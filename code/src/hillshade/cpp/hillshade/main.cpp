@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <stf/types.hpp>
+#include <stf/stf.hpp>
 
 int main()
 {

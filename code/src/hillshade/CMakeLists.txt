@@ -10,4 +10,4 @@ target_include_directories(hillshade PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
 
 target_link_libraries(hillshade PRIVATE stf)
 
-target_precompile_headers(hillshade PRIVATE <vector> <stf/types.hpp>)
+target_precompile_headers(hillshade PRIVATE <vector> <stf/stf.hpp>)
