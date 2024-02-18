@@ -1,0 +1,18 @@
+# executables
+*.exe
+*.out
+
+# build directories
+.[Bb]uild/
+[Bb]uild/
+.vs-build/
+
+# object files
+*.o
+*.obj
+
+# libraries
+*.a
+
+# IDE files
+.vscode/
