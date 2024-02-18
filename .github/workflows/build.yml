@@ -54,7 +54,6 @@ jobs:
         id: strings
         shell: bash
         run: |
-          echo "code-dir=${{ github.workspace }}/code" >> "$GITHUB_OUTPUT"
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
       - name: Configure CMake
@@ -65,7 +64,7 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -S ${{ github.workspace }}/code
+          -S ${{ github.workspace }}
 
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
