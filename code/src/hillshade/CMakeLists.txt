@@ -6,8 +6,21 @@ set(SRC_FILES
 
 add_executable(hillshade ${SRC_FILES})
 
-target_include_directories(hillshade PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/private)
+target_include_directories(hillshade
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/private
+    ${DiligentCore_SOURCE_DIR}
+)
 
-target_link_libraries(hillshade PRIVATE stf)
+target_link_directories(hillshade
+    PRIVATE
+    ${DiligentCore_BINARY_DIR}
+)
+
+target_link_libraries(hillshade
+    PRIVATE
+    stf
+    DiligentCore
+)
 
 target_precompile_headers(hillshade PRIVATE <vector> <stf/stf.hpp>)
