@@ -5,4 +5,5 @@ project(hillshade VERSION 0.0.0 DESCRIPTION "An exploration in hillshading topog
 set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
 
+add_subdirectory(deps)
 add_subdirectory(src)
