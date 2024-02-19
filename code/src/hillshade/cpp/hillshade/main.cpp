@@ -5,19 +5,11 @@
 #include <Windows.h>
 #include <crtdbg.h>
 
-#include "Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h"
-
-#include "Graphics/GraphicsEngine/interface/RenderDevice.h"
-#include "Graphics/GraphicsEngine/interface/DeviceContext.h"
-#include "Graphics/GraphicsEngine/interface/SwapChain.h"
-
-#include "Common/interface/RefCntAutoPtr.hpp"
-
-// For this tutorial, we will use simple vertex shader
-// that creates a procedural triangle
-
-// Diligent Engine can use HLSL source on all supported platforms.
-// It will convert HLSL to GLSL in OpenGL mode, while Vulkan backend will compile it directly to SPIRV.
+#include <Common/interface/RefCntAutoPtr.hpp>
+#include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
+#include <Graphics/GraphicsEngine/interface/RenderDevice.h>
+#include <Graphics/GraphicsEngine/interface/DeviceContext.h>
+#include <Graphics/GraphicsEngine/interface/SwapChain.h>
 
 static const char* VSSource = R"(
 struct PSInput 
@@ -29,15 +21,21 @@ struct PSInput
 void main(in  uint    VertId : SV_VertexID,
           out PSInput PSIn) 
 {
-    float4 Pos[3];
+    float4 Pos[6];
     Pos[0] = float4(-0.5, -0.5, 0.0, 1.0);
-    Pos[1] = float4( 0.0, +0.5, 0.0, 1.0);
-    Pos[2] = float4(+0.5, -0.5, 0.0, 1.0);
+    Pos[1] = float4(-0.5, +0.5, 0.0, 1.0);
+    Pos[2] = float4(+0.5, +0.5, 0.0, 1.0);
+    Pos[3] = float4(+0.5, +0.5, 0.0, 1.0);
+    Pos[4] = float4(+0.5, -0.5, 0.0, 1.0);
+    Pos[5] = float4(-0.5, -0.5, 0.0, 1.0);
 
-    float3 Col[3];
-    Col[0] = float3(1.0, 0.0, 0.0); // red
-    Col[1] = float3(0.0, 1.0, 0.0); // green
-    Col[2] = float3(0.0, 0.0, 1.0); // blue
+    float3 Col[6];
+    Col[0] = float3(1.0, 0.0, 0.0);
+    Col[1] = float3(1.0, 1.0, 0.0);
+    Col[2] = float3(0.0, 1.0, 0.0);
+    Col[3] = float3(0.0, 1.0, 0.0);
+    Col[4] = float3(1.0, 1.0, 0.0);
+    Col[5] = float3(1.0, 0.0, 0.0);
 
     PSIn.Pos   = Pos[VertId];
     PSIn.Color = Col[VertId];
@@ -174,7 +172,7 @@ public:
         // use any resources.
 
         Diligent::DrawAttribs drawAttrs;
-        drawAttrs.NumVertices = 3; // Render 3 vertices
+        drawAttrs.NumVertices = 6; // Render 6 vertices
         m_pImmediateContext->Draw(drawAttrs);
     }
 
