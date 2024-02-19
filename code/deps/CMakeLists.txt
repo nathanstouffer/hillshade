@@ -8,7 +8,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(stf)
 
-# TODO (stouff) test out version 2.5.4
 # declare and populate DiligentCore
 FetchContent_Declare(
     DiligentCore

@@ -36,7 +36,7 @@ target_link_libraries(hillshade
     DiligentCore
 )
 
-# TODO figure out how to staticay link libraries? not sure if it's possible?
+# TODO figure out how to staticly link libraries? not sure if it's possible?
 target_link_libraries(hillshade
     PRIVATE
     Diligent-BuildSettings
