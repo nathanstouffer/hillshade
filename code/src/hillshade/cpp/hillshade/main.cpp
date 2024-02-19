@@ -1,40 +1,15 @@
-/*
- *  Copyright 2019-2022 Diligent Graphics LLC
- *  Copyright 2015-2019 Egor Yusov
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- *  In no event and under no legal theory, whether in tort (including negligence),
- *  contract, or otherwise, unless required by applicable law (such as deliberate
- *  and grossly negligent acts) or agreed to in writing, shall any Contributor be
- *  liable for any damages, including any direct, indirect, special, incidental,
- *  or consequential damages of any character arising as a result of this License or
- *  out of the use or inability to use the software (including but not limited to damages
- *  for loss of goodwill, work stoppage, computer failure or malfunction, or any and
- *  all other commercial damages or losses), even if such Contributor has been advised
- *  of the possibility of such damages.
- */
-
 #include <memory>
 #include <iomanip>
 #include <iostream>
 
+// TODO (stouff) possibly remove this NOMINMAX bit?
 #ifndef NOMINMAX
 #    define NOMINMAX
 #endif
 #include <Windows.h>
 #include <crtdbg.h>
 
+// TODO (stouff) set this up via cmake
 #ifndef PLATFORM_WIN32
 #    define PLATFORM_WIN32 1
 #endif
@@ -43,26 +18,11 @@
 #    define ENGINE_DLL 1
 #endif
 
-#ifndef D3D11_SUPPORTED
-#    define D3D11_SUPPORTED 1
-#endif
-
-#ifndef D3D12_SUPPORTED
-#    define D3D12_SUPPORTED 1
-#endif
-
 #ifndef GL_SUPPORTED
 #    define GL_SUPPORTED 1
 #endif
 
-#ifndef VULKAN_SUPPORTED
-#    define VULKAN_SUPPORTED 1
-#endif
-
-#include "Graphics/GraphicsEngineD3D11/interface/EngineFactoryD3D11.h"
-#include "Graphics/GraphicsEngineD3D12/interface/EngineFactoryD3D12.h"
 #include "Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h"
-#include "Graphics/GraphicsEngineVulkan/interface/EngineFactoryVk.h"
 
 #include "Graphics/GraphicsEngine/interface/RenderDevice.h"
 #include "Graphics/GraphicsEngine/interface/DeviceContext.h"
@@ -139,169 +99,18 @@ public:
     bool InitializeDiligentEngine(HWND hWnd)
     {
         SwapChainDesc SCDesc;
-        switch (m_DeviceType)
-        {
-#if D3D11_SUPPORTED
-        case RENDER_DEVICE_TYPE_D3D11:
-        {
-            EngineD3D11CreateInfo EngineCI;
-#    if ENGINE_DLL
-            // Load the dll and import GetEngineFactoryD3D11() function
-            auto* GetEngineFactoryD3D11 = LoadGraphicsEngineD3D11();
-#    endif
-            auto* pFactoryD3D11 = GetEngineFactoryD3D11();
-            pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &m_pDevice, &m_pImmediateContext);
-            Win32NativeWindow Window{ hWnd };
-            pFactoryD3D11->CreateSwapChainD3D11(m_pDevice, m_pImmediateContext, SCDesc, FullScreenModeDesc{}, Window, &m_pSwapChain);
-        }
-        break;
-#endif
-
-
-#if D3D12_SUPPORTED
-        case RENDER_DEVICE_TYPE_D3D12:
-        {
-#    if ENGINE_DLL
-            // Load the dll and import GetEngineFactoryD3D12() function
-            auto GetEngineFactoryD3D12 = LoadGraphicsEngineD3D12();
-#    endif
-            EngineD3D12CreateInfo EngineCI;
-
-            auto* pFactoryD3D12 = GetEngineFactoryD3D12();
-            pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &m_pDevice, &m_pImmediateContext);
-            Win32NativeWindow Window{ hWnd };
-            pFactoryD3D12->CreateSwapChainD3D12(m_pDevice, m_pImmediateContext, SCDesc, FullScreenModeDesc{}, Window, &m_pSwapChain);
-        }
-        break;
-#endif
-
-
-#if GL_SUPPORTED
-        case RENDER_DEVICE_TYPE_GL:
-        {
 #    if EXPLICITLY_LOAD_ENGINE_GL_DLL
-            // Load the dll and import GetEngineFactoryOpenGL() function
-            auto GetEngineFactoryOpenGL = LoadGraphicsEngineOpenGL();
+        // Load the dll and import GetEngineFactoryOpenGL() function
+        auto GetEngineFactoryOpenGL = LoadGraphicsEngineOpenGL();
 #    endif
-            auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
+        auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
 
-            EngineGLCreateInfo EngineCI;
-            EngineCI.Window.hWnd = hWnd;
+        EngineGLCreateInfo EngineCI;
+        EngineCI.Window.hWnd = hWnd;
 
-            pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &m_pDevice, &m_pImmediateContext, SCDesc, &m_pSwapChain);
-        }
-        break;
-#endif
-
-
-#if VULKAN_SUPPORTED
-        case RENDER_DEVICE_TYPE_VULKAN:
-        {
-#    if EXPLICITLY_LOAD_ENGINE_VK_DLL
-            // Load the dll and import GetEngineFactoryVk() function
-            auto GetEngineFactoryVk = LoadGraphicsEngineVk();
-#    endif
-            EngineVkCreateInfo EngineCI;
-
-            auto* pFactoryVk = GetEngineFactoryVk();
-            pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &m_pDevice, &m_pImmediateContext);
-
-            if (!m_pSwapChain && hWnd != nullptr)
-            {
-                Win32NativeWindow Window{ hWnd };
-                pFactoryVk->CreateSwapChainVk(m_pDevice, m_pImmediateContext, SCDesc, Window, &m_pSwapChain);
-            }
-        }
-        break;
-#endif
-
-
-        default:
-            std::cerr << "Unknown/unsupported device type";
-            return false;
-            break;
-        }
-
+        pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &m_pDevice, &m_pImmediateContext, SCDesc, &m_pSwapChain);
         return true;
     }
-
-    bool ProcessCommandLine(const char* CmdLine)
-    {
-        const char* mode = nullptr;
-
-        const char* Keys[] = { "--mode ", "--mode=", "-m " };
-        for (size_t i = 0; i < _countof(Keys); ++i)
-        {
-            const auto* Key = Keys[i];
-            if ((mode = strstr(CmdLine, Key)) != nullptr)
-            {
-                mode += strlen(Key);
-                break;
-            }
-        }
-
-        if (mode != nullptr)
-        {
-            while (*mode == ' ')
-                ++mode;
-
-            if (_stricmp(mode, "D3D11") == 0)
-            {
-#if D3D11_SUPPORTED
-                m_DeviceType = RENDER_DEVICE_TYPE_D3D11;
-#else
-                std::cerr << "Direct3D11 is not supported. Please select another device type";
-                return false;
-#endif
-            }
-            else if (_stricmp(mode, "D3D12") == 0)
-            {
-#if D3D12_SUPPORTED
-                m_DeviceType = RENDER_DEVICE_TYPE_D3D12;
-#else
-                std::cerr << "Direct3D12 is not supported. Please select another device type";
-                return false;
-#endif
-            }
-            else if (_stricmp(mode, "GL") == 0)
-            {
-#if GL_SUPPORTED
-                m_DeviceType = RENDER_DEVICE_TYPE_GL;
-#else
-                std::cerr << "OpenGL is not supported. Please select another device type";
-                return false;
-#endif
-            }
-            else if (_stricmp(mode, "VK") == 0)
-            {
-#if VULKAN_SUPPORTED
-                m_DeviceType = RENDER_DEVICE_TYPE_VULKAN;
-#else
-                std::cerr << "Vulkan is not supported. Please select another device type";
-                return false;
-#endif
-            }
-            else
-            {
-                std::cerr << mode << " is not a valid device type. Only the following types are supported: D3D11, D3D12, GL, VK";
-                return false;
-            }
-        }
-        else
-        {
-#if D3D12_SUPPORTED
-            m_DeviceType = RENDER_DEVICE_TYPE_D3D12;
-#elif VULKAN_SUPPORTED
-            m_DeviceType = RENDER_DEVICE_TYPE_VULKAN;
-#elif D3D11_SUPPORTED
-            m_DeviceType = RENDER_DEVICE_TYPE_D3D11;
-#elif GL_SUPPORTED
-            m_DeviceType = RENDER_DEVICE_TYPE_GL;
-#endif
-        }
-        return true;
-    }
-
 
     void CreateResources()
     {
@@ -406,7 +215,7 @@ private:
     RefCntAutoPtr<IDeviceContext> m_pImmediateContext;
     RefCntAutoPtr<ISwapChain>     m_pSwapChain;
     RefCntAutoPtr<IPipelineState> m_pPSO;
-    RENDER_DEVICE_TYPE            m_DeviceType = RENDER_DEVICE_TYPE_D3D11;
+    RENDER_DEVICE_TYPE            m_DeviceType = RENDER_DEVICE_TYPE_GL;
 };
 
 std::unique_ptr<Tutorial00App> g_pTheApp;
@@ -424,18 +233,7 @@ int WINAPI WinMain(_In_ HINSTANCE     hInstance,
 
     g_pTheApp.reset(new Tutorial00App);
 
-    const auto* cmdLine = GetCommandLineA();
-    if (!g_pTheApp->ProcessCommandLine(cmdLine))
-        return -1;
-
-    std::string Title("Tutorial00: Hello Win32");
-    switch (g_pTheApp->GetDeviceType())
-    {
-    case RENDER_DEVICE_TYPE_D3D11: Title.append(" (D3D11)"); break;
-    case RENDER_DEVICE_TYPE_D3D12: Title.append(" (D3D12)"); break;
-    case RENDER_DEVICE_TYPE_GL: Title.append(" (GL)"); break;
-    case RENDER_DEVICE_TYPE_VULKAN: Title.append(" (VK)"); break;
-    }
+    std::string Title("Tutorial00: Hello Win32 (GL)");
     // Register our window class
     WNDCLASSEX wcex = { sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW, MessageProc,
                        0L, 0L, hInstance, NULL, NULL, NULL, NULL, "SampleApp", NULL };
