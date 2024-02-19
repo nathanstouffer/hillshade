@@ -2,10 +2,6 @@
 #include <iomanip>
 #include <iostream>
 
-// TODO (stouff) possibly remove this NOMINMAX bit?
-#ifndef NOMINMAX
-#    define NOMINMAX
-#endif
 #include <Windows.h>
 #include <crtdbg.h>
 
