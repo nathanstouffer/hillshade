@@ -1,62 +1,55 @@
 #include "hillshade/application.h"
 
-#include <memory>
-#include <iomanip>
-#include <iostream>
-
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
 
 namespace hillshade
 {
 
-    static const char* VSSource = R"(
+    static const char* s_vertex_shader_source = R"(
         struct PSInput 
         { 
-            float4 Pos   : SV_POSITION; 
-            float3 Color : COLOR; 
+            float4 pos   : SV_POSITION; 
+            float3 color : COLOR; 
         };
 
-        void main(in  uint    VertId : SV_VertexID,
-                  out PSInput PSIn) 
+        void main(in uint vertex_id : SV_VertexID, out PSInput pixel_input) 
         {
-            float4 Pos[6];
-            Pos[0] = float4(-0.5, -0.5, 0.0, 1.0);
-            Pos[1] = float4(-0.5, +0.5, 0.0, 1.0);
-            Pos[2] = float4(+0.5, +0.5, 0.0, 1.0);
-            Pos[3] = float4(+0.5, +0.5, 0.0, 1.0);
-            Pos[4] = float4(+0.5, -0.5, 0.0, 1.0);
-            Pos[5] = float4(-0.5, -0.5, 0.0, 1.0);
+            float4 positions[6];
+            positions[0] = float4(-0.5, -0.5, 0.0, 1.0);
+            positions[1] = float4(-0.5, +0.5, 0.0, 1.0);
+            positions[2] = float4(+0.5, +0.5, 0.0, 1.0);
+            positions[3] = float4(+0.5, +0.5, 0.0, 1.0);
+            positions[4] = float4(+0.5, -0.5, 0.0, 1.0);
+            positions[5] = float4(-0.5, -0.5, 0.0, 1.0);
 
-            float3 Col[6];
-            Col[0] = float3(1.0, 0.0, 0.0);
-            Col[1] = float3(1.0, 1.0, 0.0);
-            Col[2] = float3(0.0, 1.0, 0.0);
-            Col[3] = float3(0.0, 1.0, 0.0);
-            Col[4] = float3(1.0, 1.0, 0.0);
-            Col[5] = float3(1.0, 0.0, 0.0);
+            float3 colors[6];
+            colors[0] = float3(1.0, 0.0, 0.0);
+            colors[1] = float3(1.0, 1.0, 0.0);
+            colors[2] = float3(0.0, 1.0, 0.0);
+            colors[3] = float3(0.0, 1.0, 0.0);
+            colors[4] = float3(1.0, 1.0, 0.0);
+            colors[5] = float3(1.0, 0.0, 0.0);
 
-            PSIn.Pos   = Pos[VertId];
-            PSIn.Color = Col[VertId];
+            pixel_input.pos   = positions[vertex_id];
+            pixel_input.color = colors[vertex_id];
         }
     )";
 
-    // Pixel shader simply outputs interpolated vertex color
-    static const char* PSSource = R"(
+    static const char* s_pixel_shader_source = R"(
         struct PSInput 
         { 
-            float4 Pos   : SV_POSITION; 
-            float3 Color : COLOR; 
+            float4 pos   : SV_POSITION; 
+            float3 color : COLOR; 
         };
 
         struct PSOutput
         { 
-            float4 Color : SV_TARGET; 
+            float4 color : SV_TARGET; 
         };
 
-        void main(in  PSInput  PSIn,
-                  out PSOutput PSOut)
+        void main(in PSInput pixel_input, out PSOutput pixel_output)
         {
-            PSOut.Color = float4(PSIn.Color.rgb, 1.0);
+            pixel_output.color = float4(pixel_input.color.rgb, 1.0);
         }
     )";
 
@@ -67,103 +60,83 @@ namespace hillshade
 
     bool application::initialize(HWND hWnd)
     {
-        Diligent::SwapChainDesc SCDesc;
+        Diligent::SwapChainDesc desc;
 #    if EXPLICITLY_LOAD_ENGINE_GL_DLL
-        // Load the dll and import GetEngineFactoryOpenGL() function
-        auto GetEngineFactoryOpenGL = Diligent::LoadGraphicsEngineOpenGL();
+        // load the dll and import GetEngineFactoryOpenGL() function
+        auto engine = Diligent::LoadGraphicsEngineOpenGL();
 #    endif
-        auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
+        auto* factory = engine();
 
-        Diligent::EngineGLCreateInfo EngineCI;
-        EngineCI.Window.hWnd = hWnd;
+        Diligent::EngineGLCreateInfo info;
+        info.Window.hWnd = hWnd;
 
-        pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &m_device, &m_immediate_context, SCDesc, &m_swap_chain);
+        factory->CreateDeviceAndSwapChainGL(info, &m_device, &m_immediate_context, desc, &m_swap_chain);
         return true;
     }
 
     void application::create_resources()
     {
-        // Pipeline state object encompasses configuration of all GPU stages
+        Diligent::GraphicsPipelineStateCreateInfo pso_info;
 
-        Diligent::GraphicsPipelineStateCreateInfo PSOCreateInfo;
+        pso_info.PSODesc.Name = "Simple quad PSO";
+        pso_info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
 
-        // Pipeline state name is used by the engine to report issues.
-        // It is always a good idea to give objects descriptive names.
-        PSOCreateInfo.PSODesc.Name = "Simple triangle PSO";
+        pso_info.GraphicsPipeline.NumRenderTargets = 1;
+        pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
+        pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
+        pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
+        pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
 
-        // This is a graphics pipeline
-        PSOCreateInfo.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
-
-        // clang-format off
-        // This tutorial will render to a single render target
-        PSOCreateInfo.GraphicsPipeline.NumRenderTargets = 1;
-        // Set render target format which is the format of the swap chain's color buffer
-        PSOCreateInfo.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
-        // Use the depth buffer format from the swap chain
-        PSOCreateInfo.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
-        // Primitive topology defines what kind of primitives will be rendered by this pipeline state
-        PSOCreateInfo.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        // No back face culling for this tutorial
-        PSOCreateInfo.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
-        // Disable depth testing
-        PSOCreateInfo.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
-        // clang-format on
-
-        Diligent::ShaderCreateInfo ShaderCI;
-        // Tell the system that the shader source code is in HLSL.
-        // For OpenGL, the engine will convert this into GLSL under the hood
-        ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
-        // OpenGL backend requires emulated combined HLSL texture samplers (g_Texture + g_Texture_sampler combination)
-        ShaderCI.Desc.UseCombinedTextureSamplers = true;
-        // Create a vertex shader
-        Diligent::RefCntAutoPtr<Diligent::IShader> pVS;
+        Diligent::ShaderCreateInfo shader_info;
+        shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
+        shader_info.Desc.UseCombinedTextureSamplers = true;
+        
+        // create a vertex shader
+        Diligent::RefCntAutoPtr<Diligent::IShader> vertex_shader;
         {
-            ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
-            ShaderCI.EntryPoint = "main";
-            ShaderCI.Desc.Name = "Triangle vertex shader";
-            ShaderCI.Source = VSSource;
-            m_device->CreateShader(ShaderCI, &pVS);
+            shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
+            shader_info.EntryPoint = "main";
+            shader_info.Desc.Name = "quad vertex shader";
+            shader_info.Source = s_vertex_shader_source;
+            m_device->CreateShader(shader_info, &vertex_shader);
         }
 
-        // Create a pixel shader
-        Diligent::RefCntAutoPtr<Diligent::IShader> pPS;
+        // create a pixel shader
+        Diligent::RefCntAutoPtr<Diligent::IShader> pixel_shader;
         {
-            ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
-            ShaderCI.EntryPoint = "main";
-            ShaderCI.Desc.Name = "Triangle pixel shader";
-            ShaderCI.Source = PSSource;
-            m_device->CreateShader(ShaderCI, &pPS);
+            shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
+            shader_info.EntryPoint = "main";
+            shader_info.Desc.Name = "quad pixel shader";
+            shader_info.Source = s_pixel_shader_source;
+            m_device->CreateShader(shader_info, &pixel_shader);
         }
 
-        // Finally, create the pipeline state
-        PSOCreateInfo.pVS = pVS;
-        PSOCreateInfo.pPS = pPS;
-        m_device->CreateGraphicsPipelineState(PSOCreateInfo, &m_pso);
+        // create the pipeline state
+        pso_info.pVS = vertex_shader;
+        pso_info.pPS = pixel_shader;
+        m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
     }
 
     void application::render()
     {
-        // Set render targets before issuing any draw command.
-        // Note that Present() unbinds the back buffer if it is set as render target.
-        auto* pRTV = m_swap_chain->GetCurrentBackBufferRTV();
-        auto* pDSV = m_swap_chain->GetDepthBufferDSV();
-        m_immediate_context->SetRenderTargets(1, &pRTV, pDSV, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        // set render targets before issuing any draw command.
+        // note that present() unbinds the back buffer if it is set as render target.
+        auto* rtv = m_swap_chain->GetCurrentBackBufferRTV();
+        auto* dsv = m_swap_chain->GetDepthBufferDSV();
+        m_immediate_context->SetRenderTargets(1, &rtv, dsv, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-        // Clear the back buffer
-        const float ClearColor[] = { 0.350f, 0.350f, 0.350f, 1.0f };
-        // Let the engine perform required state transitions
-        m_immediate_context->ClearRenderTarget(pRTV, ClearColor, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-        m_immediate_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        // clear back buffer
+        float const clear_color[] = { 0.350f, 0.350f, 0.350f, 1.0f };
+        m_immediate_context->ClearRenderTarget(rtv, clear_color, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-        // Set the pipeline state in the immediate context
+        // set the pipeline state in the immediate context
         m_immediate_context->SetPipelineState(m_pso);
 
-        // Typically we should now call CommitShaderResources(), however shaders in this example don't
-        // use any resources.
-
-        Diligent::DrawAttribs drawAttrs;
-        drawAttrs.NumVertices = 6; // Render 6 vertices
-        m_immediate_context->Draw(drawAttrs);
+        Diligent::DrawAttribs draw_attrs;
+        draw_attrs.NumVertices = 6;
+        m_immediate_context->Draw(draw_attrs);
     }
 
     void application::present()
