@@ -77,8 +77,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     if (!s_app->initialize(wnd))
         return -1;
     
-    s_app->create_resources();
-
     // Main message loop
     MSG msg = { 0 };
     while (WM_QUIT != msg.message)

@@ -71,6 +71,9 @@ namespace hillshade
         info.Window.hWnd = hWnd;
 
         factory->CreateDeviceAndSwapChainGL(info, &m_device, &m_immediate_context, desc, &m_swap_chain);
+
+        create_resources();
+
         return true;
     }
 

@@ -21,9 +21,6 @@ namespace hillshade
 
         bool initialize(HWND hWnd);
 
-        // TODO (stouff) possibly wrap into initialize?
-        void create_resources();
-
         void render();
         void present();
 
@@ -38,6 +35,10 @@ namespace hillshade
         Diligent::RefCntAutoPtr<Diligent::ISwapChain>     m_swap_chain;
         Diligent::RefCntAutoPtr<Diligent::IPipelineState> m_pso;
         Diligent::RENDER_DEVICE_TYPE                      m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
+
+    private:
+
+        void create_resources();
 
 	};
 
