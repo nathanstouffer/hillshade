@@ -29,13 +29,11 @@ target_link_libraries(hillshade
     DiligentCore
 )
 
+# TODO figure out how to staticay link libraries? not sure if it's possible?
 target_link_libraries(hillshade
     PRIVATE
     Diligent-BuildSettings
-    Diligent-GraphicsEngineD3D11-shared
-    Diligent-GraphicsEngineD3D12-shared
     Diligent-GraphicsEngineOpenGL-shared
-    Diligent-GraphicsEngineVk-shared
 )
 copy_required_dlls(hillshade)
 
