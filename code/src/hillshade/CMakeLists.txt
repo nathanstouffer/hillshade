@@ -4,7 +4,7 @@ set(SRC_FILES
     ${HILLSHADE_SRC_FILES_PREFIX}/main.cpp
 )
 
-add_executable(hillshade ${SRC_FILES})
+add_executable(hillshade WIN32 ${SRC_FILES})
 
 target_include_directories(hillshade
     PRIVATE
@@ -22,5 +22,15 @@ target_link_libraries(hillshade
     stf
     DiligentCore
 )
+
+target_link_libraries(hillshade
+    PRIVATE
+    Diligent-BuildSettings
+    Diligent-GraphicsEngineD3D11-shared
+    Diligent-GraphicsEngineD3D12-shared
+    Diligent-GraphicsEngineOpenGL-shared
+    Diligent-GraphicsEngineVk-shared
+)
+copy_required_dlls(hillshade)
 
 target_precompile_headers(hillshade PRIVATE <vector> <stf/stf.hpp>)
