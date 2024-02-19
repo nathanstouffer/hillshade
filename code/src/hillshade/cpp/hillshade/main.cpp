@@ -9,19 +9,6 @@
 #include <Windows.h>
 #include <crtdbg.h>
 
-// TODO (stouff) set this up via cmake
-#ifndef PLATFORM_WIN32
-#    define PLATFORM_WIN32 1
-#endif
-
-#ifndef ENGINE_DLL
-#    define ENGINE_DLL 1
-#endif
-
-#ifndef GL_SUPPORTED
-#    define GL_SUPPORTED 1
-#endif
-
 #include "Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h"
 
 #include "Graphics/GraphicsEngine/interface/RenderDevice.h"

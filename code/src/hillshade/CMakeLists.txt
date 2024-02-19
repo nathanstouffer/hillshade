@@ -6,6 +6,12 @@ set(SRC_FILES
 
 add_executable(hillshade WIN32 ${SRC_FILES})
 
+# TODO eventually we should split this out by platform
+target_compile_definitions(hillshade
+    PRIVATE
+    PLATFORM_WIN32=1
+)
+
 target_include_directories(hillshade
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/private
