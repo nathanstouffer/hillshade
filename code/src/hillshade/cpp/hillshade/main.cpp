@@ -30,8 +30,6 @@
 
 #include "Common/interface/RefCntAutoPtr.hpp"
 
-using namespace Diligent;
-
 // For this tutorial, we will use simple vertex shader
 // that creates a procedural triangle
 
@@ -98,14 +96,14 @@ public:
 
     bool InitializeDiligentEngine(HWND hWnd)
     {
-        SwapChainDesc SCDesc;
+        Diligent::SwapChainDesc SCDesc;
 #    if EXPLICITLY_LOAD_ENGINE_GL_DLL
         // Load the dll and import GetEngineFactoryOpenGL() function
-        auto GetEngineFactoryOpenGL = LoadGraphicsEngineOpenGL();
+        auto GetEngineFactoryOpenGL = Diligent::LoadGraphicsEngineOpenGL();
 #    endif
         auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
 
-        EngineGLCreateInfo EngineCI;
+        Diligent::EngineGLCreateInfo EngineCI;
         EngineCI.Window.hWnd = hWnd;
 
         pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &m_pDevice, &m_pImmediateContext, SCDesc, &m_pSwapChain);
@@ -116,14 +114,14 @@ public:
     {
         // Pipeline state object encompasses configuration of all GPU stages
 
-        GraphicsPipelineStateCreateInfo PSOCreateInfo;
+        Diligent::GraphicsPipelineStateCreateInfo PSOCreateInfo;
 
         // Pipeline state name is used by the engine to report issues.
         // It is always a good idea to give objects descriptive names.
         PSOCreateInfo.PSODesc.Name = "Simple triangle PSO";
 
         // This is a graphics pipeline
-        PSOCreateInfo.PSODesc.PipelineType = PIPELINE_TYPE_GRAPHICS;
+        PSOCreateInfo.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
 
         // clang-format off
         // This tutorial will render to a single render target
@@ -133,23 +131,23 @@ public:
         // Use the depth buffer format from the swap chain
         PSOCreateInfo.GraphicsPipeline.DSVFormat = m_pSwapChain->GetDesc().DepthBufferFormat;
         // Primitive topology defines what kind of primitives will be rendered by this pipeline state
-        PSOCreateInfo.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        PSOCreateInfo.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         // No back face culling for this tutorial
-        PSOCreateInfo.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_NONE;
+        PSOCreateInfo.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
         // Disable depth testing
-        PSOCreateInfo.GraphicsPipeline.DepthStencilDesc.DepthEnable = False;
+        PSOCreateInfo.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
         // clang-format on
 
-        ShaderCreateInfo ShaderCI;
+        Diligent::ShaderCreateInfo ShaderCI;
         // Tell the system that the shader source code is in HLSL.
         // For OpenGL, the engine will convert this into GLSL under the hood
-        ShaderCI.SourceLanguage = SHADER_SOURCE_LANGUAGE_HLSL;
+        ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
         // OpenGL backend requires emulated combined HLSL texture samplers (g_Texture + g_Texture_sampler combination)
         ShaderCI.Desc.UseCombinedTextureSamplers = true;
         // Create a vertex shader
-        RefCntAutoPtr<IShader> pVS;
+        Diligent::RefCntAutoPtr<Diligent::IShader> pVS;
         {
-            ShaderCI.Desc.ShaderType = SHADER_TYPE_VERTEX;
+            ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
             ShaderCI.EntryPoint = "main";
             ShaderCI.Desc.Name = "Triangle vertex shader";
             ShaderCI.Source = VSSource;
@@ -157,9 +155,9 @@ public:
         }
 
         // Create a pixel shader
-        RefCntAutoPtr<IShader> pPS;
+        Diligent::RefCntAutoPtr<Diligent::IShader> pPS;
         {
-            ShaderCI.Desc.ShaderType = SHADER_TYPE_PIXEL;
+            ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
             ShaderCI.EntryPoint = "main";
             ShaderCI.Desc.Name = "Triangle pixel shader";
             ShaderCI.Source = PSSource;
@@ -178,13 +176,13 @@ public:
         // Note that Present() unbinds the back buffer if it is set as render target.
         auto* pRTV = m_pSwapChain->GetCurrentBackBufferRTV();
         auto* pDSV = m_pSwapChain->GetDepthBufferDSV();
-        m_pImmediateContext->SetRenderTargets(1, &pRTV, pDSV, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_pImmediateContext->SetRenderTargets(1, &pRTV, pDSV, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         // Clear the back buffer
         const float ClearColor[] = { 0.350f, 0.350f, 0.350f, 1.0f };
         // Let the engine perform required state transitions
-        m_pImmediateContext->ClearRenderTarget(pRTV, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-        m_pImmediateContext->ClearDepthStencil(pDSV, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_pImmediateContext->ClearRenderTarget(pRTV, ClearColor, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_pImmediateContext->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         // Set the pipeline state in the immediate context
         m_pImmediateContext->SetPipelineState(m_pPSO);
@@ -192,7 +190,7 @@ public:
         // Typically we should now call CommitShaderResources(), however shaders in this example don't
         // use any resources.
 
-        DrawAttribs drawAttrs;
+        Diligent::DrawAttribs drawAttrs;
         drawAttrs.NumVertices = 3; // Render 3 vertices
         m_pImmediateContext->Draw(drawAttrs);
     }
@@ -202,20 +200,20 @@ public:
         m_pSwapChain->Present();
     }
 
-    void WindowResize(Uint32 Width, Uint32 Height)
+    void WindowResize(Diligent::Uint32 Width, Diligent::Uint32 Height)
     {
         if (m_pSwapChain)
             m_pSwapChain->Resize(Width, Height);
     }
 
-    RENDER_DEVICE_TYPE GetDeviceType() const { return m_DeviceType; }
+    Diligent::RENDER_DEVICE_TYPE GetDeviceType() const { return m_DeviceType; }
 
 private:
-    RefCntAutoPtr<IRenderDevice>  m_pDevice;
-    RefCntAutoPtr<IDeviceContext> m_pImmediateContext;
-    RefCntAutoPtr<ISwapChain>     m_pSwapChain;
-    RefCntAutoPtr<IPipelineState> m_pPSO;
-    RENDER_DEVICE_TYPE            m_DeviceType = RENDER_DEVICE_TYPE_GL;
+    Diligent::RefCntAutoPtr<Diligent::IRenderDevice>  m_pDevice;
+    Diligent::RefCntAutoPtr<Diligent::IDeviceContext> m_pImmediateContext;
+    Diligent::RefCntAutoPtr<Diligent::ISwapChain>     m_pSwapChain;
+    Diligent::RefCntAutoPtr<Diligent::IPipelineState> m_pPSO;
+    Diligent::RENDER_DEVICE_TYPE                      m_DeviceType = Diligent::RENDER_DEVICE_TYPE_GL;
 };
 
 std::unique_ptr<Tutorial00App> g_pTheApp;
