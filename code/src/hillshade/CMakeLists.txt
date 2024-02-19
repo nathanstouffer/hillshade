@@ -1,15 +1,22 @@
 set(HILLSHADE_SRC_FILES_PREFIX "cpp/hillshade")
+set(HILLSHADE_HDR_FILES_PREFIX "include/private/hillshade")
 
 set(SRC_FILES
     ${HILLSHADE_SRC_FILES_PREFIX}/main.cpp
+    ${HILLSHADE_SRC_FILES_PREFIX}/application.cpp
 )
 
-add_executable(hillshade WIN32 ${SRC_FILES})
+set(HDR_FILES
+    ${HILLSHADE_HDR_FILES_PREFIX}/application.h
+)
+
+add_executable(hillshade WIN32 ${SRC_FILES} ${HDR_FILES})
 
 # TODO eventually we should split this out by platform
 target_compile_definitions(hillshade
     PRIVATE
     PLATFORM_WIN32=1
+    ENGINE_DLL=1
 )
 
 target_include_directories(hillshade
