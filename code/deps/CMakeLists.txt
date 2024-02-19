@@ -13,7 +13,7 @@ FetchContent_MakeAvailable(stf)
 FetchContent_Declare(
     DiligentCore
     GIT_REPOSITORY https://github.com/DiligentGraphics/DiligentCore.git
-    GIT_TAG e6a1f1c99fcbe1a9bc6b6300502e09b5efdad5cd
+    GIT_TAG v2.5.4
     SOURCE_DIR _deps/DiligentCore
 )
 FetchContent_MakeAvailable(DiligentCore)
@@ -22,7 +22,7 @@ FetchContent_MakeAvailable(DiligentCore)
 FetchContent_Declare(
     DiligentTools
     GIT_REPOSITORY https://github.com/DiligentGraphics/DiligentTools.git
-    GIT_TAG 0d6f88ee735d1058228a0baf865ffb8c4cf334bd
+    GIT_TAG v2.5.4
     SOURCE_DIR _deps/DiligentTools
 )
 FetchContent_MakeAvailable(DiligentTools)
