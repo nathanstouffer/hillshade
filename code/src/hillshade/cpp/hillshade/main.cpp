@@ -7,45 +7,40 @@
 
 static std::unique_ptr<hillshade::application> s_app = nullptr;
 
-// Called every time the NativeNativeAppBase receives a message
-LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam)
+// called every time the NativeNativeAppBase receives a message
+LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_param)
 {
     switch (message)
     {
-    case WM_PAINT:
-    {
-        PAINTSTRUCT ps;
-        BeginPaint(wnd, &ps);
-        EndPaint(wnd, &ps);
-        return 0;
-    }
-    case WM_SIZE: // Window size has been changed
-        if (s_app)
+        case WM_PAINT:
         {
-            s_app->resize(LOWORD(lParam), HIWORD(lParam));
+            PAINTSTRUCT ps;
+            BeginPaint(wnd, &ps);
+            EndPaint(wnd, &ps);
+            return 0;
         }
-        return 0;
+        case WM_SIZE: // window size has been changed
+            if (s_app) { s_app->resize(LOWORD(l_param), HIWORD(l_param)); }
+            return 0;
 
-    case WM_CHAR:
-        if (wParam == VK_ESCAPE)
+        case WM_CHAR:
+            if (w_param == VK_ESCAPE) { PostQuitMessage(0); }
+            return 0;
+
+        case WM_DESTROY:
             PostQuitMessage(0);
-        return 0;
+            return 0;
 
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        return 0;
+        case WM_GETMINMAXINFO:
+        {
+            LPMINMAXINFO range = (LPMINMAXINFO)l_param;
+            range->ptMinTrackSize.x = 320;
+            range->ptMinTrackSize.y = 240;
+            return 0;
+        }
 
-    case WM_GETMINMAXINFO:
-    {
-        LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
-
-        lpMMI->ptMinTrackSize.x = 320;
-        lpMMI->ptMinTrackSize.y = 240;
-        return 0;
-    }
-
-    default:
-        return DefWindowProc(wnd, message, wParam, lParam);
+        default:
+            return DefWindowProc(wnd, message, w_param, l_param);
     }
 }
 
@@ -59,12 +54,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     WNDCLASSEX wcex = { sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW, MessageProc, 0L, 0L, hInstance, NULL, NULL, NULL, NULL, "Hillshade", NULL };
     RegisterClassEx(&wcex);
 
-    // Create a window
-    LONG WindowWidth = 1280;
-    LONG WindowHeight = 1024;
-    RECT rc = { 0, 0, WindowWidth, WindowHeight };
-    AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-    HWND wnd = CreateWindow("Hillshade", "Hillshade", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, hInstance, NULL);
+    // create a window
+    LONG window_width = 1280;
+    LONG window_height = 1024;
+    RECT rct = { 0, 0, window_width, window_height };
+    AdjustWindowRect(&rct, WS_OVERLAPPEDWINDOW, FALSE);
+    HWND wnd = CreateWindow("Hillshade", "Hillshader", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rct.right - rct.left, rct.bottom - rct.top, NULL, NULL, hInstance, NULL);
     if (!wnd)
     {
         MessageBox(NULL, "Cannot create window", "Error", MB_OK | MB_ICONERROR);
