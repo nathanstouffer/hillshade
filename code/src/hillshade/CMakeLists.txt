@@ -1,16 +1,8 @@
-set(HILLSHADE_SRC_FILES_PREFIX "cpp/hillshade")
-set(HILLSHADE_HDR_FILES_PREFIX "include/private/hillshade")
-
-set(SRC_FILES
-    ${HILLSHADE_SRC_FILES_PREFIX}/main.cpp
-    ${HILLSHADE_SRC_FILES_PREFIX}/application.cpp
+add_executable(hillshade WIN32
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/application.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/application.h"
 )
-
-set(HDR_FILES
-    ${HILLSHADE_HDR_FILES_PREFIX}/application.h
-)
-
-add_executable(hillshade WIN32 ${SRC_FILES} ${HDR_FILES})
 
 # TODO eventually we should split this out by platform
 target_compile_definitions(hillshade
@@ -21,13 +13,13 @@ target_compile_definitions(hillshade
 
 target_include_directories(hillshade
     PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/private
-    ${DiligentCore_SOURCE_DIR}
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
+    "${DiligentCore_SOURCE_DIR}"
 )
 
 target_link_directories(hillshade
     PRIVATE
-    ${DiligentCore_BINARY_DIR}
+    "${DiligentCore_BINARY_DIR}"
 )
 
 target_link_libraries(hillshade
