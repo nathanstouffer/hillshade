@@ -8,20 +8,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(stf)
 
-# declare and populate DiligentCore
+# declare and populate DiligentCore and DiligentTools
 FetchContent_Declare(
     DiligentCore
     GIT_REPOSITORY https://github.com/DiligentGraphics/DiligentCore.git
     GIT_TAG v2.5.4
     SOURCE_DIR _deps/DiligentCore
 )
-FetchContent_MakeAvailable(DiligentCore)
-
-# declare and populate DiligentTools
 FetchContent_Declare(
     DiligentTools
     GIT_REPOSITORY https://github.com/DiligentGraphics/DiligentTools.git
     GIT_TAG v2.5.4
     SOURCE_DIR _deps/DiligentTools
 )
-FetchContent_MakeAvailable(DiligentTools)
+FetchContent_MakeAvailable(DiligentCore DiligentTools)

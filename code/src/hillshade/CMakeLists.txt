@@ -1,8 +1,13 @@
-add_executable(hillshade WIN32
+set(HILLSHADE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/application.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/application.h"
 )
+
+add_executable(hillshade WIN32 ${HILLSHADE_FILES})
+
+# add directory structure to IDEs
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/" FILES ${HILLSHADE_FILES})
 
 # TODO eventually we should split this out by platform
 target_compile_definitions(hillshade
@@ -11,10 +16,14 @@ target_compile_definitions(hillshade
     ENGINE_DLL=1
 )
 
+# TODO figure out why we need to explicitly make this available here
+FetchContent_MakeAvailable(DiligentCore DiligentTools)
+
 target_include_directories(hillshade
     PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
-    "${DiligentCore_SOURCE_DIR}"
+    "${diligentcore_SOURCE_DIR}"
+    "${diligenttools_SOURCE_DIR}"
 )
 
 target_link_directories(hillshade
