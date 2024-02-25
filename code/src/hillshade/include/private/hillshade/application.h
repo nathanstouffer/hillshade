@@ -6,6 +6,7 @@
 #include <Graphics/GraphicsEngine/interface/DeviceContext.h>
 #include <Graphics/GraphicsEngine/interface/RenderDevice.h>
 #include <Graphics/GraphicsEngine/interface/SwapChain.h>
+#include <Imgui/interface/ImGuiImplWin32.hpp>
 
 namespace hillshade
 {
@@ -21,6 +22,7 @@ namespace hillshade
 
         bool initialize(HWND hWnd);
 
+        void update();
         void render();
         void present();
 
@@ -35,6 +37,9 @@ namespace hillshade
         Diligent::RefCntAutoPtr<Diligent::ISwapChain>     m_swap_chain;
         Diligent::RefCntAutoPtr<Diligent::IPipelineState> m_pso;
         Diligent::RENDER_DEVICE_TYPE                      m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
+        
+        std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
+        float const m_clear_color[4] = { 0.350f, 0.350f, 0.350f, 1.0f };
 
     private:
 

@@ -24,17 +24,20 @@ target_include_directories(hillshade
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
     "${diligentcore_SOURCE_DIR}"
     "${diligenttools_SOURCE_DIR}"
+    "${DILIGENT_DEAR_IMGUI_PATH}"
 )
 
 target_link_directories(hillshade
     PRIVATE
-    "${DiligentCore_BINARY_DIR}"
+    "${diligentcore_BINARY_DIR}"
+    "${diligenttools_BINARY_DIR}"
 )
 
 target_link_libraries(hillshade
     PRIVATE
     stf
     DiligentCore
+    DiligentTools
 )
 
 # TODO figure out how to staticly link libraries? not sure if it's possible?

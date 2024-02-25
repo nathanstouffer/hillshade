@@ -1,6 +1,7 @@
 #include "hillshade/application.h"
 
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
+#include <imgui.h>
 
 namespace hillshade
 {
@@ -56,6 +57,7 @@ namespace hillshade
     application::~application()
     {
         m_immediate_context->Flush();
+        ImGui::DestroyContext();
     }
 
     bool application::initialize(HWND hWnd)
@@ -71,6 +73,12 @@ namespace hillshade
         info.Window.hWnd = hWnd;
 
         factory->CreateDeviceAndSwapChainGL(info, &m_device, &m_immediate_context, desc, &m_swap_chain);
+
+        // set up imgui
+        m_imgui_impl = std::make_unique<Diligent::ImGuiImplWin32>(Diligent::ImGuiDiligentCreateInfo(&*m_device, desc), hWnd);
+        ImGui::StyleColorsDark();
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = { 1280, 1024 };    // TODO (stouff) don't hardcode this
 
         create_resources();
 
@@ -121,8 +129,32 @@ namespace hillshade
         m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
     }
 
+    void application::update()
+    {
+        ImGui::NewFrame();
+
+        ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
+
+        ImGui::Text("This is some useful text.");          // Display some text (you can use a format strings too)
+
+        static float f = 0.0f;
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);              // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::ColorEdit3("clear color", (float*)&m_clear_color); // Edit 3 floats representing a color
+
+        static int counter = 0;
+        if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
+            counter++;
+        ImGui::SameLine();
+        ImGui::Text("counter = %d", counter);
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
+    }
+
     void application::render()
     {
+        update();
+
         // set render targets before issuing any draw command.
         // note that present() unbinds the back buffer if it is set as render target.
         auto* rtv = m_swap_chain->GetCurrentBackBufferRTV();
@@ -130,8 +162,7 @@ namespace hillshade
         m_immediate_context->SetRenderTargets(1, &rtv, dsv, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         // clear back buffer
-        float const clear_color[] = { 0.350f, 0.350f, 0.350f, 1.0f };
-        m_immediate_context->ClearRenderTarget(rtv, clear_color, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->ClearRenderTarget(rtv, m_clear_color, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         // set the pipeline state in the immediate context
@@ -140,6 +171,8 @@ namespace hillshade
         Diligent::DrawAttribs draw_attrs;
         draw_attrs.NumVertices = 6;
         m_immediate_context->Draw(draw_attrs);
+
+        ImGui::Render();
     }
 
     void application::present()
