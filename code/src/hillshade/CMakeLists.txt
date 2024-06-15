@@ -1,16 +1,13 @@
-set(HILLSHADE_SRC_FILES_PREFIX "cpp/hillshade")
-set(HILLSHADE_HDR_FILES_PREFIX "include/private/hillshade")
-
-set(SRC_FILES
-    ${HILLSHADE_SRC_FILES_PREFIX}/main.cpp
-    ${HILLSHADE_SRC_FILES_PREFIX}/application.cpp
+set(HILLSHADE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/application.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/application.h"
 )
 
-set(HDR_FILES
-    ${HILLSHADE_HDR_FILES_PREFIX}/application.h
-)
+add_executable(hillshade WIN32 ${HILLSHADE_FILES})
 
-add_executable(hillshade WIN32 ${SRC_FILES} ${HDR_FILES})
+# add directory structure to IDEs
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/" FILES ${HILLSHADE_FILES})
 
 # TODO eventually we should split this out by platform
 target_compile_definitions(hillshade
@@ -19,21 +16,28 @@ target_compile_definitions(hillshade
     ENGINE_DLL=1
 )
 
+# TODO figure out why we need to explicitly make this available here
+FetchContent_MakeAvailable(DiligentCore DiligentTools)
+
 target_include_directories(hillshade
     PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/private
-    ${DiligentCore_SOURCE_DIR}
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
+    "${diligentcore_SOURCE_DIR}"
+    "${diligenttools_SOURCE_DIR}"
+    "${DILIGENT_DEAR_IMGUI_PATH}"
 )
 
 target_link_directories(hillshade
     PRIVATE
-    ${DiligentCore_BINARY_DIR}
+    "${diligentcore_BINARY_DIR}"
+    "${diligenttools_BINARY_DIR}"
 )
 
 target_link_libraries(hillshade
     PRIVATE
     stf
     DiligentCore
+    DiligentTools
 )
 
 # TODO figure out how to staticly link libraries? not sure if it's possible?

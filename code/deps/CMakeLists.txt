@@ -4,24 +4,21 @@ include(FetchContent)
 FetchContent_Declare(
     stf
     GIT_REPOSITORY https://github.com/nathanstouffer/stf.git
-    GIT_TAG 994fcb51455918825809f3c3bf41041b5db9ee86
+    GIT_TAG f7a47b32d41443ca56576d00ac734e69a2ff8076
 )
 FetchContent_MakeAvailable(stf)
 
-# declare and populate DiligentCore
+# declare and populate DiligentCore and DiligentTools
 FetchContent_Declare(
     DiligentCore
     GIT_REPOSITORY https://github.com/DiligentGraphics/DiligentCore.git
     GIT_TAG v2.5.4
     SOURCE_DIR _deps/DiligentCore
 )
-FetchContent_MakeAvailable(DiligentCore)
-
-# declare and populate DiligentTools
 FetchContent_Declare(
     DiligentTools
     GIT_REPOSITORY https://github.com/DiligentGraphics/DiligentTools.git
     GIT_TAG v2.5.4
     SOURCE_DIR _deps/DiligentTools
 )
-FetchContent_MakeAvailable(DiligentTools)
+FetchContent_MakeAvailable(DiligentCore DiligentTools)
