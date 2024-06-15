@@ -57,7 +57,6 @@ namespace hillshade
     application::~application()
     {
         m_immediate_context->Flush();
-        ImGui::DestroyContext();
     }
 
     bool application::initialize(HWND hWnd)
