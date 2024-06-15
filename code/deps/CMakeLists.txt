@@ -22,3 +22,5 @@ FetchContent_Declare(
     SOURCE_DIR _deps/DiligentTools
 )
 FetchContent_MakeAvailable(DiligentCore DiligentTools)
+
+find_package(GeoTIFF CONFIG REQUIRED)

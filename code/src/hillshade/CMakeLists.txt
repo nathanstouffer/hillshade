@@ -38,6 +38,7 @@ target_link_libraries(hillshade
     stf
     DiligentCore
     DiligentTools
+    geotiff_library
 )
 
 # TODO figure out how to staticly link libraries? not sure if it's possible?

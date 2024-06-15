@@ -1,0 +1,14 @@
+{
+  "name": "hillshade",
+  "version-semver": "0.0.0",
+  "dependencies": [
+    "libgeotiff"
+  ],
+  "overrides": [
+    {
+      "name": "libgeotiff",
+      "version": "1.7.1"
+    }
+  ],
+  "builtin-baseline": "f7423ee180c4b7f40d43402c2feb3859161ef625"
+}
