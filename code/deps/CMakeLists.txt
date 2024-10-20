@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
     stf
     GIT_REPOSITORY https://github.com/nathanstouffer/stf.git
-    GIT_TAG f7a47b32d41443ca56576d00ac734e69a2ff8076
+    GIT_TAG 8ce14acd5e5db0be2195e3ad4d7eabfed8f57d6b
 )
 FetchContent_MakeAvailable(stf)
 
@@ -23,4 +23,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(DiligentCore DiligentTools)
 
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message (STATUS "CMake thinks we are compiling for 64-bit")
+else ()
+    message (STATUS "CMake thinks we are compiling for something not 64-bit")
+endif()
 find_package(GeoTIFF CONFIG REQUIRED)
