@@ -18,7 +18,6 @@ target_compile_definitions(hillshade
 
 # TODO figure out why we need to explicitly make this available here
 FetchContent_MakeAvailable(DiligentCore DiligentTools)
-
 find_package(GeoTIFF CONFIG REQUIRED)
 
 target_include_directories(hillshade
