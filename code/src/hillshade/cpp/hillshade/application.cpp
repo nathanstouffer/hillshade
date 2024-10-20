@@ -2,6 +2,7 @@
 
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
 #include <imgui.h>
+#include <geotiff.h>
 
 namespace hillshade
 {
@@ -53,6 +54,11 @@ namespace hillshade
             pixel_output.color = float4(pixel_input.color.rgb, 1.0);
         }
     )";
+
+    application::application()
+    {
+
+    }
 
     application::~application()
     {

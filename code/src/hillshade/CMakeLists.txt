@@ -19,12 +19,15 @@ target_compile_definitions(hillshade
 # TODO figure out why we need to explicitly make this available here
 FetchContent_MakeAvailable(DiligentCore DiligentTools)
 
+find_package(GeoTIFF CONFIG REQUIRED)
+
 target_include_directories(hillshade
     PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
     "${diligentcore_SOURCE_DIR}"
     "${diligenttools_SOURCE_DIR}"
     "${DILIGENT_DEAR_IMGUI_PATH}"
+    "${GeoTIFF_INCLUDE_DIRS}"
 )
 
 target_link_directories(hillshade
@@ -38,7 +41,6 @@ target_link_libraries(hillshade
     stf
     DiligentCore
     DiligentTools
-    geotiff_library
 )
 
 # TODO figure out how to staticly link libraries? not sure if it's possible?

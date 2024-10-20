@@ -23,9 +23,4 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(DiligentCore DiligentTools)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message (STATUS "CMake thinks we are compiling for 64-bit")
-else ()
-    message (STATUS "CMake thinks we are compiling for something not 64-bit")
-endif()
 find_package(GeoTIFF CONFIG REQUIRED)

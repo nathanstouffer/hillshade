@@ -15,7 +15,7 @@ namespace hillshade
 	{
     public:
 
-        application() = default;
+        application();
         ~application();
         application(application const& rhs) = delete;
         application& operator=(application const& rhs) = delete;
