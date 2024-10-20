@@ -83,7 +83,7 @@ namespace hillshade
         m_imgui_impl = std::make_unique<Diligent::ImGuiImplWin32>(Diligent::ImGuiDiligentCreateInfo(&*m_device, desc), hWnd);
         ImGui::StyleColorsDark();
         ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = { 1280, 1024 };    // TODO (stouff) don't hardcode this
+        io.DisplaySize = { static_cast<float>(m_width), static_cast<float>(m_height) };
 
         create_resources();
 
@@ -136,7 +136,7 @@ namespace hillshade
 
     void application::update()
     {
-        ImGui::NewFrame();
+        m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
 
         ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
 
@@ -177,7 +177,7 @@ namespace hillshade
         draw_attrs.NumVertices = 6;
         m_immediate_context->Draw(draw_attrs);
 
-        ImGui::Render();
+        m_imgui_impl->Render(m_immediate_context);
     }
 
     void application::present()
@@ -187,6 +187,8 @@ namespace hillshade
 
     void application::resize(Diligent::Uint32 width, Diligent::Uint32 height)
     {
+        m_width = width;
+        m_height = height;
         if (m_swap_chain)
         {
             m_swap_chain->Resize(width, height);

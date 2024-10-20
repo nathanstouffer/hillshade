@@ -40,6 +40,8 @@ namespace hillshade
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
         float const m_clear_color[4] = { 0.350f, 0.350f, 0.350f, 1.0f };
+        Diligent::Uint32 m_width = 1280;
+        Diligent::Uint32 m_height = 1024;
 
     private:
 
