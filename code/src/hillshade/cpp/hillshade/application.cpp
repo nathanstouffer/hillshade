@@ -1,11 +1,15 @@
 #include "hillshade/application.h"
 
+#include <filesystem>
+
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
 #include <imgui.h>
 #include <geotiff.h>
 
 namespace hillshade
 {
+
+    static const char* c_tiffs_dir = "tiffs";
 
     static const char* s_vertex_shader_source = R"(
         struct PSInput 
@@ -90,70 +94,44 @@ namespace hillshade
         return true;
     }
 
-    void application::create_resources()
-    {
-        Diligent::GraphicsPipelineStateCreateInfo pso_info;
-
-        pso_info.PSODesc.Name = "Simple quad PSO";
-        pso_info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
-
-        pso_info.GraphicsPipeline.NumRenderTargets = 1;
-        pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
-        pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
-        pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
-        pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
-
-        Diligent::ShaderCreateInfo shader_info;
-        shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
-        shader_info.Desc.UseCombinedTextureSamplers = true;
-        
-        // create a vertex shader
-        Diligent::RefCntAutoPtr<Diligent::IShader> vertex_shader;
-        {
-            shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
-            shader_info.EntryPoint = "main";
-            shader_info.Desc.Name = "quad vertex shader";
-            shader_info.Source = s_vertex_shader_source;
-            m_device->CreateShader(shader_info, &vertex_shader);
-        }
-
-        // create a pixel shader
-        Diligent::RefCntAutoPtr<Diligent::IShader> pixel_shader;
-        {
-            shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
-            shader_info.EntryPoint = "main";
-            shader_info.Desc.Name = "quad pixel shader";
-            shader_info.Source = s_pixel_shader_source;
-            m_device->CreateShader(shader_info, &pixel_shader);
-        }
-
-        // create the pipeline state
-        pso_info.pVS = vertex_shader;
-        pso_info.pPS = pixel_shader;
-        m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
-    }
-
     void application::update()
     {
         m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
 
-        ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
+        // debug window
+        {
+            ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
 
-        ImGui::Text("This is some useful text.");          // Display some text (you can use a format strings too)
+            ImGui::Text("This is some useful text.");          // Display some text (you can use a format strings too)
 
-        static float f = 0.0f;
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);              // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float*)&m_clear_color); // Edit 3 floats representing a color
+            static float f = 0.0f;
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);              // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::ColorEdit3("clear color", (float*)&m_clear_color); // Edit 3 floats representing a color
 
-        static int counter = 0;
-        if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
+            static int counter = 0;
+            if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
 
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::End();
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            if (ImGui::BeginMenu("tiffs"))
+            {
+                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiffs_dir))
+                {
+                    std::string name = file.path().filename().string();
+                    bool selected = m_tiff == name;
+                    if (ImGui::MenuItem(name.c_str(), nullptr, selected, !selected))
+                    {
+                        load_tiff(name);
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::End();
+        }
     }
 
     void application::render()
@@ -193,6 +171,56 @@ namespace hillshade
         {
             m_swap_chain->Resize(width, height);
         }
+    }
+
+    void application::create_resources()
+    {
+        Diligent::GraphicsPipelineStateCreateInfo pso_info;
+
+        pso_info.PSODesc.Name = "Simple quad PSO";
+        pso_info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
+
+        pso_info.GraphicsPipeline.NumRenderTargets = 1;
+        pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
+        pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
+        pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
+        pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
+
+        Diligent::ShaderCreateInfo shader_info;
+        shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
+        shader_info.Desc.UseCombinedTextureSamplers = true;
+
+        // create a vertex shader
+        Diligent::RefCntAutoPtr<Diligent::IShader> vertex_shader;
+        {
+            shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
+            shader_info.EntryPoint = "main";
+            shader_info.Desc.Name = "quad vertex shader";
+            shader_info.Source = s_vertex_shader_source;
+            m_device->CreateShader(shader_info, &vertex_shader);
+        }
+
+        // create a pixel shader
+        Diligent::RefCntAutoPtr<Diligent::IShader> pixel_shader;
+        {
+            shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
+            shader_info.EntryPoint = "main";
+            shader_info.Desc.Name = "quad pixel shader";
+            shader_info.Source = s_pixel_shader_source;
+            m_device->CreateShader(shader_info, &pixel_shader);
+        }
+
+        // create the pipeline state
+        pso_info.pVS = vertex_shader;
+        pso_info.pPS = pixel_shader;
+        m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
+    }
+
+    void application::load_tiff(std::string const& name)
+    {
+        m_tiff = name;
+        // TODO (stouff) load tiff
     }
 
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <Windows.h>
 
 #include <Common/interface/RefCntAutoPtr.hpp>
@@ -43,9 +45,13 @@ namespace hillshade
         Diligent::Uint32 m_width = 1280;
         Diligent::Uint32 m_height = 1024;
 
+        std::string m_tiff;
+
     private:
 
         void create_resources();
+
+        void load_tiff(std::string const& name);
 
 	};
 
