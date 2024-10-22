@@ -127,8 +127,8 @@ namespace hillshade
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-            ImGui::ColorEdit3("background", (float*)&m_clear_color);
-            ImGui::ColorEdit3("albedo", (float*)&m_albedo);
+            ImGui::ColorEdit3("background", reinterpret_cast<float*>(&m_clear_color));
+            ImGui::ColorEdit3("albedo", reinterpret_cast<float*>(&m_albedo));
 
             ImGui::End();
         }
