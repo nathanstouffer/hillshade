@@ -96,25 +96,16 @@ namespace hillshade
 
     void application::update()
     {
-        m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
+        if (m_render_ui) { render_ui(); }
+    }
 
+    void application::render_ui()
+    {
+        m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
+        
         // debug window
         {
-            ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");          // Display some text (you can use a format strings too)
-
-            static float f = 0.0f;
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);              // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&m_clear_color); // Edit 3 floats representing a color
-
-            static int counter = 0;
-            if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::BeginMainMenuBar();
 
             if (ImGui::BeginMenu("tiffs"))
             {
@@ -129,6 +120,15 @@ namespace hillshade
                 }
                 ImGui::EndMenu();
             }
+
+            ImGui::EndMainMenuBar();
+
+            ImGui::Begin("Debugging"); // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            ImGui::ColorEdit3("background", (float*)&m_clear_color);
+            ImGui::ColorEdit3("albedo", (float*)&m_albedo);
 
             ImGui::End();
         }
@@ -145,7 +145,7 @@ namespace hillshade
         m_immediate_context->SetRenderTargets(1, &rtv, dsv, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         // clear back buffer
-        m_immediate_context->ClearRenderTarget(rtv, m_clear_color, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->ClearRenderTarget(rtv, reinterpret_cast<float*>(&m_clear_color), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         // set the pipeline state in the immediate context
@@ -155,7 +155,7 @@ namespace hillshade
         draw_attrs.NumVertices = 6;
         m_immediate_context->Draw(draw_attrs);
 
-        m_imgui_impl->Render(m_immediate_context);
+        if (m_render_ui) { m_imgui_impl->Render(m_immediate_context); }
     }
 
     void application::present()
