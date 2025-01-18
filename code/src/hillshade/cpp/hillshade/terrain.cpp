@@ -15,9 +15,6 @@ namespace hillshade
             return;
         }
 
-        auto tmp0 = dataset->GetProjectionRef();
-        auto tmp1 = dataset->GetSpatialRef();
-        std::cout << tmp0 << tmp1 << std::endl;
         dataset->GetGeoTransform(m_geo_transform.data());
 
         // grab dimensions
@@ -27,7 +24,6 @@ namespace hillshade
         // resize data container
         m_values.resize(width * height);
 
-        // TODO (stouff) investigate exception?
         GDALRasterBand* band = dataset->GetRasterBand(1);
         band->RasterIO(GF_Read, 0, 0, width, height, m_values.data(), width, height, GDT_Float32, 0, 0);
 
