@@ -1,5 +1,7 @@
 #include "hillshade/terrain.h"
 
+#include <algorithm>
+
 #include <gdal_priv.h>
 
 namespace hillshade
@@ -29,6 +31,16 @@ namespace hillshade
 
         m_width = static_cast<size_t>(width);
         m_height = static_cast<size_t>(height);
+
+        // compute elevation range
+        {
+            m_range = stff::interval(m_values[0], m_values[0]);
+            for (float elevation : m_values)
+            {
+                m_range.a = std::min(m_range.a, elevation);
+                m_range.b = std::max(m_range.b, elevation);
+            }
+        }
 
         // compute spatial bounds
         {
