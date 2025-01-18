@@ -2,7 +2,10 @@
 
 #include <filesystem>
 
+#include <Common/interface/DataBlobImpl.hpp>
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
+#include <TextureLoader/interface/TextureLoader.h>
+#include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
 
 namespace hillshade
@@ -221,6 +224,26 @@ namespace hillshade
         m_tiff_name = name;
         std::string path = std::string(c_tiffs_dir) + "/" + m_tiff_name;
         m_terrain = std::make_unique<terrain>(path);
+
+        Diligent::RefCntAutoPtr<Diligent::IDataBlob> blob = Diligent::DataBlobImpl::Create(sizeof(float) * m_terrain->width() * m_terrain->height(), m_terrain->values().data());
+
+        Diligent::RefCntAutoPtr<Diligent::Image> img;
+        Diligent::ImageDesc desc;
+        desc.Width = static_cast<Diligent::Uint32>(m_terrain->width());
+        desc.Height = static_cast<Diligent::Uint32>(m_terrain->height());
+        desc.NumComponents = 1;
+        desc.ComponentType = Diligent::VALUE_TYPE::VT_FLOAT32;
+        desc.RowStride = sizeof(float) * desc.Width;
+        Diligent::Image::CreateFromMemory(desc, blob, &img);
+
+        Diligent::RefCntAutoPtr<Diligent::ITextureLoader> loader;
+        Diligent::TextureLoadInfo info;
+        info.Format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_R32_FLOAT;
+        info.MipLevels = 1;
+        info.GenerateMips = false;
+        Diligent::CreateTextureLoaderFromImage(img, info, &loader);
+
+        loader->CreateTexture(m_device, &m_texture);
     }
 
 }

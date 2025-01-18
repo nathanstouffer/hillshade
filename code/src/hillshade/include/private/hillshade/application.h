@@ -58,6 +58,7 @@ namespace hillshade
 
         std::string m_tiff_name;
         std::unique_ptr<terrain> m_terrain;
+        Diligent::RefCntAutoPtr<Diligent::ITexture> m_texture;
 
         stf::gfx::rgba m_clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
         stf::gfx::rgba m_albedo = { 1.0f, 1.0f, 1.0f, 1.0f };
