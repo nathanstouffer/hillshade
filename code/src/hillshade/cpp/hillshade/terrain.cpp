@@ -35,14 +35,16 @@ namespace hillshade
 
         // compute spatial bounds
         {
-            m_top_left = stfd::vec2(m_geo_transform[0], m_geo_transform[3]);
-            m_bottom_right = m_top_left;
-            m_bottom_right += static_cast<double>(width) * stfd::vec2(m_geo_transform[1], m_geo_transform[4]);
-            m_bottom_right += static_cast<double>(height) * stfd::vec2(m_geo_transform[2], m_geo_transform[5]);
+            stfd::vec2 top_left = stfd::vec2(m_geo_transform[0], m_geo_transform[3]);
+            stfd::vec2 bottom_right = top_left;
+            bottom_right += static_cast<double>(width) * stfd::vec2(m_geo_transform[1], m_geo_transform[4]);
+            bottom_right += static_cast<double>(height) * stfd::vec2(m_geo_transform[2], m_geo_transform[5]);
 
-            stfd::vec2 center = 0.5 * (m_top_left + m_bottom_right);
-            m_top_left -= center;
-            m_bottom_right -= center;
+            stfd::vec2 center = 0.5 * (top_left + bottom_right);
+            top_left -= center;
+            bottom_right -= center;
+
+            m_bounds = stfd::aabb2(stfd::vec2(top_left.x, bottom_right.y), stfd::vec2(bottom_right.x, top_left.y));
         }
 
         GDALClose(dataset);

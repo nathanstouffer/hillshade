@@ -35,8 +35,7 @@ namespace hillshade
         // ]
         std::array<double, 6> m_geo_transform;
 
-        stfd::vec2 m_top_left;
-        stfd::vec2 m_bottom_right;
+        stfd::aabb2 m_bounds;
 
     };
 
