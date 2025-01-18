@@ -1,10 +1,14 @@
 #include "hillshade/application.h"
 
+#include <filesystem>
+
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
 #include <imgui.h>
 
 namespace hillshade
 {
+
+    static const char* c_tiffs_dir = "tiffs";
 
     static const char* s_vertex_shader_source = R"(
         struct PSInput 
@@ -54,6 +58,11 @@ namespace hillshade
         }
     )";
 
+    application::application()
+    {
+
+    }
+
     application::~application()
     {
         m_immediate_context->Flush();
@@ -77,11 +86,90 @@ namespace hillshade
         m_imgui_impl = std::make_unique<Diligent::ImGuiImplWin32>(Diligent::ImGuiDiligentCreateInfo(&*m_device, desc), hWnd);
         ImGui::StyleColorsDark();
         ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = { 1280, 1024 };    // TODO (stouff) don't hardcode this
+        io.DisplaySize = { static_cast<float>(m_width), static_cast<float>(m_height) };
 
         create_resources();
 
         return true;
+    }
+
+    void application::update()
+    {
+        if (m_render_ui) { render_ui(); }
+    }
+
+    void application::render_ui()
+    {
+        m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
+        
+        // debug window
+        {
+            ImGui::BeginMainMenuBar();
+
+            if (ImGui::BeginMenu("tiffs"))
+            {
+                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiffs_dir))
+                {
+                    std::string name = file.path().filename().string();
+                    bool selected = m_tiff_name == name;
+                    if (ImGui::MenuItem(name.c_str(), nullptr, selected, !selected))
+                    {
+                        load_tiff(name);
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMainMenuBar();
+
+            ImGui::Begin("Debugging"); // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            ImGui::ColorEdit3("background", reinterpret_cast<float*>(&m_clear_color));
+            ImGui::ColorEdit3("albedo", reinterpret_cast<float*>(&m_albedo));
+
+            ImGui::End();
+        }
+    }
+
+    void application::render()
+    {
+        update();
+
+        // set render targets before issuing any draw command.
+        // note that present() unbinds the back buffer if it is set as render target.
+        auto* rtv = m_swap_chain->GetCurrentBackBufferRTV();
+        auto* dsv = m_swap_chain->GetDepthBufferDSV();
+        m_immediate_context->SetRenderTargets(1, &rtv, dsv, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+        // clear back buffer
+        m_immediate_context->ClearRenderTarget(rtv, reinterpret_cast<float*>(&m_clear_color), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+        // set the pipeline state in the immediate context
+        m_immediate_context->SetPipelineState(m_pso);
+
+        Diligent::DrawAttribs draw_attrs;
+        draw_attrs.NumVertices = 6;
+        m_immediate_context->Draw(draw_attrs);
+
+        if (m_render_ui) { m_imgui_impl->Render(m_immediate_context); }
+    }
+
+    void application::present()
+    {
+        m_swap_chain->Present();
+    }
+
+    void application::resize(Diligent::Uint32 width, Diligent::Uint32 height)
+    {
+        m_width = width;
+        m_height = height;
+        if (m_swap_chain)
+        {
+            m_swap_chain->Resize(width, height);
+        }
     }
 
     void application::create_resources()
@@ -101,7 +189,7 @@ namespace hillshade
         Diligent::ShaderCreateInfo shader_info;
         shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
         shader_info.Desc.UseCombinedTextureSamplers = true;
-        
+
         // create a vertex shader
         Diligent::RefCntAutoPtr<Diligent::IShader> vertex_shader;
         {
@@ -128,63 +216,11 @@ namespace hillshade
         m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
     }
 
-    void application::update()
+    void application::load_tiff(std::string const& name)
     {
-        ImGui::NewFrame();
-
-        ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
-
-        ImGui::Text("This is some useful text.");          // Display some text (you can use a format strings too)
-
-        static float f = 0.0f;
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);              // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float*)&m_clear_color); // Edit 3 floats representing a color
-
-        static int counter = 0;
-        if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::End();
-    }
-
-    void application::render()
-    {
-        update();
-
-        // set render targets before issuing any draw command.
-        // note that present() unbinds the back buffer if it is set as render target.
-        auto* rtv = m_swap_chain->GetCurrentBackBufferRTV();
-        auto* dsv = m_swap_chain->GetDepthBufferDSV();
-        m_immediate_context->SetRenderTargets(1, &rtv, dsv, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-        // clear back buffer
-        m_immediate_context->ClearRenderTarget(rtv, m_clear_color, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-        m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-        // set the pipeline state in the immediate context
-        m_immediate_context->SetPipelineState(m_pso);
-
-        Diligent::DrawAttribs draw_attrs;
-        draw_attrs.NumVertices = 6;
-        m_immediate_context->Draw(draw_attrs);
-
-        ImGui::Render();
-    }
-
-    void application::present()
-    {
-        m_swap_chain->Present();
-    }
-
-    void application::resize(Diligent::Uint32 width, Diligent::Uint32 height)
-    {
-        if (m_swap_chain)
-        {
-            m_swap_chain->Resize(width, height);
-        }
+        m_tiff_name = name;
+        std::string path = std::string(c_tiffs_dir) + "/" + m_tiff_name;
+        m_terrain = std::make_unique<terrain>(path);
     }
 
 }

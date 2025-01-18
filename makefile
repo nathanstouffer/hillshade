@@ -15,5 +15,5 @@ clean:
 
 .PHONY: generate-vs-project
 generate-vs-project:
-	@cmake -S . -B .build/Win64 -G "Visual Studio 17 2022" -A x64
+	@cmake -S . -B .build/Win64 -DCMAKE_TOOLCHAIN_FILE=C:/src/vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 17 2022" -A x64
 	@echo "Generated VS project"

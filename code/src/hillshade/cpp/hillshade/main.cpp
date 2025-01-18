@@ -1,7 +1,10 @@
 #include <memory>
 
+#define NOMINMAX
 #include <Windows.h>
 #include <crtdbg.h>
+
+#include <gdal_priv.h>
 
 #include "hillshade/application.h"
 
@@ -19,12 +22,30 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
             EndPaint(wnd, &ps);
             return 0;
         }
+
+        case WM_LBUTTONDOWN:
+            s_app->io().AddMouseButtonEvent(0, true);
+            return 0;
+
+        case WM_LBUTTONUP:
+            s_app->io().AddMouseButtonEvent(0, false);
+            return 0;
+
+        case WM_RBUTTONDOWN:
+            s_app->io().AddMouseButtonEvent(1, true);
+            return 0;
+
+        case WM_RBUTTONUP:
+            s_app->io().AddMouseButtonEvent(1, false);
+            return 0;
+
         case WM_SIZE: // window size has been changed
             if (s_app) { s_app->resize(LOWORD(l_param), HIWORD(l_param)); }
             return 0;
 
         case WM_CHAR:
             if (w_param == VK_ESCAPE) { PostQuitMessage(0); }
+            if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
             return 0;
 
         case WM_DESTROY:
@@ -49,6 +70,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 #if defined(_DEBUG) || defined(DEBUG)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+    // register gdal
+    GDALAllRegister();
 
     // register window
     WNDCLASSEX wcex = { sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW, MessageProc, 0L, 0L, hInstance, NULL, NULL, NULL, NULL, "Hillshade", NULL };
