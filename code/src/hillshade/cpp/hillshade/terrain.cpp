@@ -15,9 +15,34 @@ namespace hillshade
             return;
         }
 
+        dataset->GetGeoTransform(m_geo_transform.data());
+
+        // grab dimensions
         int width = dataset->GetRasterXSize();
         int height = dataset->GetRasterYSize();
-        std::cout << "Width: " << width << ", Height: " << height << std::endl;
+
+        // resize data container
+        m_values.resize(width * height);
+
+        GDALRasterBand* band = dataset->GetRasterBand(1);
+        band->RasterIO(GF_Read, 0, 0, width, height, m_values.data(), width, height, GDT_Float32, 0, 0);
+
+        m_width = static_cast<size_t>(width);
+        m_height = static_cast<size_t>(height);
+
+        // compute spatial bounds
+        {
+            stfd::vec2 top_left = stfd::vec2(m_geo_transform[0], m_geo_transform[3]);
+            stfd::vec2 bottom_right = top_left;
+            bottom_right += static_cast<double>(width) * stfd::vec2(m_geo_transform[1], m_geo_transform[4]);
+            bottom_right += static_cast<double>(height) * stfd::vec2(m_geo_transform[2], m_geo_transform[5]);
+
+            stfd::vec2 center = 0.5 * (top_left + bottom_right);
+            top_left -= center;
+            bottom_right -= center;
+
+            m_bounds = stfd::aabb2(stfd::vec2(top_left.x, bottom_right.y), stfd::vec2(bottom_right.x, top_left.y));
+        }
 
         GDALClose(dataset);
     }
