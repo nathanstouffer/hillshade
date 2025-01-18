@@ -20,8 +20,8 @@
 namespace hillshade
 {
 
-	class application
-	{
+    class application
+    {
     public:
 
         application();
@@ -70,6 +70,6 @@ namespace hillshade
 
         void load_tiff(std::string const& name);
 
-	};
+    };
 
 }
