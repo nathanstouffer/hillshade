@@ -62,7 +62,7 @@ namespace hillshade
 
         void main(in PSInput pixel_input, out PSOutput pixel_output)
         {
-            float4 color = g_terrain.Sample(g_terrain_sampler, pixel_input.uv) / 3000.0;
+            float4 color = g_terrain.Sample(g_terrain_sampler, pixel_input.uv);
             pixel_output.color = float4(float3(color.r), 1.0);
         }
     )";
