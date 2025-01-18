@@ -4,7 +4,6 @@
 
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
 #include <imgui.h>
-#include <geotiff.h>
 
 namespace hillshade
 {
@@ -112,7 +111,7 @@ namespace hillshade
                 for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiffs_dir))
                 {
                     std::string name = file.path().filename().string();
-                    bool selected = m_tiff == name;
+                    bool selected = m_tiff_name == name;
                     if (ImGui::MenuItem(name.c_str(), nullptr, selected, !selected))
                     {
                         load_tiff(name);
@@ -219,8 +218,9 @@ namespace hillshade
 
     void application::load_tiff(std::string const& name)
     {
-        m_tiff = name;
-        // TODO (stouff) load tiff
+        m_tiff_name = name;
+        std::string path = std::string(c_tiffs_dir) + "/" + m_tiff_name;
+        m_terrain = std::make_unique<terrain>(path);
     }
 
 }

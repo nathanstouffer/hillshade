@@ -23,4 +23,4 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(DiligentCore DiligentTools)
 
-find_package(GeoTIFF CONFIG REQUIRED)
+find_package(gdal CONFIG REQUIRED)
