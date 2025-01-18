@@ -44,11 +44,12 @@ namespace hillshade
 
     private:
 
-        Diligent::RefCntAutoPtr<Diligent::IRenderDevice>  m_device;
-        Diligent::RefCntAutoPtr<Diligent::IDeviceContext> m_immediate_context;
-        Diligent::RefCntAutoPtr<Diligent::ISwapChain>     m_swap_chain;
-        Diligent::RefCntAutoPtr<Diligent::IPipelineState> m_pso;
-        Diligent::RENDER_DEVICE_TYPE                      m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
+        Diligent::RefCntAutoPtr<Diligent::IRenderDevice>          m_device;
+        Diligent::RefCntAutoPtr<Diligent::IDeviceContext>         m_immediate_context;
+        Diligent::RefCntAutoPtr<Diligent::ISwapChain>             m_swap_chain;
+        Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_pso;
+        Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_srb;
+        Diligent::RENDER_DEVICE_TYPE                              m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
         Diligent::Uint32 m_width = 1280;
@@ -59,6 +60,7 @@ namespace hillshade
         std::string m_tiff_name;
         std::unique_ptr<terrain> m_terrain;
         Diligent::RefCntAutoPtr<Diligent::ITexture> m_texture;
+        Diligent::RefCntAutoPtr<Diligent::ITextureView> m_texture_srv;
 
         stf::gfx::rgba m_clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
         stf::gfx::rgba m_albedo = { 1.0f, 1.0f, 1.0f, 1.0f };

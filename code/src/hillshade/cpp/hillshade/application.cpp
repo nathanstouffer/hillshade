@@ -13,11 +13,12 @@ namespace hillshade
 
     static const char* c_tiffs_dir = "tiffs";
 
-    static const char* s_vertex_shader_source = R"(
+    static const char* s_vertex_shader_source =
+    R"(
         struct PSInput 
         { 
-            float4 pos   : SV_POSITION; 
-            float3 color : COLOR; 
+            float4 pos  : SV_POSITION; 
+            float2 uv   : TEX_COORD;
         };
 
         void main(in uint vertex_id : SV_VertexID, out PSInput pixel_input) 
@@ -38,16 +39,20 @@ namespace hillshade
             colors[4] = float3(1.0, 1.0, 0.0);
             colors[5] = float3(1.0, 0.0, 0.0);
 
-            pixel_input.pos   = positions[vertex_id];
-            pixel_input.color = colors[vertex_id];
+            pixel_input.pos = positions[vertex_id];
+            pixel_input.uv  = positions[vertex_id].xy + float2(0.5); // colors[vertex_id];
         }
     )";
 
-    static const char* s_pixel_shader_source = R"(
-        struct PSInput 
+    static const char* s_pixel_shader_source =
+    R"(
+        Texture2D       g_terrain;
+        SamplerState    g_terrain_sampler;
+
+        struct PSInput
         { 
-            float4 pos   : SV_POSITION; 
-            float3 color : COLOR; 
+            float4 pos  : SV_POSITION; 
+            float2 uv   : TEX_COORD; 
         };
 
         struct PSOutput
@@ -57,7 +62,8 @@ namespace hillshade
 
         void main(in PSInput pixel_input, out PSOutput pixel_output)
         {
-            pixel_output.color = float4(pixel_input.color.rgb, 1.0);
+            float4 color = g_terrain.Sample(g_terrain_sampler, pixel_input.uv) / 3000.0;
+            pixel_output.color = float4(float3(color.r), 1.0);
         }
     )";
 
@@ -152,6 +158,7 @@ namespace hillshade
 
         // set the pipeline state in the immediate context
         m_immediate_context->SetPipelineState(m_pso);
+        m_immediate_context->CommitShaderResources(m_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         Diligent::DrawAttribs draw_attrs;
         draw_attrs.NumVertices = 6;
@@ -216,7 +223,33 @@ namespace hillshade
         // create the pipeline state
         pso_info.pVS = vertex_shader;
         pso_info.pPS = pixel_shader;
+
+        pso_info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
+
+        // shader variables should typically be mutable, which means they are expected to change on a per-instance basis
+        Diligent::ShaderResourceVariableDesc vars[] =
+        {
+            {Diligent::SHADER_TYPE_PIXEL, "g_terrain", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
+        };
+        pso_info.PSODesc.ResourceLayout.Variables = vars;
+        pso_info.PSODesc.ResourceLayout.NumVariables = _countof(vars);
+
+        // define immutable sampler for g_terrain. Immutable samplers should be used whenever possible
+        Diligent::SamplerDesc desc
+        {
+            Diligent::FILTER_TYPE_LINEAR, Diligent::FILTER_TYPE_LINEAR, Diligent::FILTER_TYPE_LINEAR,
+            Diligent::TEXTURE_ADDRESS_CLAMP, Diligent::TEXTURE_ADDRESS_CLAMP, Diligent::TEXTURE_ADDRESS_CLAMP
+        };
+        Diligent::ImmutableSamplerDesc immutable_samplers[] =
+        {
+            {Diligent::SHADER_TYPE_PIXEL, "g_terrain", desc}
+        };
+        pso_info.PSODesc.ResourceLayout.ImmutableSamplers = immutable_samplers;
+        pso_info.PSODesc.ResourceLayout.NumImmutableSamplers = _countof(immutable_samplers);
+
         m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
+
+        m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
 
     void application::load_tiff(std::string const& name)
@@ -244,6 +277,9 @@ namespace hillshade
         Diligent::CreateTextureLoaderFromImage(img, info, &loader);
 
         loader->CreateTexture(m_device, &m_texture);
+
+        m_texture_srv = m_texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+        m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
     }
 
 }
