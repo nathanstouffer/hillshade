@@ -258,28 +258,38 @@ namespace hillshade
         std::string path = std::string(c_tiffs_dir) + "/" + m_tiff_name;
         m_terrain = std::make_unique<terrain>(path);
 
-        Diligent::RefCntAutoPtr<Diligent::IDataBlob> blob = Diligent::DataBlobImpl::Create(sizeof(float) * m_terrain->width() * m_terrain->height(), m_terrain->values().data());
+        // compute camera information
+        {
+            float z = std::max(m_terrain->range().b, m_terrain->bounds().diagonal().as<float>().length());
+            stff::vec3 eye(0, 0, z);
+            m_camera = stff::scamera(eye, 0, 0, 0.1, 10000, m_width / m_height, stff::scamera::c_default_fov);
+        }
 
-        Diligent::RefCntAutoPtr<Diligent::Image> img;
-        Diligent::ImageDesc desc;
-        desc.Width = static_cast<Diligent::Uint32>(m_terrain->width());
-        desc.Height = static_cast<Diligent::Uint32>(m_terrain->height());
-        desc.NumComponents = 1;
-        desc.ComponentType = Diligent::VALUE_TYPE::VT_FLOAT32;
-        desc.RowStride = sizeof(float) * desc.Width;
-        Diligent::Image::CreateFromMemory(desc, blob, &img);
+        // load gpu resources
+        {
+            Diligent::RefCntAutoPtr<Diligent::IDataBlob> blob = Diligent::DataBlobImpl::Create(sizeof(float) * m_terrain->width() * m_terrain->height(), m_terrain->values().data());
 
-        Diligent::RefCntAutoPtr<Diligent::ITextureLoader> loader;
-        Diligent::TextureLoadInfo info;
-        info.Format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_R32_FLOAT;
-        info.MipLevels = 1;
-        info.GenerateMips = false;
-        Diligent::CreateTextureLoaderFromImage(img, info, &loader);
+            Diligent::RefCntAutoPtr<Diligent::Image> img;
+            Diligent::ImageDesc desc;
+            desc.Width = static_cast<Diligent::Uint32>(m_terrain->width());
+            desc.Height = static_cast<Diligent::Uint32>(m_terrain->height());
+            desc.NumComponents = 1;
+            desc.ComponentType = Diligent::VALUE_TYPE::VT_FLOAT32;
+            desc.RowStride = sizeof(float) * desc.Width;
+            Diligent::Image::CreateFromMemory(desc, blob, &img);
 
-        loader->CreateTexture(m_device, &m_texture);
+            Diligent::RefCntAutoPtr<Diligent::ITextureLoader> loader;
+            Diligent::TextureLoadInfo info;
+            info.Format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_R32_FLOAT;
+            info.MipLevels = 1;
+            info.GenerateMips = false;
+            Diligent::CreateTextureLoaderFromImage(img, info, &loader);
 
-        m_texture_srv = m_texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-        m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
+            loader->CreateTexture(m_device, &m_texture);
+
+            m_texture_srv = m_texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+            m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
+        }
     }
 
 }

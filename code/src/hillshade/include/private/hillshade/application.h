@@ -13,6 +13,7 @@
 #include <Graphics/GraphicsEngine/interface/SwapChain.h>
 #include <Imgui/interface/ImGuiImplWin32.hpp>
 
+#include <stf/stf.hpp>
 #include <stf/gfx/color.hpp>
 
 #include "hillshade/terrain.h"
@@ -56,6 +57,8 @@ namespace hillshade
         Diligent::Uint32 m_height = 1024;
 
         bool m_render_ui = true;
+
+        stff::scamera m_camera;
 
         std::string m_tiff_name;
         std::unique_ptr<terrain> m_terrain;
