@@ -9,7 +9,7 @@ set(HILLSHADE_FILES
 add_executable(hillshade WIN32 ${HILLSHADE_FILES})
 
 message(STATUS "Copying resources")
-file(COPY "${CMAKE_SOURCE_DIR}/tiffs" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+file(COPY "${CMAKE_SOURCE_DIR}/tiffs" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 # add directory structure to IDEs
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/" FILES ${HILLSHADE_FILES})

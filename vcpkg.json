@@ -7,7 +7,7 @@
   "overrides": [
     {
       "name": "gdal",
-      "version": "3.9.2"
+      "version": "3.10.0"
     }
   ],
   "builtin-baseline": "10b7a178346f3f0abef60cecd5130e295afd8da4"
