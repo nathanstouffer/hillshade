@@ -13,6 +13,7 @@
 #include <Graphics/GraphicsEngine/interface/SwapChain.h>
 #include <Imgui/interface/ImGuiImplWin32.hpp>
 
+#include <stf/stf.hpp>
 #include <stf/gfx/color.hpp>
 
 #include "hillshade/terrain.h"
@@ -39,6 +40,8 @@ namespace hillshade
 
         void toggle_ui() { m_render_ui = !m_render_ui; }
 
+        inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
+
         ImGuiIO& io() { return ImGui::GetIO(); }
         Diligent::RENDER_DEVICE_TYPE device_type() const { return m_device_type; }
 
@@ -49,6 +52,7 @@ namespace hillshade
         Diligent::RefCntAutoPtr<Diligent::ISwapChain>             m_swap_chain;
         Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_pso;
         Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_srb;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_shader_constants;
         Diligent::RENDER_DEVICE_TYPE                              m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
@@ -56,6 +60,8 @@ namespace hillshade
         Diligent::Uint32 m_height = 1024;
 
         bool m_render_ui = true;
+
+        stff::scamera m_camera;
 
         std::string m_tiff_name;
         std::unique_ptr<terrain> m_terrain;
