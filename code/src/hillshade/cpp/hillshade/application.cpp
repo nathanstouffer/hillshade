@@ -4,6 +4,8 @@
 
 #include <Common/interface/DataBlobImpl.hpp>
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
+#include <Graphics/GraphicsTools/interface/GraphicsUtilities.h>
+#include <Graphics/GraphicsTools/interface/MapHelper.hpp>
 #include <TextureLoader/interface/TextureLoader.h>
 #include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
@@ -13,8 +15,25 @@ namespace hillshade
 
     static const char* c_tiffs_dir = "tiffs";
 
+    struct constants
+    {
+        stff::vec4 bounds;
+        stff::mtx4 view_proj;
+    };
+
     static const char* s_vertex_shader_source =
     R"(
+        struct constants
+        {
+            float4 bounds;
+            float4x4 view_proj;
+        };
+
+        cbuffer VSConstants
+        {
+            constants g_constants;
+        };
+
         struct PSInput 
         { 
             float4 pos  : SV_POSITION; 
@@ -23,13 +42,13 @@ namespace hillshade
 
         void main(in uint vertex_id : SV_VertexID, out PSInput pixel_input) 
         {
-            float4 positions[6];
-            positions[0] = float4(-0.5, -0.5, 0.0, 1.0);
-            positions[1] = float4(-0.5, +0.5, 0.0, 1.0);
-            positions[2] = float4(+0.5, +0.5, 0.0, 1.0);
-            positions[3] = float4(+0.5, +0.5, 0.0, 1.0);
-            positions[4] = float4(+0.5, -0.5, 0.0, 1.0);
-            positions[5] = float4(-0.5, -0.5, 0.0, 1.0);
+            float2 uvs[6];
+            uvs[0] = float2(0.0, 0.0);
+            uvs[1] = float2(0.0, 1.0);
+            uvs[2] = float2(1.0, 1.0);
+            uvs[3] = float2(1.0, 1.0);
+            uvs[4] = float2(1.0, 0.0);
+            uvs[5] = float2(0.0, 0.0);
 
             float3 colors[6];
             colors[0] = float3(1.0, 0.0, 0.0);
@@ -39,8 +58,9 @@ namespace hillshade
             colors[4] = float3(1.0, 1.0, 0.0);
             colors[5] = float3(1.0, 0.0, 0.0);
 
-            pixel_input.pos = positions[vertex_id];
-            pixel_input.uv  = positions[vertex_id].xy + float2(0.5); // colors[vertex_id];
+            float2 pos = lerp(g_constants.bounds.xy, g_constants.bounds.zw, uvs[vertex_id]);
+            pixel_input.pos = mul(float4(pos, 0.0, 1.0), g_constants.view_proj);
+            pixel_input.uv  = uvs[vertex_id]; // colors[vertex_id];
         }
     )";
 
@@ -156,6 +176,14 @@ namespace hillshade
         m_immediate_context->ClearRenderTarget(rtv, reinterpret_cast<float*>(&m_clear_color), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
+        Diligent::MapHelper<constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+        if (m_terrain)
+        {
+            stff::aabb2 bounds = m_terrain->bounds().as<float>();
+            consts->bounds = stff::vec4(bounds.min, bounds.max);
+        }
+        consts->view_proj = m_camera.perspective() * m_camera.view();
+
         // set the pipeline state in the immediate context
         m_immediate_context->SetPipelineState(m_pso);
         m_immediate_context->CommitShaderResources(m_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -195,6 +223,9 @@ namespace hillshade
         pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
         pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
+
+        // create dynamic uniform buffer that will store shader constants
+        Diligent::CreateUniformBuffer(m_device, sizeof(constants), "Global shader constants CB", &m_shader_constants);
 
         Diligent::ShaderCreateInfo shader_info;
         shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
@@ -248,6 +279,8 @@ namespace hillshade
         pso_info.PSODesc.ResourceLayout.NumImmutableSamplers = _countof(immutable_samplers);
 
         m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
+
+        m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "VSConstants")->Set(m_shader_constants);
 
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
