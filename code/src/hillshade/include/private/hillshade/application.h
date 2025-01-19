@@ -40,6 +40,8 @@ namespace hillshade
 
         void toggle_ui() { m_render_ui = !m_render_ui; }
 
+        inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
+
         ImGuiIO& io() { return ImGui::GetIO(); }
         Diligent::RENDER_DEVICE_TYPE device_type() const { return m_device_type; }
 

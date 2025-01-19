@@ -182,6 +182,7 @@ namespace hillshade
             stff::aabb2 bounds = m_terrain->bounds().as<float>();
             consts->bounds = stff::vec4(bounds.min, bounds.max);
         }
+        m_camera.aspect = aspect_ratio();
         consts->view_proj = m_camera.perspective() * m_camera.view();
 
         // set the pipeline state in the immediate context
@@ -295,7 +296,7 @@ namespace hillshade
         {
             float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
             stff::vec3 eye(0, 0, z);
-            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, static_cast<float>(m_width / m_height), stff::scamera::c_default_fov);
+            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
 
         // load gpu resources
