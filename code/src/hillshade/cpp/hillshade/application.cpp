@@ -10,6 +10,19 @@
 #include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
 
+namespace
+{
+
+    stff::vec3 light_direction(float const azimuth, float const altitude)
+    {
+        // transform azimuth and altitude into spherical coordinates
+        float const theta = stff::constants::half_pi - stf::math::to_radians(azimuth);
+        float const phi = stff::constants::half_pi - stf::math::to_radians(altitude);
+        return -stf::math::unit_vector(theta, phi);
+    }
+
+}
+
 namespace hillshade
 {
 
@@ -17,21 +30,27 @@ namespace hillshade
 
     struct constants
     {
-        stff::vec4 bounds;
         stff::mtx4 view_proj;
+        stff::vec4 bounds;
+        stff::vec4 albedo;
+        stff::vec3 light_dir;
+        float ambient_intensity;
     };
 
-    static const char* s_vertex_shader_source =
+    static constexpr char* s_vertex_shader_source =
     R"(
         struct constants
         {
-            float4 bounds;
             float4x4 view_proj;
+            float4 bounds;
+            float4 albedo;
+            float3 light_dir;
+            float ambient_intensity;
         };
 
         cbuffer VSConstants
         {
-            constants g_constants;
+            constants g_vconstants;
         };
 
         struct PSInput 
@@ -50,24 +69,30 @@ namespace hillshade
             uvs[4] = float2(1.0, 0.0);
             uvs[5] = float2(0.0, 0.0);
 
-            float3 colors[6];
-            colors[0] = float3(1.0, 0.0, 0.0);
-            colors[1] = float3(1.0, 1.0, 0.0);
-            colors[2] = float3(0.0, 1.0, 0.0);
-            colors[3] = float3(0.0, 1.0, 0.0);
-            colors[4] = float3(1.0, 1.0, 0.0);
-            colors[5] = float3(1.0, 0.0, 0.0);
-
-            float2 pos = lerp(g_constants.bounds.xy, g_constants.bounds.zw, uvs[vertex_id]);
-            pixel_input.pos = mul(float4(pos, 0.0, 1.0), g_constants.view_proj);
-            pixel_input.uv  = uvs[vertex_id]; // colors[vertex_id];
+            float2 pos = lerp(g_vconstants.bounds.xy, g_vconstants.bounds.zw, uvs[vertex_id]);
+            pixel_input.pos = mul(float4(pos, 0.0, 1.0), g_vconstants.view_proj);
+            pixel_input.uv  = uvs[vertex_id];
         }
     )";
 
     static const char* s_pixel_shader_source =
     R"(
+        struct constants
+        {
+            float4x4 view_proj;
+            float4 bounds;
+            float4 albedo;
+            float3 light_dir;
+            float ambient_intensity;
+        };
+
         Texture2D       g_terrain;
         SamplerState    g_terrain_sampler;
+
+        cbuffer PSConstants
+        {
+            constants g_pconstants;
+        };
 
         struct PSInput
         { 
@@ -80,10 +105,18 @@ namespace hillshade
             float4 color : SV_TARGET; 
         };
 
+        float3 hillshade(float3 albedo, float3 light_dir, float ambient_intensity, float3 normal)
+        {
+            float strength = 0.5 * (1.0 - dot(normal, light_dir));
+            return (ambient_intensity + (1 - ambient_intensity) * strength) * albedo;
+        }
+
         void main(in PSInput pixel_input, out PSOutput pixel_output)
         {
-            float4 color = g_terrain.Sample(g_terrain_sampler, pixel_input.uv);
-            pixel_output.color = float4(float3(color.r), 1.0);
+            //float4 color = g_terrain.Sample(g_terrain_sampler, pixel_input.uv);
+            float3 normal = float3(0, 0, 1);
+            float3 shading = hillshade(g_pconstants.albedo.rgb, g_pconstants.light_dir, g_pconstants.ambient_intensity, normal);
+            pixel_output.color = float4(shading, 1.0);
         }
     )";
 
@@ -180,13 +213,18 @@ namespace hillshade
         m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         Diligent::MapHelper<constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+        m_camera.aspect = aspect_ratio();
+        consts->view_proj = m_camera.perspective() * m_camera.view();
+        
         if (m_terrain)
         {
             stff::aabb2 bounds = m_terrain->bounds().as<float>();
             consts->bounds = stff::vec4(bounds.min, bounds.max);
         }
-        m_camera.aspect = aspect_ratio();
-        consts->view_proj = m_camera.perspective() * m_camera.view();
+        
+        consts->albedo = m_albedo.as_vec();
+        consts->light_dir = light_direction(m_azimuth, m_altitude);
+        consts->ambient_intensity = m_ambient_intensity;
 
         // set the pipeline state in the immediate context
         m_immediate_context->SetPipelineState(m_pso);
@@ -285,6 +323,7 @@ namespace hillshade
         m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
 
         m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "VSConstants")->Set(m_shader_constants);
+        m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL,  "PSConstants")->Set(m_shader_constants);
 
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
@@ -325,7 +364,8 @@ namespace hillshade
             loader->CreateTexture(m_device, &m_texture);
 
             m_texture_srv = m_texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-            m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
+            // TODO (stouff) figure out why this is a read access violation
+            //m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
         }
     }
 
