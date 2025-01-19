@@ -260,7 +260,7 @@ namespace hillshade
 
         // compute camera information
         {
-            float z = std::max(m_terrain->range().b, m_terrain->bounds().diagonal().as<float>().length());
+            float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
             stff::vec3 eye(0, 0, z);
             m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1, 10000, m_width / m_height, stff::scamera::c_default_fov);
         }
