@@ -157,6 +157,9 @@ namespace hillshade
 
             ImGui::ColorEdit3("background", reinterpret_cast<float*>(&m_clear_color));
             ImGui::ColorEdit3("albedo", reinterpret_cast<float*>(&m_albedo));
+            ImGui::DragFloat("azimuth", &m_azimuth, 0.5f, 0.f, 360.f, "%.1f");
+            ImGui::DragFloat("altitude", &m_altitude, 0.5f, 0.f, 90.f, "%.1f");
+            ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
 
             ImGui::End();
         }
