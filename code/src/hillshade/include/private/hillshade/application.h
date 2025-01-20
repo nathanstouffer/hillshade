@@ -40,6 +40,9 @@ namespace hillshade
 
         void toggle_ui() { m_render_ui = !m_render_ui; }
 
+        inline void zoom_in() { m_camera.eye.z /= 2.f; }
+        inline void zoom_out() { m_camera.eye.z *= 2.f; }
+
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 
         ImGuiIO& io() { return ImGui::GetIO(); }
