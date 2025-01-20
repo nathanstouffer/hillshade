@@ -72,7 +72,7 @@ namespace hillshade
         stf::gfx::rgba m_albedo = { 1.0f, 1.0f, 1.0f, 1.0f };
         float m_azimuth = 315.f;
         float m_altitude = 50.f;
-        float m_ambient_intensity = 0.5f;
+        float m_ambient_intensity = 0.0f;
 
     private:
 
