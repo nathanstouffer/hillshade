@@ -10,6 +10,11 @@
 
 static std::unique_ptr<hillshade::application> s_app = nullptr;
 
+static float constexpr c_small_zoom_factor = 1.05f;
+static float constexpr c_big_zoom_factor = 2.f;
+static float constexpr c_small_pan_factor = 0.0005f;
+//static float constexpr c_big_pan_factor = 0.05f;
+
 // called every time the NativeNativeAppBase receives a message
 LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_param)
 {
@@ -45,11 +50,21 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
 
         case WM_CHAR:
             if (w_param == VK_ESCAPE) { PostQuitMessage(0); }
+            // hide/show ui
             if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
-            if (w_param == L'=') { s_app->zoom_in(1.05f); }
-            if (w_param == L'-') { s_app->zoom_out(1.05f); }
-            if (w_param == L'+') { s_app->zoom_in(2.0f); }
-            if (w_param == L'_') { s_app->zoom_out(2.0f); }
+            // small zooming
+            if (w_param == L'=') { s_app->zoom_in (c_small_zoom_factor); }
+            if (w_param == L'-') { s_app->zoom_out(c_small_zoom_factor); }
+            // big zooming
+            if (w_param == L'+') { s_app->zoom_in (c_big_zoom_factor); }
+            if (w_param == L'_') { s_app->zoom_out(c_big_zoom_factor); }
+            // wasd movement (small)
+            if (w_param == L'w') { s_app->pan(stff::vec2(               0.0f, c_small_pan_factor )); }
+            if (w_param == L'a') { s_app->pan(stff::vec2(-c_small_pan_factor, 0.0f               )); }
+            if (w_param == L's') { s_app->pan(stff::vec2(               0.0f, -c_small_pan_factor)); }
+            if (w_param == L'd') { s_app->pan(stff::vec2( c_small_pan_factor, 0.0f               )); }
+            // WASD movment (big)
+            // TODO (stouff) write this
             return 0;
 
         case WM_DESTROY:
