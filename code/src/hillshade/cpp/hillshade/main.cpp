@@ -46,8 +46,10 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case WM_CHAR:
             if (w_param == VK_ESCAPE) { PostQuitMessage(0); }
             if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
-            if (w_param == L'+') { s_app->zoom_in(); }
-            if (w_param == L'_') { s_app->zoom_out(); }
+            if (w_param == L'=') { s_app->zoom_in(1.05f); }
+            if (w_param == L'-') { s_app->zoom_out(1.05f); }
+            if (w_param == L'+') { s_app->zoom_in(2.0f); }
+            if (w_param == L'_') { s_app->zoom_out(2.0f); }
             return 0;
 
         case WM_DESTROY:
