@@ -70,6 +70,9 @@ namespace hillshade
 
         stf::gfx::rgba m_clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
         stf::gfx::rgba m_albedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+        float m_azimuth = 315.f;
+        float m_altitude = 50.f;
+        float m_ambient_intensity = 0.0f;
 
     private:
 
