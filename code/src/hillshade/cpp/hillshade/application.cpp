@@ -32,6 +32,7 @@ namespace hillshade
     {
         stff::mtx4 view_proj;
         stff::vec4 bounds;
+        stff::vec4 resolution;
         stff::vec4 albedo;
         stff::vec3 light_dir;
         float ambient_intensity;
@@ -43,6 +44,7 @@ namespace hillshade
         {
             float4x4 view_proj;
             float4 bounds;
+            float4 terrain_resolution;
             float4 albedo;
             float3 light_dir;
             float ambient_intensity;
@@ -81,6 +83,7 @@ namespace hillshade
         {
             float4x4 view_proj;
             float4 bounds;
+            float4 terrain_resolution;
             float4 albedo;
             float3 light_dir;
             float ambient_intensity;
@@ -105,6 +108,28 @@ namespace hillshade
             float4 color : SV_TARGET; 
         };
 
+        float3 normal_at(float2 uv, float4 bounds, float4 res)
+        {
+            float step = 0.5 * res.z;    // step is half a texel in the x direction
+
+            // compute uv coords
+            float2 north_uv = uv + float2(0, step);
+            float2 south_uv = uv - float2(0, step);
+            float2 east_uv  = uv + float2(step, 0);
+            float2 west_uv  = uv - float2(step, 0);
+
+            // sample elevation vlaues
+            float north_z = g_terrain.Sample(g_terrain_sampler, north_uv).r;
+            float south_z = g_terrain.Sample(g_terrain_sampler, south_uv).r;
+            float east_z  = g_terrain.Sample(g_terrain_sampler, east_uv).r;
+            float west_z  = g_terrain.Sample(g_terrain_sampler, west_uv).r;
+
+            // compute normal vector
+            float delta = step * (bounds.z - bounds.x);
+            float3 normal = float3(east_z - west_z, north_z - south_z, 2.0 * delta);
+            return normalize(normal);
+        }
+
         float3 hillshade(float3 albedo, float3 light_dir, float ambient_intensity, float3 normal)
         {
             float strength = 0.5 * (1.0 - dot(normal, light_dir));
@@ -113,8 +138,7 @@ namespace hillshade
 
         void main(in PSInput pixel_input, out PSOutput pixel_output)
         {
-            //float4 color = g_terrain.Sample(g_terrain_sampler, pixel_input.uv);
-            float3 normal = float3(0, 0, 1);
+            float3 normal = normal_at(pixel_input.uv, g_pconstants.bounds, g_pconstants.terrain_resolution);
             float3 shading = hillshade(g_pconstants.albedo.rgb, g_pconstants.light_dir, g_pconstants.ambient_intensity, normal);
             pixel_output.color = float4(shading, 1.0);
         }
@@ -220,6 +244,8 @@ namespace hillshade
         {
             stff::aabb2 bounds = m_terrain->bounds().as<float>();
             consts->bounds = stff::vec4(bounds.min, bounds.max);
+            stff::vec2 res = stff::vec2(static_cast<float>(m_terrain->width()), static_cast<float>(m_terrain->height()));
+            consts->resolution = stff::vec4(res.x, res.y, 1.0f / res.x, 1.0f / res.y);
         }
         
         consts->albedo = m_albedo.as_vec();
@@ -364,8 +390,7 @@ namespace hillshade
             loader->CreateTexture(m_device, &m_texture);
 
             m_texture_srv = m_texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-            // TODO (stouff) figure out why this is a read access violation
-            //m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
+            m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
         }
     }
 
