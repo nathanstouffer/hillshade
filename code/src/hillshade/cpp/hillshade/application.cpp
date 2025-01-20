@@ -176,6 +176,9 @@ namespace hillshade
 
         create_resources();
 
+        std::string name = (*std::filesystem::directory_iterator(c_tiffs_dir)).path().filename().string();
+        load_tiff(name);
+
         return true;
     }
 
