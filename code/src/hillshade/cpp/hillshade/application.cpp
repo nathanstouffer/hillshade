@@ -1,5 +1,6 @@
 #include "hillshade/application.h"
 
+#include <chrono>
 #include <filesystem>
 
 #include <Common/interface/DataBlobImpl.hpp>
@@ -72,7 +73,7 @@ namespace hillshade
             uvs[5] = float2(0.0, 0.0);
 
             float2 pos = lerp(g_vconstants.bounds.xy, g_vconstants.bounds.zw, uvs[vertex_id]);
-            pixel_input.pos = mul(float4(pos, 0.0, 1.0), g_vconstants.view_proj);
+            pixel_input.pos = mul(g_vconstants.view_proj, float4(pos, 0.0, 1.0));
             pixel_input.uv  = uvs[vertex_id];
         }
     )";
@@ -176,6 +177,9 @@ namespace hillshade
 
         create_resources();
 
+        std::string name = (*std::filesystem::directory_iterator(c_tiffs_dir)).path().filename().string();
+        load_tiff(name);
+
         return true;
     }
 
@@ -218,6 +222,10 @@ namespace hillshade
             ImGui::DragFloat("altitude", &m_altitude, 0.5f, 0.f, 90.f, "%.1f");
             ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
 
+            ImGui::Separator();
+            ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
+            ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
+
             ImGui::End();
         }
     }
@@ -237,6 +245,7 @@ namespace hillshade
         m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         Diligent::MapHelper<constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+        
         m_camera.aspect = aspect_ratio();
         consts->view_proj = m_camera.perspective() * m_camera.view();
         

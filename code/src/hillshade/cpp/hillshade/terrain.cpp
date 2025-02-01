@@ -26,6 +26,7 @@ namespace hillshade
         // resize data container
         m_values.resize(width * height);
 
+        // TODO (stouff) improve run time load on this
         GDALRasterBand* band = dataset->GetRasterBand(1);
         band->RasterIO(GF_Read, 0, 0, width, height, m_values.data(), width, height, GDT_Float32, 0, 0);
 
