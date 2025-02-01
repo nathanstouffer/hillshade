@@ -1,5 +1,6 @@
 #include "hillshade/application.h"
 
+#include <chrono>
 #include <filesystem>
 
 #include <Common/interface/DataBlobImpl.hpp>
@@ -72,7 +73,7 @@ namespace hillshade
             uvs[5] = float2(0.0, 0.0);
 
             float2 pos = lerp(g_vconstants.bounds.xy, g_vconstants.bounds.zw, uvs[vertex_id]);
-            pixel_input.pos = mul(float4(pos, 0.0, 1.0), g_vconstants.view_proj);
+            pixel_input.pos = mul(g_vconstants.view_proj, float4(pos, 0.0, 1.0));
             pixel_input.uv  = uvs[vertex_id];
         }
     )";
@@ -244,6 +245,7 @@ namespace hillshade
         m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         Diligent::MapHelper<constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+        
         m_camera.aspect = aspect_ratio();
         consts->view_proj = m_camera.perspective() * m_camera.view();
         
