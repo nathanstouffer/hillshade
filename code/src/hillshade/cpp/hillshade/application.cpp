@@ -254,7 +254,7 @@ namespace hillshade
             stff::aabb2 bounds = m_terrain->bounds().as<float>();
             consts->bounds = stff::vec4(bounds.min, bounds.max);
             stff::vec2 res = stff::vec2(static_cast<float>(m_terrain->width()), static_cast<float>(m_terrain->height()));
-            consts->resolution = stff::vec4(res.x, res.y, 1.0f / res.x, 1.0f / res.y);
+            consts->resolution = stff::vec4(res, 1.0f / res);
         }
         
         consts->albedo = m_albedo.as_vec();
