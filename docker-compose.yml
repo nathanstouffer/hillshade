@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: .docker/Convert.dockerfile
     volumes:
-      - ./converter:/converter
-      - ./tiffs:/converter/tiffs
-      - ./terrarium:/converter/terrarium
+      - ./converter:/src
+      - ./tiffs:/data
+      - ./terrarium:/data
     command: python convert.py
