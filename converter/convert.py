@@ -1,5 +1,6 @@
 import constants
 import math
+import json
 import numpy as np
 import os
 from osgeo import gdal
@@ -26,9 +27,25 @@ def convert(filename: str):
     # read tif
     print("reading tif")
     dataset = gdal.Open(f"{constants.DATA_DIR}/tiffs/{filename}", gdal.GA_ReadOnly)
+    geotransform = dataset.GetGeoTransform()
     band = dataset.GetRasterBand(1)
     values = band.ReadAsArray()
     dataset.Close()
+
+    # compute spatial information
+    print("computing bounds")
+    width, height = values.shape
+    top_left = [geotransform[0], geotransform[3]]
+    bottom_right = [
+        geotransform[0] + width * geotransform[1] + height * geotransform[2],
+        geotransform[3] + width * geotransform[4] + height * geotransform[5]
+    ]
+    bounds = {
+        "min": [top_left[0], bottom_right[1]],
+        "max": [bottom_right[0], top_left[1]]
+    }
+    with open(f"{constants.DATA_DIR}/terrarium/{name}.bounds", "w") as f:
+        json.dump(bounds, f, indent=4)
 
     # encode image
     print("encoding to terrarium")
