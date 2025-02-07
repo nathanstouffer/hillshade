@@ -1,4 +1,0 @@
-# numpy==2.2.2
-# wheel==0.45.1
-# setuptools==75.80.0
-gdal==3.10.1

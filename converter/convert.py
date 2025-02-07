@@ -10,8 +10,6 @@ def convert(filename: str):
     arr = band.ReadAsArray()
     print(arr.shape)
     dataset.Close()
-    # with rasterio.open(f"{constants.DATA_DIR}/tiffs/{filename}") as tif:
-    #     data = tif.read()
 
 gdal.UseExceptions()
 for filename in os.listdir(f"{constants.DATA_DIR}/tiffs/"):
