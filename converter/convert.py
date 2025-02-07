@@ -33,19 +33,19 @@ def convert(filename: str):
     dataset.Close()
 
     # compute spatial information
-    print("computing bounds")
+    print("computing metadata")
     width, height = values.shape
     top_left = [geotransform[0], geotransform[3]]
     bottom_right = [
         geotransform[0] + width * geotransform[1] + height * geotransform[2],
         geotransform[3] + width * geotransform[4] + height * geotransform[5]
     ]
-    bounds = {
+    metadata = {
         "min": [top_left[0], bottom_right[1]],
         "max": [bottom_right[0], top_left[1]]
     }
-    with open(f"{constants.DATA_DIR}/terrarium/{name}.bounds", "w") as f:
-        json.dump(bounds, f, indent=4)
+    with open(f"{constants.DATA_DIR}/terrarium/{name}.json", "w") as f:
+        json.dump(metadata, f, indent=4)
 
     # encode image
     print("encoding to terrarium")
