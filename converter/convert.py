@@ -21,18 +21,24 @@ def encode_terrarium_array(array: np.ndarray):
 
 def convert(filename: str):
     name = filename.split('.')[0]
-    print(f"processing {name}")
+    print(f"---------- processing {name} ----------")
 
     # read tif
+    print("reading tif")
     dataset = gdal.Open(f"{constants.DATA_DIR}/tiffs/{filename}", gdal.GA_ReadOnly)
     band = dataset.GetRasterBand(1)
     values = band.ReadAsArray()
     dataset.Close()
 
+    # encode image
+    print("encoding to terrarium")
     terrarium = encode_terrarium_array(values)
 
+    print("saving encoded image")
     img = Image.fromarray(terrarium)
     img.save(f"{constants.DATA_DIR}/terrarium/{name}.png")
+
+    print(f"----------{"-" * len(f" processing {name}")}-----------")
 
 gdal.UseExceptions()
 for filename in os.listdir(f"{constants.DATA_DIR}/tiffs/"):
