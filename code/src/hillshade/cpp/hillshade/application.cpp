@@ -28,7 +28,7 @@ namespace
 namespace hillshade
 {
 
-    static const char* c_tiffs_dir = "tiffs";
+    static const char* c_tiff_dir = "tiff";
     static const char* c_terrarium_dir = "terrarium";
 
     struct constants
@@ -179,7 +179,7 @@ namespace hillshade
 
         create_resources();
 
-        std::string path = (*(std::filesystem::directory_iterator(c_tiffs_dir))).path().string();
+        std::string path = (*(std::filesystem::directory_iterator(c_tiff_dir))).path().string();
         load_dem(path);
 
         return true;
@@ -198,9 +198,9 @@ namespace hillshade
         {
             ImGui::BeginMainMenuBar();
 
-            if (ImGui::BeginMenu("tiffs"))
+            if (ImGui::BeginMenu("tiff"))
             {
-                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiffs_dir))
+                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiff_dir))
                 {
                     std::string path = file.path().string();
                     bool selected = m_dem_path == path;

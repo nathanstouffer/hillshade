@@ -26,7 +26,7 @@ def convert(filename: str):
 
     # read tif
     print("reading tif")
-    dataset = gdal.Open(f"{constants.DATA_DIR}/tiffs/{filename}", gdal.GA_ReadOnly)
+    dataset = gdal.Open(f"{constants.DATA_DIR}//{filename}", gdal.GA_ReadOnly)
     geotransform = dataset.GetGeoTransform()
     band = dataset.GetRasterBand(1)
     values = band.ReadAsArray()
@@ -58,5 +58,5 @@ def convert(filename: str):
     print(f"----------{"-" * len(f" processing {name}")}-----------")
 
 gdal.UseExceptions()
-for filename in os.listdir(f"{constants.DATA_DIR}/tiffs/"):
+for filename in os.listdir(f"{constants.DATA_DIR}/tiff/"):
     convert(filename)

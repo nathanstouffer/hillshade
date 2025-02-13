@@ -8,7 +8,7 @@ set(HILLSHADE_FILES
 
 add_executable(hillshade WIN32 ${HILLSHADE_FILES})
 
-file(CREATE_LINK "${CMAKE_SOURCE_DIR}/tiffs" "${CMAKE_CURRENT_BINARY_DIR}/tiffs" SYMBOLIC)
+file(CREATE_LINK "${CMAKE_SOURCE_DIR}/tiff" "${CMAKE_CURRENT_BINARY_DIR}/tiff" SYMBOLIC)
 file(CREATE_LINK "${CMAKE_SOURCE_DIR}/terrarium" "${CMAKE_CURRENT_BINARY_DIR}/terrarium" SYMBOLIC)
 
 # add directory structure to IDEs

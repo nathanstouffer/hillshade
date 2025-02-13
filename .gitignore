@@ -19,5 +19,5 @@ __pycache__/
 .vscode/
 
 # data folders
-tiffs/
+tiff/
 terrarium/
