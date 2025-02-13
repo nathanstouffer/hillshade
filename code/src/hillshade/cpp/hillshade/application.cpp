@@ -179,8 +179,7 @@ namespace hillshade
 
         create_resources();
 
-        //std::string path = (*(std::filesystem::directory_iterator(c_tiffs_dir))).path().string();
-        std::string path = (*(++std::filesystem::directory_iterator(c_terrarium_dir))).path().string();
+        std::string path = (*(std::filesystem::directory_iterator(c_tiffs_dir))).path().string();
         load_dem(path);
 
         return true;
