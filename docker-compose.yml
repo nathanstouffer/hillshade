@@ -1,0 +1,10 @@
+services:
+  convert:
+    build:
+      context: .
+      dockerfile: .docker/Convert.dockerfile
+    volumes:
+      - ./converter:/src
+      - ./tiff:/data/tiff
+      - ./terrarium:/data/terrarium
+    command: python convert.py

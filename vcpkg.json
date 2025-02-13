@@ -2,7 +2,9 @@
   "name": "hillshade",
   "version-semver": "0.0.0",
   "dependencies": [
-    "gdal"
+    "gdal",
+    "nlohmann-json",
+    "stb"
   ],
   "overrides": [
     {

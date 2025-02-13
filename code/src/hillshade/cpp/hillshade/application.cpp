@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <filesystem>
+#include <set>
 
 #include <Common/interface/DataBlobImpl.hpp>
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
@@ -27,7 +28,8 @@ namespace
 namespace hillshade
 {
 
-    static const char* c_tiffs_dir = "tiffs";
+    static const char* c_tiff_dir = "tiff";
+    static const char* c_terrarium_dir = "terrarium";
 
     struct constants
     {
@@ -177,8 +179,8 @@ namespace hillshade
 
         create_resources();
 
-        std::string name = (*std::filesystem::directory_iterator(c_tiffs_dir)).path().filename().string();
-        load_tiff(name);
+        std::string path = (*(std::filesystem::directory_iterator(c_tiff_dir))).path().string();
+        load_dem(path);
 
         return true;
     }
@@ -196,15 +198,32 @@ namespace hillshade
         {
             ImGui::BeginMainMenuBar();
 
-            if (ImGui::BeginMenu("tiffs"))
+            if (ImGui::BeginMenu("tiff"))
             {
-                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiffs_dir))
+                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiff_dir))
                 {
-                    std::string name = file.path().filename().string();
-                    bool selected = m_tiff_name == name;
-                    if (ImGui::MenuItem(name.c_str(), nullptr, selected, !selected))
+                    std::string path = file.path().string();
+                    bool selected = m_dem_path == path;
+                    if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
                     {
-                        load_tiff(name);
+                        load_dem(path);
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("terrarium"))
+            {
+                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_terrarium_dir))
+                {
+                    if (file.path().extension() != ".json")
+                    {
+                        std::string path = file.path().string();
+                        bool selected = m_dem_path == path;
+                        if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
+                        {
+                            load_dem(path);
+                        }
                     }
                 }
                 ImGui::EndMenu();
@@ -254,7 +273,7 @@ namespace hillshade
             stff::aabb2 bounds = m_terrain->bounds().as<float>();
             consts->bounds = stff::vec4(bounds.min, bounds.max);
             stff::vec2 res = stff::vec2(static_cast<float>(m_terrain->width()), static_cast<float>(m_terrain->height()));
-            consts->resolution = stff::vec4(res.x, res.y, 1.0f / res.x, 1.0f / res.y);
+            consts->resolution = stff::vec4(res, 1.0f / res);
         }
         
         consts->albedo = m_albedo.as_vec();
@@ -363,11 +382,10 @@ namespace hillshade
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
 
-    void application::load_tiff(std::string const& name)
+    void application::load_dem(std::string const& path)
     {
-        m_tiff_name = name;
-        std::string path = std::string(c_tiffs_dir) + "/" + m_tiff_name;
-        m_terrain = std::make_unique<terrain>(path);
+        m_dem_path = path;
+        m_terrain = std::make_unique<terrain>(m_dem_path);
 
         // compute camera information
         {

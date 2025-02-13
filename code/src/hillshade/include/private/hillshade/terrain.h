@@ -25,6 +25,11 @@ namespace hillshade
 
     private:
 
+        void load_tif(std::filesystem::path const& path);
+        void load_terrarium(std::filesystem::path const& path);
+
+    private:
+
         size_t m_width;
         size_t m_height;
         std::vector<float> m_values;
