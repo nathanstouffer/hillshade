@@ -28,6 +28,7 @@ namespace
 namespace hillshade
 {
 
+    static const char* c_shader_dir = "shaders";
     static const char* c_tiff_dir = "tiff";
     static const char* c_terrarium_dir = "terrarium";
 
@@ -41,116 +42,7 @@ namespace hillshade
         float ambient_intensity;
     };
 
-    static constexpr char* s_vertex_shader_source =
-    R"(
-        struct constants
-        {
-            float4x4 view_proj;
-            float4 bounds;
-            float4 terrain_resolution;
-            float4 albedo;
-            float3 light_dir;
-            float ambient_intensity;
-        };
-
-        cbuffer VSConstants
-        {
-            constants g_vconstants;
-        };
-
-        struct PSInput 
-        { 
-            float4 pos  : SV_POSITION; 
-            float2 uv   : TEX_COORD;
-        };
-
-        void main(in uint vertex_id : SV_VertexID, out PSInput pixel_input) 
-        {
-            float2 uvs[6];
-            uvs[0] = float2(0.0, 0.0);
-            uvs[1] = float2(0.0, 1.0);
-            uvs[2] = float2(1.0, 1.0);
-            uvs[3] = float2(1.0, 1.0);
-            uvs[4] = float2(1.0, 0.0);
-            uvs[5] = float2(0.0, 0.0);
-
-            float2 pos = lerp(g_vconstants.bounds.xy, g_vconstants.bounds.zw, uvs[vertex_id]);
-            pixel_input.pos = mul(g_vconstants.view_proj, float4(pos, 0.0, 1.0));
-            pixel_input.uv  = uvs[vertex_id];
-        }
-    )";
-
-    static const char* s_pixel_shader_source =
-    R"(
-        struct constants
-        {
-            float4x4 view_proj;
-            float4 bounds;
-            float4 terrain_resolution;
-            float4 albedo;
-            float3 light_dir;
-            float ambient_intensity;
-        };
-
-        Texture2D       g_terrain;
-        SamplerState    g_terrain_sampler;
-
-        cbuffer PSConstants
-        {
-            constants g_pconstants;
-        };
-
-        struct PSInput
-        { 
-            float4 pos  : SV_POSITION; 
-            float2 uv   : TEX_COORD; 
-        };
-
-        struct PSOutput
-        { 
-            float4 color : SV_TARGET; 
-        };
-
-        float3 normal_at(float2 uv, float4 bounds, float4 res)
-        {
-            float step = 0.5 * res.z;    // step is half a texel in the x direction
-
-            // compute uv coords
-            float2 north_uv = uv + float2(0, step);
-            float2 south_uv = uv - float2(0, step);
-            float2 east_uv  = uv + float2(step, 0);
-            float2 west_uv  = uv - float2(step, 0);
-
-            // sample elevation vlaues
-            float north_z = g_terrain.Sample(g_terrain_sampler, north_uv).r;
-            float south_z = g_terrain.Sample(g_terrain_sampler, south_uv).r;
-            float east_z  = g_terrain.Sample(g_terrain_sampler, east_uv).r;
-            float west_z  = g_terrain.Sample(g_terrain_sampler, west_uv).r;
-
-            // compute normal vector
-            float delta = step * (bounds.z - bounds.x);
-            float3 normal = float3(east_z - west_z, north_z - south_z, 2.0 * delta);
-            return normalize(normal);
-        }
-
-        float3 hillshade(float3 albedo, float3 light_dir, float ambient_intensity, float3 normal)
-        {
-            float strength = 0.5 * (1.0 - dot(normal, light_dir));
-            return (ambient_intensity + (1 - ambient_intensity) * strength) * albedo;
-        }
-
-        void main(in PSInput pixel_input, out PSOutput pixel_output)
-        {
-            float3 normal = normal_at(pixel_input.uv, g_pconstants.bounds, g_pconstants.terrain_resolution);
-            float3 shading = hillshade(g_pconstants.albedo.rgb, g_pconstants.light_dir, g_pconstants.ambient_intensity, normal);
-            pixel_output.color = float4(shading, 1.0);
-        }
-    )";
-
-    application::application()
-    {
-
-    }
+    application::application() {}
 
     application::~application()
     {
@@ -165,6 +57,7 @@ namespace hillshade
         auto engine = Diligent::LoadGraphicsEngineOpenGL();
 #    endif
         auto* factory = engine();
+        m_engine_factory = factory;
 
         Diligent::EngineGLCreateInfo info;
         info.Window.hWnd = hWnd;
@@ -326,24 +219,29 @@ namespace hillshade
         Diligent::ShaderCreateInfo shader_info;
         shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
         shader_info.Desc.UseCombinedTextureSamplers = true;
+        Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> shader_source_factory;
+        m_engine_factory->CreateDefaultShaderSourceStreamFactory(nullptr, &shader_source_factory);
+        shader_info.pShaderSourceStreamFactory = shader_source_factory;
 
         // create a vertex shader
         Diligent::RefCntAutoPtr<Diligent::IShader> vertex_shader;
         {
+            std::string path = std::string(c_shader_dir) + "/hillshade.vsh";
             shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
             shader_info.EntryPoint = "main";
             shader_info.Desc.Name = "quad vertex shader";
-            shader_info.Source = s_vertex_shader_source;
+            shader_info.FilePath = path.c_str();
             m_device->CreateShader(shader_info, &vertex_shader);
         }
 
         // create a pixel shader
         Diligent::RefCntAutoPtr<Diligent::IShader> pixel_shader;
         {
+            std::string path = std::string(c_shader_dir) + "/hillshade.psh";
             shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
             shader_info.EntryPoint = "main";
             shader_info.Desc.Name = "quad pixel shader";
-            shader_info.Source = s_pixel_shader_source;
+            shader_info.FilePath = path.c_str();
             m_device->CreateShader(shader_info, &pixel_shader);
         }
 

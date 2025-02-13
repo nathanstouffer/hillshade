@@ -8,11 +8,12 @@ set(HILLSHADE_FILES
 
 add_executable(hillshade WIN32 ${HILLSHADE_FILES})
 
-file(CREATE_LINK "${CMAKE_SOURCE_DIR}/tiff" "${CMAKE_CURRENT_BINARY_DIR}/tiff" SYMBOLIC)
-file(CREATE_LINK "${CMAKE_SOURCE_DIR}/terrarium" "${CMAKE_CURRENT_BINARY_DIR}/terrarium" SYMBOLIC)
-
 # add directory structure to IDEs
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/" FILES ${HILLSHADE_FILES})
+
+file(CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/shaders" "${CMAKE_CURRENT_BINARY_DIR}/shaders" SYMBOLIC)
+file(CREATE_LINK "${CMAKE_SOURCE_DIR}/tiff" "${CMAKE_CURRENT_BINARY_DIR}/tiff" SYMBOLIC)
+file(CREATE_LINK "${CMAKE_SOURCE_DIR}/terrarium" "${CMAKE_CURRENT_BINARY_DIR}/terrarium" SYMBOLIC)
 
 # TODO eventually we should split this out by platform
 target_compile_definitions(hillshade
