@@ -179,8 +179,8 @@ namespace hillshade
 
         create_resources();
 
-        std::string filename = (*(std::filesystem::directory_iterator(c_tiffs_dir))).path().filename().string();
-        std::string path = std::string(c_tiffs_dir) + "/" + filename;
+        //std::string path = (*(std::filesystem::directory_iterator(c_tiffs_dir))).path().string();
+        std::string path = (*(++std::filesystem::directory_iterator(c_terrarium_dir))).path().string();
         load_dem(path);
 
         return true;
@@ -203,11 +203,9 @@ namespace hillshade
             {
                 for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiffs_dir))
                 {
-                    std::string filename = file.path().filename().string();
-                    std::string name = filename.substr(0, filename.find("."));
-                    std::string path = std::string(c_tiffs_dir) + "/" + filename;
+                    std::string path = file.path().string();
                     bool selected = m_dem_path == path;
-                    if (ImGui::MenuItem(name.c_str(), nullptr, selected, !selected))
+                    if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
                     {
                         load_dem(path);
                     }
@@ -219,17 +217,13 @@ namespace hillshade
             {
                 for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_terrarium_dir))
                 {
-                    std::string filename = file.path().filename().string();
-                    size_t dot = filename.find(".");
-                    std::string_view extension = std::string_view(filename).substr(dot + 1);
-                    if (extension != "json")
+                    if (file.path().extension() != ".json")
                     {
-                        std::string path = std::string(c_terrarium_dir) + "/" + filename;
-                        std::string name = filename.substr(0, dot);
+                        std::string path = file.path().string();
                         bool selected = m_dem_path == path;
-                        if (ImGui::MenuItem(name.c_str(), nullptr, selected, !selected))
+                        if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
                         {
-                            load_dem(name);
+                            load_dem(path);
                         }
                     }
                 }
