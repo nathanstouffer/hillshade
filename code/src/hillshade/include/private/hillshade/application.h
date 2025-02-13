@@ -51,6 +51,7 @@ namespace hillshade
 
     private:
 
+        Diligent::RefCntAutoPtr<Diligent::IEngineFactory>         m_engine_factory;
         Diligent::RefCntAutoPtr<Diligent::IRenderDevice>          m_device;
         Diligent::RefCntAutoPtr<Diligent::IDeviceContext>         m_immediate_context;
         Diligent::RefCntAutoPtr<Diligent::ISwapChain>             m_swap_chain;
