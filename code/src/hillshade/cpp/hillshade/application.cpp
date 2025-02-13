@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <filesystem>
+#include <set>
 
 #include <Common/interface/DataBlobImpl.hpp>
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
@@ -28,6 +29,7 @@ namespace hillshade
 {
 
     static const char* c_tiffs_dir = "tiffs";
+    static const char* c_terrarium_dir = "terrarium";
 
     struct constants
     {
@@ -177,8 +179,9 @@ namespace hillshade
 
         create_resources();
 
-        std::string name = (*std::filesystem::directory_iterator(c_tiffs_dir)).path().filename().string();
-        load_tiff(name);
+        std::string filename = (*(std::filesystem::directory_iterator(c_tiffs_dir))).path().filename().string();
+        std::string path = std::string(c_tiffs_dir) + "/" + filename;
+        load_dem(path);
 
         return true;
     }
@@ -200,11 +203,34 @@ namespace hillshade
             {
                 for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiffs_dir))
                 {
-                    std::string name = file.path().filename().string();
-                    bool selected = m_tiff_name == name;
+                    std::string filename = file.path().filename().string();
+                    std::string name = filename.substr(0, filename.find("."));
+                    std::string path = std::string(c_tiffs_dir) + "/" + filename;
+                    bool selected = m_dem_path == path;
                     if (ImGui::MenuItem(name.c_str(), nullptr, selected, !selected))
                     {
-                        load_tiff(name);
+                        load_dem(path);
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("terrarium"))
+            {
+                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_terrarium_dir))
+                {
+                    std::string filename = file.path().filename().string();
+                    size_t dot = filename.find(".");
+                    std::string_view extension = std::string_view(filename).substr(dot + 1);
+                    if (extension != "json")
+                    {
+                        std::string path = std::string(c_terrarium_dir) + "/" + filename;
+                        std::string name = filename.substr(0, dot);
+                        bool selected = m_dem_path == path;
+                        if (ImGui::MenuItem(name.c_str(), nullptr, selected, !selected))
+                        {
+                            load_dem(name);
+                        }
                     }
                 }
                 ImGui::EndMenu();
@@ -363,11 +389,10 @@ namespace hillshade
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
 
-    void application::load_tiff(std::string const& name)
+    void application::load_dem(std::string const& path)
     {
-        m_tiff_name = name;
-        std::string path = std::string(c_tiffs_dir) + "/" + m_tiff_name;
-        m_terrain = std::make_unique<terrain>(path);
+        m_dem_path = path;
+        m_terrain = std::make_unique<terrain>(m_dem_path);
 
         // compute camera information
         {

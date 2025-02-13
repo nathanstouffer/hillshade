@@ -67,7 +67,7 @@ namespace hillshade
 
         stff::scamera m_camera;
 
-        std::string m_tiff_name;
+        std::string m_dem_path;
         std::unique_ptr<terrain> m_terrain;
         Diligent::RefCntAutoPtr<Diligent::ITexture> m_texture;
         Diligent::RefCntAutoPtr<Diligent::ITextureView> m_texture_srv;
@@ -84,7 +84,7 @@ namespace hillshade
 
         void render_ui();
 
-        void load_tiff(std::string const& name);
+        void load_dem(std::string const& path);
 
     };
 
