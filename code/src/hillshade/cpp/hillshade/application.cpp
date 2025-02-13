@@ -147,10 +147,7 @@ namespace hillshade
         }
     )";
 
-    application::application()
-    {
-
-    }
+    application::application() {}
 
     application::~application()
     {
