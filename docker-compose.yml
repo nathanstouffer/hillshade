@@ -2,9 +2,18 @@ services:
   convert:
     build:
       context: .
-      dockerfile: .docker/Convert.dockerfile
+      dockerfile: .docker/Transform.dockerfile
     volumes:
-      - ./converter:/src
+      - ./transform:/src
       - ./tiff:/data/tiff
       - ./terrarium:/data/terrarium
     command: python convert.py
+
+  cut:
+    build:
+      context: .
+      dockerfile: .docker/Transform.dockerfile
+    volumes:
+      - ./transform:/src
+      - ./tiff:/data/tiff
+    entrypoint: python cut.py
