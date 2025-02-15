@@ -126,7 +126,6 @@ namespace hillshade
 
             ImGui::Begin("Debugging");
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
             // configuration block
             {
@@ -146,6 +145,7 @@ namespace hillshade
 
                 stff::vec3 light_dir = light_direction(m_azimuth, m_altitude);
                 ImGui::Text("Light direction: (%.1f, %.1f, %.1f)", light_dir.x, light_dir.y, light_dir.z);
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             }
 
             ImGui::End();
