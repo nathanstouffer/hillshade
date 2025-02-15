@@ -78,6 +78,7 @@ namespace hillshade
         float m_azimuth = 315.f;
         float m_altitude = 50.f;
         float m_ambient_intensity = 0.0f;
+        float m_exaggeration = 1.0f;
 
     private:
 
