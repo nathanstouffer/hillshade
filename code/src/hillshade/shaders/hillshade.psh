@@ -33,8 +33,8 @@ float3 normal_at(float2 uv, float4 bounds, float4 res)
     float step = 0.5 * res.z;    // step is half a texel in the x direction
 
     // compute uv coords
-    float2 north_uv = uv + float2(0, step);
-    float2 south_uv = uv - float2(0, step);
+    float2 north_uv = uv - float2(0, step);
+    float2 south_uv = uv + float2(0, step);
     float2 east_uv  = uv + float2(step, 0);
     float2 west_uv  = uv - float2(step, 0);
 
