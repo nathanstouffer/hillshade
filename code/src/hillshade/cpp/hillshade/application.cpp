@@ -72,7 +72,7 @@ namespace hillshade
 
         create_resources();
 
-        std::string path = (*(std::filesystem::directory_iterator(c_tiff_dir))).path().string();
+        std::string path = (*(++std::filesystem::directory_iterator(c_tiff_dir))).path().string();
         load_dem(path);
 
         return true;
@@ -124,19 +124,29 @@ namespace hillshade
 
             ImGui::EndMainMenuBar();
 
-            ImGui::Begin("Debugging"); // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Debugging");
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-            ImGui::ColorEdit3("background", reinterpret_cast<float*>(&m_clear_color));
-            ImGui::ColorEdit3("albedo", reinterpret_cast<float*>(&m_albedo));
-            ImGui::DragFloat("azimuth", &m_azimuth, 0.5f, 0.f, 360.f, "%.1f");
-            ImGui::DragFloat("altitude", &m_altitude, 0.5f, 0.f, 90.f, "%.1f");
-            ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
-
+            // configuration block
+            {
+                ImGui::Text("Configuration");
+                ImGui::ColorEdit3("background", reinterpret_cast<float*>(&m_clear_color));
+                ImGui::ColorEdit3("albedo", reinterpret_cast<float*>(&m_albedo));
+                ImGui::DragFloat("azimuth", &m_azimuth, 0.5f, 0.f, 360.f, "%.1f");
+                ImGui::DragFloat("altitude", &m_altitude, 0.5f, 0.f, 90.f, "%.1f");
+                ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
+            }
             ImGui::Separator();
-            ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
-            ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
+            // info block
+            {
+                ImGui::Text("Info");
+                ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
+                ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
+
+                stff::vec3 light_dir = light_direction(m_azimuth, m_altitude);
+                ImGui::Text("Light direction: (%.1f, %.1f, %.1f)", light_dir.x, light_dir.y, light_dir.z);
+            }
 
             ImGui::End();
         }
@@ -254,7 +264,7 @@ namespace hillshade
         // shader variables should typically be mutable, which means they are expected to change on a per-instance basis
         Diligent::ShaderResourceVariableDesc vars[] =
         {
-            {Diligent::SHADER_TYPE_PIXEL, "g_terrain", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
+            { Diligent::SHADER_TYPE_PIXEL, "g_terrain", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE }
         };
         pso_info.PSODesc.ResourceLayout.Variables = vars;
         pso_info.PSODesc.ResourceLayout.NumVariables = _countof(vars);
