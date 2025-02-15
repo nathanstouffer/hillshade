@@ -40,6 +40,7 @@ namespace hillshade
         stff::vec4 albedo;
         stff::vec3 light_dir;
         float ambient_intensity;
+        float exaggeration;
     };
 
     application::application() {}
@@ -135,6 +136,7 @@ namespace hillshade
                 ImGui::DragFloat("azimuth", &m_azimuth, 0.5f, 0.f, 360.f, "%.1f");
                 ImGui::DragFloat("altitude", &m_altitude, 0.5f, 0.f, 90.f, "%.1f");
                 ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
+                ImGui::DragFloat("exaggeration", &m_exaggeration, 0.01f, 0.f, 10.f, "%.2f");
             }
             ImGui::Separator();
             // info block
@@ -182,6 +184,7 @@ namespace hillshade
         consts->albedo = m_albedo.as_vec();
         consts->light_dir = light_direction(m_azimuth, m_altitude);
         consts->ambient_intensity = m_ambient_intensity;
+        consts->exaggeration = m_exaggeration;
 
         // set the pipeline state in the immediate context
         m_immediate_context->SetPipelineState(m_pso);
