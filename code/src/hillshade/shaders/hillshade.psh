@@ -33,16 +33,16 @@ float3 normal_at(float2 uv, float4 bounds, float4 res)
     float step = 0.5 * res.z;    // step is half a texel in the x direction
 
     // compute uv coords
-    float2 north_uv = uv - float2(0, step);
-    float2 south_uv = uv + float2(0, step);
     float2 east_uv  = uv + float2(step, 0);
     float2 west_uv  = uv - float2(step, 0);
+    float2 north_uv = uv - float2(0, step);
+    float2 south_uv = uv + float2(0, step);
 
     // sample elevation vlaues
-    float north_z = g_terrain.Sample(g_terrain_sampler, north_uv).r;
-    float south_z = g_terrain.Sample(g_terrain_sampler, south_uv).r;
     float east_z  = g_terrain.Sample(g_terrain_sampler, east_uv).r;
     float west_z  = g_terrain.Sample(g_terrain_sampler, west_uv).r;
+    float north_z = g_terrain.Sample(g_terrain_sampler, north_uv).r;
+    float south_z = g_terrain.Sample(g_terrain_sampler, south_uv).r;
 
     // compute normal vector
     float delta = step * (bounds.z - bounds.x);
