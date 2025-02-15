@@ -46,7 +46,7 @@ float3 normal_at(float2 uv, float4 bounds, float4 res)
 
     // compute normal vector
     float delta = step * (bounds.z - bounds.x);
-    float3 normal = float3(east_z - west_z, north_z - south_z, 2.0 * delta);
+    float3 normal = float3(west_z - east_z, south_z - north_z, 2.0 * delta);
     return normalize(normal);
 }
 
