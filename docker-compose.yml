@@ -16,4 +16,4 @@ services:
     volumes:
       - ./transform:/src
       - ./tiff:/data/tiff
-    command: python cut.py
+    entrypoint: python cut.py
