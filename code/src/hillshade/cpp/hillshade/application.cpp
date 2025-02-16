@@ -301,7 +301,7 @@ namespace hillshade
         // shader variables should typically be mutable, which means they are expected to change on a per-instance basis
         Diligent::ShaderResourceVariableDesc vars[] =
         {
-            { Diligent::SHADER_TYPE_PIXEL, "g_terrain", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE }
+            { Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL, "g_terrain", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE },
         };
         pso_info.PSODesc.ResourceLayout.Variables = vars;
         pso_info.PSODesc.ResourceLayout.NumVariables = _countof(vars);
@@ -314,7 +314,7 @@ namespace hillshade
         };
         Diligent::ImmutableSamplerDesc immutable_samplers[] =
         {
-            {Diligent::SHADER_TYPE_PIXEL, "g_terrain", desc}
+            { Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL, "g_terrain", desc },
         };
         pso_info.PSODesc.ResourceLayout.ImmutableSamplers = immutable_samplers;
         pso_info.PSODesc.ResourceLayout.NumImmutableSamplers = _countof(immutable_samplers);
@@ -404,6 +404,7 @@ namespace hillshade
             loader->CreateTexture(m_device, &m_texture);
 
             m_texture_srv = m_texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+            m_srb->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_terrain")->Set(m_texture_srv);
             m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
         }
     }
