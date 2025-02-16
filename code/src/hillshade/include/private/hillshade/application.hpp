@@ -95,6 +95,8 @@ namespace hillshade
 
         void load_dem(std::string const& path);
 
+        void release_dem_resources();
+
     };
 
 }

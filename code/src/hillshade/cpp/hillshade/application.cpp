@@ -332,9 +332,11 @@ namespace hillshade
 
     void application::load_dem(std::string const& path)
     {
+        release_dem_resources();
+
         m_dem_path = path;
         m_terrain = std::make_unique<terrain>(m_dem_path);
-        
+
         // compute camera information
         {
             float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
@@ -410,6 +412,14 @@ namespace hillshade
             m_srb->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_terrain")->Set(m_texture_srv);
             m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL , "g_terrain")->Set(m_texture_srv);
         }
+    }
+
+    void application::release_dem_resources()
+    {
+        if (m_texture) { m_texture = nullptr; }
+        if (m_texture_srv) { m_texture_srv = nullptr; }
+        if (m_vertex_buffer) { m_vertex_buffer = nullptr; }
+        if (m_index_buffer) { m_index_buffer = nullptr; }
     }
 
 }
