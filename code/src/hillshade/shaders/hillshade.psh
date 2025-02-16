@@ -1,13 +1,4 @@
-struct constants
-{
-    float4x4 view_proj;
-    float4 bounds;
-    float4 terrain_resolution;
-    float4 albedo;
-    float3 light_dir;
-    float ambient_intensity;
-    float exaggeration;
-};
+#include "shaders/structures.fxh"
 
 Texture2D       g_terrain;
 SamplerState    g_terrain_sampler;
@@ -17,26 +8,23 @@ cbuffer PSConstants
     constants g_pconstants;
 };
 
-struct PSInput
-{ 
-    float4 pos  : SV_POSITION; 
-    float2 uv   : TEX_COORD; 
-};
-
-struct PSOutput
-{ 
-    float4 color : SV_TARGET; 
-};
-
-float3 normal_at(float2 uv, float4 bounds, float4 res)
+float compute_delta_uv(float3 pos, float3 eye, float step_scalar, float4 bounds, float4 res)
 {
-    float step = 0.5 * res.z;    // step is half a texel in the x direction
+    float dist = length(pos - eye);
+    float delta_world = step_scalar * dist;
+    float delta_uv = delta_world / (bounds.z - bounds.x);
 
+    float threshold = 0.5 * res.z; // step must be at least half a texel
+    return max(threshold, delta_uv);
+}
+
+float3 normal_at(float2 uv, float4 bounds, float delta_uv)
+{
     // compute uv coords
-    float2 east_uv  = uv + float2(step, 0);
-    float2 west_uv  = uv - float2(step, 0);
-    float2 north_uv = uv - float2(0, step);
-    float2 south_uv = uv + float2(0, step);
+    float2 east_uv  = uv + float2(delta_uv, 0);
+    float2 west_uv  = uv - float2(delta_uv, 0);
+    float2 north_uv = uv - float2(0, delta_uv);
+    float2 south_uv = uv + float2(0, delta_uv);
 
     // sample elevation vlaues
     float east_z  = g_terrain.Sample(g_terrain_sampler, east_uv).r;
@@ -45,8 +33,8 @@ float3 normal_at(float2 uv, float4 bounds, float4 res)
     float south_z = g_terrain.Sample(g_terrain_sampler, south_uv).r;
 
     // compute normal vector
-    float delta = step * (bounds.z - bounds.x);
-    float3 normal = float3(west_z - east_z, south_z - north_z, 2.0 * delta);
+    float delta_world = delta_uv * (bounds.z - bounds.x);
+    float3 normal = float3(west_z - east_z, south_z - north_z, 2.0 * delta_world);
     return normalize(normal);
 }
 
@@ -59,7 +47,8 @@ float3 hillshade(float3 albedo, float3 light_dir, float ambient_intensity, float
 
 void main(in PSInput pixel_input, out PSOutput pixel_output)
 {
-    float3 normal = normal_at(pixel_input.uv, g_pconstants.bounds, g_pconstants.terrain_resolution);
+    float delta_uv = compute_delta_uv(pixel_input.world_pos, g_pconstants.eye, g_pconstants.step_scalar, g_pconstants.bounds, g_pconstants.terrain_resolution);
+    float3 normal = normal_at(pixel_input.uv, g_pconstants.bounds, delta_uv);
     float3 shading = hillshade(g_pconstants.albedo.rgb, g_pconstants.light_dir, g_pconstants.ambient_intensity, normal, g_pconstants.exaggeration);
     pixel_output.color = float4(shading, 1.0);
 }

@@ -50,6 +50,7 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
 
         case WM_CHAR:
             if (w_param == VK_ESCAPE) { PostQuitMessage(0); }
+            if (w_param == L'q') { PostQuitMessage(0); }
             // hide/show ui
             if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
             // small zooming
