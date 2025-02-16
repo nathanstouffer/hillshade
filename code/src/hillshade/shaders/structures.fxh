@@ -13,6 +13,7 @@ struct constants
     float exaggeration;
 
     float step_scalar;
+    bool flag_3d;
 };
 
 struct VSInput
