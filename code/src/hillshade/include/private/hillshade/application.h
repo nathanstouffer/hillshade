@@ -58,6 +58,8 @@ namespace hillshade
         Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_pso;
         Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_srb;
         Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_shader_constants;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_vertex_buffer;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_index_buffer;
         Diligent::RENDER_DEVICE_TYPE                              m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;

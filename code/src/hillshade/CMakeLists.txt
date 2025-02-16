@@ -2,8 +2,10 @@ set(HILLSHADE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/application.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/terrain.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/mesh.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/application.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/terrain.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/mesh.hpp"
 )
 
 add_executable(hillshade WIN32 ${HILLSHADE_FILES})
