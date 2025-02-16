@@ -149,6 +149,8 @@ namespace hillshade
             // info block
             {
                 ImGui::Text("Info");
+                stfd::aabb2 const& bounds = m_terrain->bounds();
+                ImGui::Text("DEM Bounds: (%.1f, %.1f) - (%.1f, %.1f)", bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y);
                 ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
                 ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
 
