@@ -1,8 +1,11 @@
 #include "hillshade/application.hpp"
 
 #include <chrono>
+#include <fstream>
 #include <filesystem>
 #include <set>
+
+#include <nlohmann/json.hpp>
 
 #include <Common/interface/DataBlobImpl.hpp>
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
@@ -28,6 +31,7 @@ namespace
 namespace hillshade
 {
 
+    static constexpr char* c_start_up_file = "startup.json";
     static constexpr char* c_shader_dir = "shaders";
     static constexpr char* c_tiff_dir = "tiff";
     static constexpr char* c_terrarium_dir = "terrarium";
@@ -82,8 +86,16 @@ namespace hillshade
 
         create_resources();
 
-        std::string path = (*(++std::filesystem::directory_iterator(c_terrarium_dir))).path().string();
-        load_dem(path);
+        std::ifstream ifs(c_start_up_file);
+        if (ifs)
+        {
+            nlohmann::json json = nlohmann::json::parse(ifs);
+            if (json.contains("dem_path"))
+            {
+                std::string dem_path = json["dem_path"];
+                load_dem(dem_path);
+            }
+        }
 
         return true;
     }
@@ -153,7 +165,7 @@ namespace hillshade
             // info block
             {
                 ImGui::Text("Info");
-                stfd::aabb2 const& bounds = m_terrain->bounds();
+                stfd::aabb2 const bounds = (m_terrain) ? m_terrain->bounds() : stfd::aabb2(stfd::vec2(), stfd::vec2());
                 ImGui::Text("DEM Bounds: (%.1f, %.1f) - (%.1f, %.1f)", bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y);
                 ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
                 ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
@@ -181,44 +193,44 @@ namespace hillshade
         m_immediate_context->ClearRenderTarget(rtv, reinterpret_cast<float*>(&m_clear_color), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-        Diligent::MapHelper<constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-
-        m_camera.aspect = aspect_ratio();
-        consts->view_proj = m_camera.perspective() * m_camera.view();
-
         if (m_terrain)
         {
+            Diligent::MapHelper<constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+
+            m_camera.aspect = aspect_ratio();
+            consts->view_proj = m_camera.perspective() * m_camera.view();
+
             stff::aabb2 bounds = m_terrain->bounds().as<float>();
             consts->bounds = stff::vec4(bounds.min, bounds.max);
             stff::vec2 res = stff::vec2(static_cast<float>(m_terrain->width()), static_cast<float>(m_terrain->height()));
             consts->resolution = stff::vec4(res, 1.0f / res);
+
+            consts->albedo = m_albedo.as_vec();
+
+            consts->light_dir = light_direction(m_azimuth, m_altitude);
+            consts->ambient_intensity = m_ambient_intensity;
+
+            consts->eye = m_camera.eye;
+            consts->exaggeration = m_exaggeration;
+
+            consts->step_scalar = m_step_scalar;
+            consts->flag_3d = m_flag_3d;
+
+            uint64_t const offset = 0;
+            Diligent::IBuffer* buffers[] = { m_vertex_buffer };
+            m_immediate_context->SetVertexBuffers(0, 1, buffers, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+            m_immediate_context->SetIndexBuffer(m_index_buffer, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+            // set the pipeline state in the immediate context
+            m_immediate_context->SetPipelineState(m_pso);
+            m_immediate_context->CommitShaderResources(m_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+            Diligent::DrawIndexedAttribs draw_attrs;
+            draw_attrs.IndexType = Diligent::VT_UINT32;
+            draw_attrs.NumIndices = static_cast<uint32_t>(m_indices.size());
+            draw_attrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
+            m_immediate_context->DrawIndexed(draw_attrs);
         }
-
-        consts->albedo = m_albedo.as_vec();
-
-        consts->light_dir = light_direction(m_azimuth, m_altitude);
-        consts->ambient_intensity = m_ambient_intensity;
-        
-        consts->eye = m_camera.eye;
-        consts->exaggeration = m_exaggeration;
-
-        consts->step_scalar = m_step_scalar;
-        consts->flag_3d = m_flag_3d;
-
-        uint64_t const offset = 0;
-        Diligent::IBuffer* buffers[] = { m_vertex_buffer };
-        m_immediate_context->SetVertexBuffers(0, 1, buffers, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-        m_immediate_context->SetIndexBuffer(m_index_buffer, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-        // set the pipeline state in the immediate context
-        m_immediate_context->SetPipelineState(m_pso);
-        m_immediate_context->CommitShaderResources(m_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-        Diligent::DrawIndexedAttribs draw_attrs;
-        draw_attrs.IndexType = Diligent::VT_UINT32;
-        draw_attrs.NumIndices = static_cast<uint32_t>(m_indices.size());
-        draw_attrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
-        m_immediate_context->DrawIndexed(draw_attrs);
 
         if (m_render_ui) { m_imgui_impl->Render(m_immediate_context); }
     }
