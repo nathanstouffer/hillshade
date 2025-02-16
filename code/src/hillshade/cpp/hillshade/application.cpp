@@ -322,7 +322,7 @@ namespace hillshade
         m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
 
         m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "VSConstants")->Set(m_shader_constants);
-        m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL,  "PSConstants")->Set(m_shader_constants);
+        m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL , "PSConstants")->Set(m_shader_constants);
 
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
@@ -405,7 +405,7 @@ namespace hillshade
 
             m_texture_srv = m_texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
             m_srb->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_terrain")->Set(m_texture_srv);
-            m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
+            m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL , "g_terrain")->Set(m_texture_srv);
         }
     }
 
