@@ -1,13 +1,17 @@
 struct constants
 {
     float4x4 view_proj;
+
     float4 bounds;
     float4 terrain_resolution;
     float4 albedo;
+
     float3 light_dir;
     float ambient_intensity;
+
     float3 eye;
     float exaggeration;
+
     float step_scalar;
 };
 

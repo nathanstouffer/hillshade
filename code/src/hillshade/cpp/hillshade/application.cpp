@@ -35,13 +35,17 @@ namespace hillshade
     struct constants
     {
         stff::mtx4 view_proj;
+
         stff::vec4 bounds;
         stff::vec4 resolution;
         stff::vec4 albedo;
+
         stff::vec3 light_dir;
         float ambient_intensity;
+
         stff::vec3 eye;
         float exaggeration;
+
         float step_scalar;
     };
 
@@ -172,7 +176,7 @@ namespace hillshade
         m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         Diligent::MapHelper<constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-        
+
         m_camera.aspect = aspect_ratio();
         consts->view_proj = m_camera.perspective() * m_camera.view();
 
@@ -183,13 +187,15 @@ namespace hillshade
             stff::vec2 res = stff::vec2(static_cast<float>(m_terrain->width()), static_cast<float>(m_terrain->height()));
             consts->resolution = stff::vec4(res, 1.0f / res);
         }
-        
+
         consts->albedo = m_albedo.as_vec();
+        
         consts->light_dir = light_direction(m_azimuth, m_altitude);
         consts->ambient_intensity = m_ambient_intensity;
         
         consts->eye = m_camera.eye;
         consts->exaggeration = m_exaggeration;
+
         consts->step_scalar = m_step_scalar;
 
         // set the pipeline state in the immediate context
