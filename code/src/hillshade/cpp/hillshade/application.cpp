@@ -28,9 +28,11 @@ namespace
 namespace hillshade
 {
 
-    static const char* c_shader_dir = "shaders";
-    static const char* c_tiff_dir = "tiff";
-    static const char* c_terrarium_dir = "terrarium";
+    static constexpr char* c_shader_dir = "shaders";
+    static constexpr char* c_tiff_dir = "tiff";
+    static constexpr char* c_terrarium_dir = "terrarium";
+
+    static constexpr double c_min_meters_per_quad = 5.0;
 
     struct constants
     {
@@ -337,38 +339,46 @@ namespace hillshade
             m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
 
-        //size_t resolution = std::max(m_terrain->width(), m_terrain->height());
-
-        // compute and load vertex buffer
+        // compute and load vertex/index buffer
         {
-            m_vertices = mesh::vertices(2);
+            // compute resolution
+            stfd::vec2 const& diagonal = m_terrain->bounds().diagonal();
+            double meters_per_pixel = std::max(diagonal.x / m_terrain->width(), diagonal.y / m_terrain->height());
+            double meters_per_quad = std::max(meters_per_pixel, c_min_meters_per_quad);
+            size_t threshold = static_cast<size_t>(std::min(diagonal.x / meters_per_quad, diagonal.y / meters_per_quad));
+            size_t resolution = std::min(threshold, std::max(m_terrain->width(), m_terrain->height()));
 
-            Diligent::BufferDesc desc;
-            desc.Name = "Terrain vertex buffer";
-            desc.Usage = Diligent::USAGE_IMMUTABLE;
-            desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-            desc.Size = sizeof(mesh::vertex_t) * m_vertices.size();
+            // compute and load vertex buffer
+            {
+                m_vertices = mesh::vertices(resolution);
 
-            Diligent::BufferData data;
-            data.pData = m_vertices.data();
-            data.DataSize = sizeof(mesh::vertex_t) * m_vertices.size();
-            m_device->CreateBuffer(desc, &data, &m_vertex_buffer);
-        }
+                Diligent::BufferDesc desc;
+                desc.Name = "Terrain vertex buffer";
+                desc.Usage = Diligent::USAGE_IMMUTABLE;
+                desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+                desc.Size = sizeof(mesh::vertex_t) * m_vertices.size();
 
-        // compute and load index buffer
-        {
-            m_indices = mesh::index_strip(2);
+                Diligent::BufferData data;
+                data.pData = m_vertices.data();
+                data.DataSize = sizeof(mesh::vertex_t) * m_vertices.size();
+                m_device->CreateBuffer(desc, &data, &m_vertex_buffer);
+            }
 
-            Diligent::BufferDesc desc;
-            desc.Name = "Terrain index buffer";
-            desc.Usage = Diligent::USAGE_IMMUTABLE;
-            desc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-            desc.Size = sizeof(uint32_t) * m_indices.size();
+            // compute and load index buffer
+            {
+                m_indices = mesh::index_strip(resolution);
 
-            Diligent::BufferData data;
-            data.pData = m_indices.data();
-            data.DataSize = sizeof(uint32_t) * m_indices.size();
-            m_device->CreateBuffer(desc, &data, &m_index_buffer);
+                Diligent::BufferDesc desc;
+                desc.Name = "Terrain index buffer";
+                desc.Usage = Diligent::USAGE_IMMUTABLE;
+                desc.BindFlags = Diligent::BIND_INDEX_BUFFER;
+                desc.Size = sizeof(uint32_t) * m_indices.size();
+
+                Diligent::BufferData data;
+                data.pData = m_indices.data();
+                data.DataSize = sizeof(uint32_t) * m_indices.size();
+                m_device->CreateBuffer(desc, &data, &m_index_buffer);
+            }
         }
 
         // load terrain texture
