@@ -105,6 +105,12 @@ namespace hillshade
         if (m_render_ui) { render_ui(); }
     }
 
+    void application::store_start_up_state()
+    {
+        std::ofstream out(c_start_up_file);
+        out << std::setw(4) << m_start_up_state << std::endl;
+    }
+
     void application::render_ui()
     {
         m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
@@ -424,6 +430,9 @@ namespace hillshade
             m_srb->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_terrain")->Set(m_texture_srv, Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
             m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL , "g_terrain")->Set(m_texture_srv, Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
         }
+
+        m_start_up_state["dem_path"] = path;
+        store_start_up_state();
     }
 
     void application::release_dem_resources()
