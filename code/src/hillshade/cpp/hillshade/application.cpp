@@ -243,7 +243,7 @@ namespace hillshade
         pso_info.GraphicsPipeline.NumRenderTargets = 1;
         pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
         pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
-        pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;   // TODO (stouff) convert this to a triangle strip
         pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_BACK;
         pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
 
@@ -337,9 +337,11 @@ namespace hillshade
             m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
 
+        size_t resolution = std::max(m_terrain->width(), m_terrain->height());
+
         // compute and load vertex buffer
         {
-            m_vertices = mesh::vertices(1);
+            m_vertices = mesh::vertices(2 * resolution);
 
             Diligent::BufferDesc desc;
             desc.Name = "Terrain vertex buffer";
@@ -355,7 +357,7 @@ namespace hillshade
 
         // compute and load index buffer
         {
-            m_indices = mesh::indices(1);
+            m_indices = mesh::indices(2 * resolution);
 
             Diligent::BufferDesc desc;
             desc.Name = "Terrain index buffer";
