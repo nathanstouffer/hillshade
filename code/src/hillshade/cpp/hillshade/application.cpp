@@ -49,6 +49,7 @@ namespace hillshade
         float exaggeration;
 
         float step_scalar;
+        bool flag_3d;
     };
 
     application::application() {}
@@ -146,6 +147,7 @@ namespace hillshade
                 ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
                 ImGui::DragFloat("exaggeration", &m_exaggeration, 0.01f, 0.f, 10.f, "%.2f");
                 ImGui::DragFloat("step scalar", &m_step_scalar, 0.0001f, 0.f, 0.01f, "%.4f");
+                ImGui::Checkbox("render in 3d", &m_flag_3d);
             }
             ImGui::Separator();
             // info block
@@ -201,6 +203,7 @@ namespace hillshade
         consts->exaggeration = m_exaggeration;
 
         consts->step_scalar = m_step_scalar;
+        consts->flag_3d = m_flag_3d;
 
         uint64_t const offset = 0;
         Diligent::IBuffer* buffers[] = { m_vertex_buffer };
@@ -301,7 +304,7 @@ namespace hillshade
         // shader variables should typically be mutable, which means they are expected to change on a per-instance basis
         Diligent::ShaderResourceVariableDesc vars[] =
         {
-            { Diligent::SHADER_TYPE_PIXEL, "g_terrain", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE }
+            { Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL, "g_terrain", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE },
         };
         pso_info.PSODesc.ResourceLayout.Variables = vars;
         pso_info.PSODesc.ResourceLayout.NumVariables = _countof(vars);
@@ -314,7 +317,7 @@ namespace hillshade
         };
         Diligent::ImmutableSamplerDesc immutable_samplers[] =
         {
-            {Diligent::SHADER_TYPE_PIXEL, "g_terrain", desc}
+            { Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL, "g_terrain", desc },
         };
         pso_info.PSODesc.ResourceLayout.ImmutableSamplers = immutable_samplers;
         pso_info.PSODesc.ResourceLayout.NumImmutableSamplers = _countof(immutable_samplers);
@@ -322,7 +325,7 @@ namespace hillshade
         m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
 
         m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "VSConstants")->Set(m_shader_constants);
-        m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL,  "PSConstants")->Set(m_shader_constants);
+        m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL , "PSConstants")->Set(m_shader_constants);
 
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
@@ -404,7 +407,8 @@ namespace hillshade
             loader->CreateTexture(m_device, &m_texture);
 
             m_texture_srv = m_texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-            m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_terrain")->Set(m_texture_srv);
+            m_srb->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_terrain")->Set(m_texture_srv);
+            m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL , "g_terrain")->Set(m_texture_srv);
         }
     }
 
