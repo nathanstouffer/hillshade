@@ -34,8 +34,8 @@ namespace hillshade::mesh
             for (size_t j = 0; j < resolution; ++j, ++offset)
             {
                 buffer.push_back(static_cast<uint32_t>(offset + 0));
-                buffer.push_back(static_cast<uint32_t>(offset + 1));
                 buffer.push_back(static_cast<uint32_t>(offset + fenceposts));
+                buffer.push_back(static_cast<uint32_t>(offset + 1));
 
                 buffer.push_back(static_cast<uint32_t>(offset + fenceposts));
                 buffer.push_back(static_cast<uint32_t>(offset + fenceposts + 1));
