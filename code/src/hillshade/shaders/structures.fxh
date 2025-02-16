@@ -13,7 +13,7 @@ struct constants
 struct PSInput 
 { 
     float4 pos       : SV_POSITION;
-    float3 world_pos : NORMAL;
+    float3 world_pos : POSITION;
     float2 uv        : TEX_COORD;
 };
 
