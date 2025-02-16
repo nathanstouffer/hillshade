@@ -189,7 +189,7 @@ namespace hillshade
         }
 
         consts->albedo = m_albedo.as_vec();
-        
+
         consts->light_dir = light_direction(m_azimuth, m_altitude);
         consts->ambient_intensity = m_ambient_intensity;
         
