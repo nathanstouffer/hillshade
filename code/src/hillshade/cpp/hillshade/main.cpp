@@ -6,7 +6,7 @@
 
 #include <gdal_priv.h>
 
-#include "hillshade/application.h"
+#include "hillshade/application.hpp"
 
 static std::unique_ptr<hillshade::application> s_app = nullptr;
 

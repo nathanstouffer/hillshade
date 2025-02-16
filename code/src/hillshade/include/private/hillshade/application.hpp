@@ -16,7 +16,8 @@
 #include <stf/stf.hpp>
 #include <stf/gfx/color.hpp>
 
-#include "hillshade/terrain.h"
+#include "hillshade/mesh.hpp"
+#include "hillshade/terrain.hpp"
 
 namespace hillshade
 {
@@ -58,6 +59,8 @@ namespace hillshade
         Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_pso;
         Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_srb;
         Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_shader_constants;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_vertex_buffer;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_index_buffer;
         Diligent::RENDER_DEVICE_TYPE                              m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
@@ -70,6 +73,8 @@ namespace hillshade
 
         std::string m_dem_path;
         std::unique_ptr<terrain> m_terrain;
+        std::vector<mesh::vertex_t> m_vertices;
+        std::vector<uint32_t> m_indices;
         Diligent::RefCntAutoPtr<Diligent::ITexture> m_texture;
         Diligent::RefCntAutoPtr<Diligent::ITextureView> m_texture_srv;
 
@@ -78,7 +83,7 @@ namespace hillshade
         float m_azimuth = 315.f;
         float m_altitude = 50.f;
         float m_ambient_intensity = 0.0f;
-        float m_exaggeration = 1.0f;
+        float m_exaggeration = 2.0f;
         float m_step_scalar = 0.001f;
 
     private:
