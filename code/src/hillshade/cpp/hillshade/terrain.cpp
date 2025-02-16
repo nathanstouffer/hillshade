@@ -1,4 +1,4 @@
-#include "hillshade/terrain.h"
+#include "hillshade/terrain.hpp"
 
 #include <algorithm>
 #include <fstream>

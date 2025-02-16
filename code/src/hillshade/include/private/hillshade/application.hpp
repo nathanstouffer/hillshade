@@ -16,7 +16,7 @@
 #include <stf/stf.hpp>
 #include <stf/gfx/color.hpp>
 
-#include "hillshade/terrain.h"
+#include "hillshade/terrain.hpp"
 
 namespace hillshade
 {

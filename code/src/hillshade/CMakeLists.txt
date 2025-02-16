@@ -3,8 +3,8 @@ set(HILLSHADE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/application.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/terrain.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/mesh.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/application.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/terrain.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/application.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/terrain.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/mesh.hpp"
 )
 
