@@ -86,14 +86,17 @@ namespace hillshade
 
         create_resources();
 
-        std::ifstream ifs(c_start_up_file);
-        if (ifs)
+        std::ifstream start_up_stream(c_start_up_file);
+        if (start_up_stream)
         {
-            nlohmann::json json = nlohmann::json::parse(ifs);
+            nlohmann::json json = nlohmann::json::parse(start_up_stream);
             if (json.contains("dem_path"))
             {
                 std::string dem_path = json["dem_path"];
-                load_dem(dem_path);
+                if (std::filesystem::exists(dem_path))
+                {
+                    load_dem(dem_path);
+                }
             }
         }
 
