@@ -6,13 +6,14 @@ struct constants
     float4 albedo;
     float3 light_dir;
     float ambient_intensity;
+    float3 eye;
     float exaggeration;
 };
 
 struct PSInput 
 { 
     float4 pos       : SV_POSITION;
-    //float3 world_pos : POSITION;
+    float3 world_pos : NORMAL;
     float2 uv        : TEX_COORD;
 };
 

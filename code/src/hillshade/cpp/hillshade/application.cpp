@@ -40,6 +40,7 @@ namespace hillshade
         stff::vec4 albedo;
         stff::vec3 light_dir;
         float ambient_intensity;
+        stff::vec3 eye;
         float exaggeration;
     };
 
@@ -172,7 +173,7 @@ namespace hillshade
         
         m_camera.aspect = aspect_ratio();
         consts->view_proj = m_camera.perspective() * m_camera.view();
-        
+
         if (m_terrain)
         {
             stff::aabb2 bounds = m_terrain->bounds().as<float>();
@@ -184,6 +185,8 @@ namespace hillshade
         consts->albedo = m_albedo.as_vec();
         consts->light_dir = light_direction(m_azimuth, m_altitude);
         consts->ambient_intensity = m_ambient_intensity;
+        
+        consts->eye = m_camera.eye;
         consts->exaggeration = m_exaggeration;
 
         // set the pipeline state in the immediate context
