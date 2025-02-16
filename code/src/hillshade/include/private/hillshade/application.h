@@ -79,6 +79,7 @@ namespace hillshade
         float m_altitude = 50.f;
         float m_ambient_intensity = 0.0f;
         float m_exaggeration = 1.0f;
+        float m_delta_scalar = 0.001f;
 
     private:
 

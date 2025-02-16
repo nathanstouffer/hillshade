@@ -138,6 +138,7 @@ namespace hillshade
                 ImGui::DragFloat("altitude", &m_altitude, 0.5f, 0.f, 90.f, "%.1f");
                 ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
                 ImGui::DragFloat("exaggeration", &m_exaggeration, 0.01f, 0.f, 10.f, "%.2f");
+                ImGui::DragFloat("delta scalar", &m_delta_scalar, 0.0001f, 0.f, 0.01f, "%.4f");
             }
             ImGui::Separator();
             // info block
