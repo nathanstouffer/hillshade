@@ -200,13 +200,20 @@ namespace hillshade
 
         consts->step_scalar = m_step_scalar;
 
+        uint64_t const offset = 0;
+        Diligent::IBuffer* buffers[] = { m_vertex_buffer };
+        m_immediate_context->SetVertexBuffers(0, 1, buffers, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+        m_immediate_context->SetIndexBuffer(m_index_buffer, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
         // set the pipeline state in the immediate context
         m_immediate_context->SetPipelineState(m_pso);
         m_immediate_context->CommitShaderResources(m_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-        Diligent::DrawAttribs draw_attrs;
-        draw_attrs.NumVertices = 6;
-        m_immediate_context->Draw(draw_attrs);
+        Diligent::DrawIndexedAttribs draw_attrs;
+        draw_attrs.IndexType = Diligent::VT_UINT32;
+        draw_attrs.NumIndices = static_cast<uint32_t>(m_indices.size());
+        draw_attrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
+        m_immediate_context->DrawIndexed(draw_attrs);
 
         if (m_render_ui) { m_imgui_impl->Render(m_immediate_context); }
     }
@@ -237,7 +244,7 @@ namespace hillshade
         pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
         pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
         pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
+        pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;   // TODO (stouff) add a cull mode
         pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
 
         // create dynamic uniform buffer that will store shader constants
@@ -276,6 +283,17 @@ namespace hillshade
         pso_info.pVS = vertex_shader;
         pso_info.pPS = pixel_shader;
 
+        Diligent::LayoutElement layout_elems[] =
+        {
+            // Attribute 0 - vertex position
+            Diligent::LayoutElement{0, 0, 2, Diligent::VT_FLOAT32, Diligent::False},
+            // Attribute 1 - texture coordinates
+            Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, Diligent::False}
+        };
+
+        pso_info.GraphicsPipeline.InputLayout.LayoutElements = layout_elems;
+        pso_info.GraphicsPipeline.InputLayout.NumElements = _countof(layout_elems);
+
         pso_info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 
         // shader variables should typically be mutable, which means they are expected to change on a per-instance basis
@@ -311,7 +329,7 @@ namespace hillshade
     {
         m_dem_path = path;
         m_terrain = std::make_unique<terrain>(m_dem_path);
-
+        
         // compute camera information
         {
             float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
@@ -319,7 +337,39 @@ namespace hillshade
             m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
 
-        // load gpu resources
+        // compute and load vertex buffer
+        {
+            m_vertices = mesh::vertices(1);
+
+            Diligent::BufferDesc desc;
+            desc.Name = "Terrain vertex buffer";
+            desc.Usage = Diligent::USAGE_IMMUTABLE;
+            desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+            desc.Size = sizeof(mesh::vertex_t) * m_vertices.size();
+
+            Diligent::BufferData data;
+            data.pData = m_vertices.data();
+            data.DataSize = sizeof(mesh::vertex_t) * m_vertices.size();
+            m_device->CreateBuffer(desc, &data, &m_vertex_buffer);
+        }
+
+        // compute and load index buffer
+        {
+            m_indices = mesh::indices(1);
+
+            Diligent::BufferDesc desc;
+            desc.Name = "Terrain index buffer";
+            desc.Usage = Diligent::USAGE_IMMUTABLE;
+            desc.BindFlags = Diligent::BIND_INDEX_BUFFER;
+            desc.Size = sizeof(uint32_t) * m_indices.size();
+
+            Diligent::BufferData data;
+            data.pData = m_indices.data();
+            data.DataSize = sizeof(uint32_t) * m_indices.size();
+            m_device->CreateBuffer(desc, &data, &m_index_buffer);
+        }
+
+        // load terrain texture
         {
             Diligent::RefCntAutoPtr<Diligent::IDataBlob> blob = Diligent::DataBlobImpl::Create(sizeof(float) * m_terrain->width() * m_terrain->height(), m_terrain->values().data());
 

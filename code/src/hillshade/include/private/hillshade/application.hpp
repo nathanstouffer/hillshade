@@ -16,6 +16,7 @@
 #include <stf/stf.hpp>
 #include <stf/gfx/color.hpp>
 
+#include "hillshade/mesh.hpp"
 #include "hillshade/terrain.hpp"
 
 namespace hillshade
@@ -72,6 +73,8 @@ namespace hillshade
 
         std::string m_dem_path;
         std::unique_ptr<terrain> m_terrain;
+        std::vector<mesh::vertex_t> m_vertices;
+        std::vector<uint32_t> m_indices;
         Diligent::RefCntAutoPtr<Diligent::ITexture> m_texture;
         Diligent::RefCntAutoPtr<Diligent::ITextureView> m_texture_srv;
 

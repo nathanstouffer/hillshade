@@ -15,6 +15,12 @@ struct constants
     float step_scalar;
 };
 
+struct VSInput
+{
+    float2 pos : ATTRIB0;
+    float2 uv  : ATTRIB1;
+};
+
 struct PSInput 
 { 
     float4 pos       : SV_POSITION;
