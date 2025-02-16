@@ -1,6 +1,20 @@
 #pragma once
 
-namespace hillshade
+#include <vector>
+
+#include <stf/stf.hpp>
+
+namespace hillshade::mesh
 {
-    
+
+    struct vertex_t
+    {
+        stff::vec2 pos;
+        stff::vec2 uv;
+    };
+
+    // resolution specifies the number of cells along each dimension of the tile
+    std::vector<vertex_t> vertices(size_t resolution);
+    std::vector<uint32_t> indices (size_t resolution);
+
 }
