@@ -22,7 +22,7 @@ namespace hillshade::mesh
         return buffer;
     }
 
-    std::vector<uint32_t> indices(size_t resolution)
+    std::vector<uint32_t> index_list(size_t resolution)
     {
         std::vector<uint32_t> buffer;
         buffer.reserve(6 * resolution * resolution);
@@ -41,6 +41,34 @@ namespace hillshade::mesh
                 buffer.push_back(static_cast<uint32_t>(offset + fenceposts + 1));
                 buffer.push_back(static_cast<uint32_t>(offset + 1));
             }
+        }
+
+        return buffer;
+    }
+
+    std::vector<uint32_t> index_strip(size_t resolution)
+    {
+        std::vector<uint32_t> buffer;
+        buffer.reserve(6 * resolution * resolution);    // TODO (stouff) correct computation here
+
+        size_t fenceposts = resolution + 1;
+        size_t offset = 0;
+        for (size_t i = 0; i < resolution; ++i)
+        {
+            for (size_t j = 0; j < resolution; ++j, ++offset)
+            {
+                buffer.push_back(static_cast<uint32_t>(offset + 0));
+                buffer.push_back(static_cast<uint32_t>(offset + fenceposts));
+            }
+            // close triangle row
+            buffer.push_back(static_cast<uint32_t>(offset + 0));
+            buffer.push_back(static_cast<uint32_t>(offset + fenceposts));
+
+            // add degenerate triangles to close row
+            buffer.push_back(static_cast<uint32_t>(offset + fenceposts));
+            buffer.push_back(static_cast<uint32_t>(offset + 1));
+
+            ++offset;
         }
 
         return buffer;

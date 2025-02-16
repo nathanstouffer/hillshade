@@ -15,6 +15,7 @@ namespace hillshade::mesh
 
     // resolution specifies the number of cells along each dimension of the tile
     std::vector<vertex_t> vertices(size_t resolution);
-    std::vector<uint32_t> indices (size_t resolution);
+    std::vector<uint32_t> index_list(size_t resolution);
+    std::vector<uint32_t> index_strip(size_t resolution);
 
 }
