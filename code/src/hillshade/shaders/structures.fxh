@@ -8,6 +8,7 @@ struct constants
     float ambient_intensity;
     float3 eye;
     float exaggeration;
+    float step_scalar;
 };
 
 struct PSInput 

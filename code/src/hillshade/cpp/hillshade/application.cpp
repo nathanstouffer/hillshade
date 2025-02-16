@@ -42,6 +42,7 @@ namespace hillshade
         float ambient_intensity;
         stff::vec3 eye;
         float exaggeration;
+        float step_scalar;
     };
 
     application::application() {}
@@ -138,7 +139,7 @@ namespace hillshade
                 ImGui::DragFloat("altitude", &m_altitude, 0.5f, 0.f, 90.f, "%.1f");
                 ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
                 ImGui::DragFloat("exaggeration", &m_exaggeration, 0.01f, 0.f, 10.f, "%.2f");
-                ImGui::DragFloat("delta scalar", &m_delta_scalar, 0.0001f, 0.f, 0.01f, "%.4f");
+                ImGui::DragFloat("step scalar", &m_step_scalar, 0.0001f, 0.f, 0.01f, "%.4f");
             }
             ImGui::Separator();
             // info block
@@ -189,6 +190,7 @@ namespace hillshade
         
         consts->eye = m_camera.eye;
         consts->exaggeration = m_exaggeration;
+        consts->step_scalar = m_step_scalar;
 
         // set the pipeline state in the immediate context
         m_immediate_context->SetPipelineState(m_pso);
