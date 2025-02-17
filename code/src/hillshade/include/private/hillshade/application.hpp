@@ -7,6 +7,8 @@
 
 #include <imgui.h>
 
+#include <nlohmann/json.hpp>
+
 #include <Common/interface/RefCntAutoPtr.hpp>
 #include <Graphics/GraphicsEngine/interface/DeviceContext.h>
 #include <Graphics/GraphicsEngine/interface/RenderDevice.h>
@@ -87,13 +89,19 @@ namespace hillshade
         float m_step_scalar = 0.001f;
         bool m_flag_3d = false;
 
+        nlohmann::json m_start_up_state;
+
     private:
+
+        void store_start_up_state();
 
         void create_resources();
 
         void render_ui();
 
         void load_dem(std::string const& path);
+
+        void release_dem_resources();
 
     };
 
