@@ -26,13 +26,16 @@ target_compile_definitions(hillshade
 
 # TODO figure out why we need to explicitly make this available here
 FetchContent_MakeAvailable(DiligentCore DiligentTools)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(Stb REQUIRED)
 
 target_include_directories(hillshade
     PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
     "${diligentcore_SOURCE_DIR}"
     "${diligenttools_SOURCE_DIR}"
     "${DILIGENT_DEAR_IMGUI_PATH}"
+    "${Stb_INCLUDE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
 )
 
 target_link_directories(hillshade
@@ -44,6 +47,7 @@ target_link_directories(hillshade
 target_link_libraries(hillshade
     PRIVATE
     stf
+    nlohmann_json::nlohmann_json
     DiligentCore
     DiligentTools
 )
