@@ -46,7 +46,6 @@ target_link_libraries(hillshade
     stf
     DiligentCore
     DiligentTools
-    GDAL::GDAL
 )
 
 # TODO figure out how to staticly link libraries? not sure if it's possible?
