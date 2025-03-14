@@ -33,7 +33,6 @@ namespace hillshade
 
     static constexpr char* c_start_up_file = "startup.json";
     static constexpr char* c_shader_dir = "shaders";
-    static constexpr char* c_tiff_dir = "tiff";
     static constexpr char* c_terrarium_dir = "terrarium";
 
     static constexpr double c_min_meters_per_quad = 5.0;
@@ -121,20 +120,6 @@ namespace hillshade
         // debug window
         {
             ImGui::BeginMainMenuBar();
-
-            if (ImGui::BeginMenu("tiff"))
-            {
-                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_tiff_dir))
-                {
-                    std::string path = file.path().string();
-                    bool selected = m_dem_path == path;
-                    if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
-                    {
-                        load_dem(path);
-                    }
-                }
-                ImGui::EndMenu();
-            }
 
             if (ImGui::BeginMenu("terrarium"))
             {
