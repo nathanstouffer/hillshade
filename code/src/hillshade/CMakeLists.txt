@@ -26,7 +26,6 @@ target_compile_definitions(hillshade
 
 # TODO figure out why we need to explicitly make this available here
 FetchContent_MakeAvailable(DiligentCore DiligentTools)
-find_package(gdal CONFIG REQUIRED)
 
 target_include_directories(hillshade
     PRIVATE
@@ -34,7 +33,6 @@ target_include_directories(hillshade
     "${diligentcore_SOURCE_DIR}"
     "${diligenttools_SOURCE_DIR}"
     "${DILIGENT_DEAR_IMGUI_PATH}"
-    "${gdal_INCLUDE_DIRS}"
 )
 
 target_link_directories(hillshade
