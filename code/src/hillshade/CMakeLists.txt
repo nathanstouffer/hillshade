@@ -37,18 +37,13 @@ target_include_directories(hillshade
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
 )
 
-target_link_directories(hillshade
-    PRIVATE
-    "${diligentcore_BINARY_DIR}"
-    "${diligenttools_BINARY_DIR}"
-)
-
 target_link_libraries(hillshade
     PRIVATE
     stf
     nlohmann_json::nlohmann_json
-    DiligentCore
-    DiligentTools
+    Diligent-Common
+    Diligent-TextureLoader
+    Diligent-Imgui
 )
 
 # TODO figure out how to staticly link libraries? not sure if it's possible?
