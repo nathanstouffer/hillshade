@@ -36,19 +36,21 @@ target_include_directories(hillshade
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
 )
 
+# add small dependencies
 target_link_libraries(hillshade
     PRIVATE
     stf
     nlohmann_json::nlohmann_json
-    Diligent-Common
-    Diligent-TextureLoader
-    Diligent-Imgui
 )
 
-# TODO figure out how to staticly link libraries? not sure if it's possible?
+# add diligent dependencies
 target_link_libraries(hillshade
     PRIVATE
     Diligent-BuildSettings
+    Diligent-Common
+    Diligent-TextureLoader
+    Diligent-Imgui
+    # rendering dependencies
     Diligent-GraphicsEngineOpenGL-shared
 )
 copy_required_dlls(hillshade)
