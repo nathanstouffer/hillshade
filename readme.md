@@ -1,8 +1,8 @@
-## hillshade
+# hillshade
 
 An exploration in hillshading for topographic maps
 
-## running
+## Building
 
 1. Put tiffs in `./tiff`
 1. `docker compose build && docker compose run --rm convert`
