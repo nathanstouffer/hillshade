@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <fstream>
 
-#include <gdal_priv.h>
-
 #include <nlohmann/json.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -15,75 +13,7 @@ namespace hillshade
 
     terrain::terrain(std::filesystem::path const& path) :
         m_width(0),
-        m_height(0),
-        m_geo_transform({})
-    {
-        std::string filename = path.filename().string();
-        size_t dot = filename.find(".");
-        std::string_view extension = std::string_view(filename).substr(dot + 1);
-        if (extension == "tif" || extension == "tiff" || extension == "geotiff")
-        {
-            load_tif(path);
-        }
-        else
-        {
-            load_terrarium(path);
-        }
-    }
-
-    void terrain::load_tif(std::filesystem::path const& path)
-    {
-        GDALDataset* dataset = static_cast<GDALDataset*>(GDALOpen(path.string().c_str(), GA_ReadOnly));
-
-        if (dataset == nullptr)
-        {
-            std::cerr << "Error opening file: " << path << std::endl;
-            return;
-        }
-
-        dataset->GetGeoTransform(m_geo_transform.data());
-
-        // grab dimensions
-        int width = dataset->GetRasterXSize();
-        int height = dataset->GetRasterYSize();
-
-        // resize data container
-        m_values.resize(width * height);
-
-        GDALRasterBand* band = dataset->GetRasterBand(1);
-        band->RasterIO(GF_Read, 0, 0, width, height, m_values.data(), width, height, GDT_Float32, 0, 0);
-
-        m_width = static_cast<size_t>(width);
-        m_height = static_cast<size_t>(height);
-
-        // compute elevation range
-        {
-            m_range = stff::interval(m_values[0], m_values[0]);
-            for (float elevation : m_values)
-            {
-                m_range.a = std::min(m_range.a, elevation);
-                m_range.b = std::max(m_range.b, elevation);
-            }
-        }
-
-        // compute spatial bounds
-        {
-            stfd::vec2 top_left = stfd::vec2(m_geo_transform[0], m_geo_transform[3]);
-            stfd::vec2 bottom_right = top_left;
-            bottom_right += static_cast<double>(width) * stfd::vec2(m_geo_transform[1], m_geo_transform[4]);
-            bottom_right += static_cast<double>(height) * stfd::vec2(m_geo_transform[2], m_geo_transform[5]);
-
-            stfd::vec2 center = 0.5 * (top_left + bottom_right);
-            top_left -= center;
-            bottom_right -= center;
-
-            m_bounds = stfd::aabb2(stfd::vec2(top_left.x, bottom_right.y), stfd::vec2(bottom_right.x, top_left.y));
-        }
-
-        GDALClose(dataset);
-    }
-
-    void terrain::load_terrarium(std::filesystem::path const& path)
+        m_height(0)
     {
         int width = 0;
         int height = 0;

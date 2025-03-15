@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
     stf
     GIT_REPOSITORY https://github.com/nathanstouffer/stf.git
-    GIT_TAG f89b3f9a39841aa6cc0274938000ef93d9a217e4
+    GIT_TAG 635bf857b54fbb17a5c9e8d5d465fa08afd6667c
 )
 FetchContent_MakeAvailable(stf)
 
@@ -22,5 +22,3 @@ FetchContent_Declare(
     SOURCE_DIR _deps/DiligentTools
 )
 FetchContent_MakeAvailable(DiligentCore DiligentTools)
-
-find_package(gdal CONFIG REQUIRED)

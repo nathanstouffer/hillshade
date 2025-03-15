@@ -4,8 +4,6 @@
 #include <Windows.h>
 #include <crtdbg.h>
 
-#include <gdal_priv.h>
-
 #include "hillshade/application.hpp"
 
 static std::unique_ptr<hillshade::application> s_app = nullptr;
@@ -93,9 +91,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 #if defined(_DEBUG) || defined(DEBUG)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-
-    // register gdal
-    GDALAllRegister();
 
     // register window
     WNDCLASSEX wcex = { sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW, MessageProc, 0L, 0L, hInstance, NULL, NULL, NULL, NULL, "Hillshade", NULL };
