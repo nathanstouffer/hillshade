@@ -32,7 +32,6 @@ target_include_directories(hillshade
     PRIVATE
     "${diligentcore_SOURCE_DIR}"
     "${diligenttools_SOURCE_DIR}"
-    "${DILIGENT_DEAR_IMGUI_PATH}"
     "${Stb_INCLUDE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private"
 )
