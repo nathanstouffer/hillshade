@@ -300,6 +300,20 @@ namespace hillshade
         }
     }
 
+    void application::reset_camera()
+    {
+        if (m_terrain)
+        {
+            float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
+            stff::vec3 eye(0, 0, z);
+            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
+        }
+        else
+        {
+            m_camera = stff::scamera(stff::vec3(0, 0, 3000), stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
+        }
+    }
+
     void application::create_resources()
     {
         Diligent::GraphicsPipelineStateCreateInfo pso_info;
@@ -409,12 +423,7 @@ namespace hillshade
         m_dem_path = path;
         m_terrain = std::make_unique<terrain>(m_dem_path);
 
-        // compute camera information
-        {
-            float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
-            stff::vec3 eye(0, 0, z);
-            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
-        }
+        reset_camera();
 
         // compute and load vertex/index buffer
         {
