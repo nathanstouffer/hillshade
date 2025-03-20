@@ -116,6 +116,8 @@ namespace hillshade
             m_update_focus = false;
         }
 
+        // TODO (stouff) have ImGui eat input when appropriate
+
         if (ImGui::GetIO().MouseWheel != stff::constants::zero)
         {
             float dist = stf::math::dist(m_camera.eye, m_focus);
@@ -124,6 +126,14 @@ namespace hillshade
             dist = std::pow(2.f, log_dist);
             stff::vec3 dir = (m_camera.eye - m_focus).normalize();
             m_camera.eye = m_focus + dist * dir;
+        }
+
+        // TODO (stouff) scale panning based on z-height
+        if (ImGui::GetIO().MouseDown[0])
+        {
+            ImVec2 delta = ImGui::GetIO().MouseDelta;
+            m_camera.eye -= delta.x * m_camera.right();
+            m_camera.eye += delta.y * m_camera.up();
         }
     }
 
