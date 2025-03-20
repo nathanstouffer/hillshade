@@ -39,7 +39,7 @@ namespace hillshade
 
     static constexpr double c_min_meters_per_quad = 5.0;
 
-    static constexpr float c_wheel_scalar = 1.f / (50.f * 120.f);
+    static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
 
     struct constants
     {
@@ -120,7 +120,7 @@ namespace hillshade
         {
             float dist = stf::math::dist(m_camera.eye, m_focus);
             float log_dist = std::log2(dist);
-            log_dist -= ImGui::GetIO().MouseWheel / 960.f;
+            log_dist -= c_wheel_scalar * ImGui::GetIO().MouseWheel;
             dist = std::pow(2.f, log_dist);
             stff::vec3 dir = (m_camera.eye - m_focus).normalize();
             m_camera.eye = m_focus + dist * dir;
