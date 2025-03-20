@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 #define NOMINMAX
 #include <Windows.h>
@@ -49,6 +50,7 @@ namespace hillshade
 
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 
+        inline void update_focus() { m_update_focus = true; }
         ImGuiIO& io() { return ImGui::GetIO(); }
         Diligent::RENDER_DEVICE_TYPE device_type() const { return m_device_type; }
 
@@ -72,6 +74,9 @@ namespace hillshade
         bool m_render_ui = true;
 
         stff::scamera m_camera;
+        
+        stff::vec3 m_focus;
+        bool m_update_focus;
 
         std::string m_dem_path;
         std::unique_ptr<terrain> m_terrain;
@@ -98,6 +103,8 @@ namespace hillshade
         void create_resources();
 
         void render_ui();
+
+        std::optional<stff::vec3> cursor_world_pos() const;
 
         void load_dem(std::string const& path);
 

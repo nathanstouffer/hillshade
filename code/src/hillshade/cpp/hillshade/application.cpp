@@ -39,6 +39,8 @@ namespace hillshade
 
     static constexpr double c_min_meters_per_quad = 5.0;
 
+    static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
+
     struct constants
     {
         stff::mtx4 view_proj;
@@ -106,7 +108,23 @@ namespace hillshade
 
     void application::update()
     {
-        if (m_render_ui) { render_ui(); }
+        // compute new camera position
+        if (m_update_focus)
+        {
+            std::optional<stff::vec3> opt = cursor_world_pos();
+            m_focus = (opt) ? *opt : stff::vec3();
+            m_update_focus = false;
+        }
+
+        if (ImGui::GetIO().MouseWheel != stff::constants::zero)
+        {
+            float dist = stf::math::dist(m_camera.eye, m_focus);
+            float log_dist = std::log2(dist);
+            log_dist -= c_wheel_scalar * ImGui::GetIO().MouseWheel;
+            dist = std::pow(2.f, log_dist);
+            stff::vec3 dir = (m_camera.eye - m_focus).normalize();
+            m_camera.eye = m_focus + dist * dir;
+        }
     }
 
     void application::store_start_up_state()
@@ -117,8 +135,6 @@ namespace hillshade
 
     void application::render_ui()
     {
-        m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
-        
         // debug window
         {
             ImGui::BeginMainMenuBar();
@@ -168,11 +184,7 @@ namespace hillshade
 
                 ImVec2 mouse_pos = ImGui::GetIO().MousePos;
                 ImGui::Text("Mouse Pos (screen): (%.3f, %.3f)", mouse_pos.x, mouse_pos.y);
-                ImVec2 res = ImGui::GetIO().DisplaySize;
-                stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
-                stff::ray3 ray = m_camera.ray(uv);
-                stff::plane plane = stff::plane(stff::vec3(), stff::vec3(0, 0, 1));
-                std::optional<stff::vec3> opt = stf::alg::intersect(ray, plane);
+                std::optional<stff::vec3> opt = cursor_world_pos();
                 if (opt)
                 {
                     stff::vec3 const& world_pos = *opt;
@@ -191,6 +203,9 @@ namespace hillshade
 
     void application::render()
     {
+        // start the ImGui frame (even if we're not going to render it) so that input is refreshed
+        m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
+        
         update();
 
         // set render targets before issuing any draw command.
@@ -242,7 +257,9 @@ namespace hillshade
             m_immediate_context->DrawIndexed(draw_attrs);
         }
 
-        if (m_render_ui) { m_imgui_impl->Render(m_immediate_context); }
+        if (m_render_ui) { render_ui(); }
+
+        m_imgui_impl->Render(m_immediate_context);
     }
 
     void application::present()
@@ -350,6 +367,16 @@ namespace hillshade
         m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL , "PSConstants")->Set(m_shader_constants);
 
         m_pso->CreateShaderResourceBinding(&m_srb, true);
+    }
+
+    std::optional<stff::vec3> application::cursor_world_pos() const
+    {
+        ImVec2 mouse_pos = ImGui::GetIO().MousePos;
+        ImVec2 res = ImGui::GetIO().DisplaySize;
+        stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
+        stff::ray3 ray = m_camera.ray(uv);
+        stff::plane plane = stff::plane(stff::vec3(), stff::vec3(0, 0, 1));
+        return stf::alg::intersect(ray, plane);
     }
 
     void application::load_dem(std::string const& path)
