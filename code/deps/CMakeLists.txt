@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
     stf
     GIT_REPOSITORY https://github.com/nathanstouffer/stf.git
-    GIT_TAG 635bf857b54fbb17a5c9e8d5d465fa08afd6667c
+    GIT_TAG a85e04d6df8bcc8d32e3b0a6d2425930fc356dee
 )
 FetchContent_MakeAvailable(stf)
 
