@@ -7,6 +7,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <stf/alg/intersect.hpp>
+
 #include <Common/interface/DataBlobImpl.hpp>
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
 #include <Graphics/GraphicsTools/interface/GraphicsUtilities.h>
@@ -166,7 +168,14 @@ namespace hillshade
 
                 ImVec2 mouse_pos = io().MousePos;
                 ImGui::Text("Mouse Pos (screen): (%.3f, %.3f)", mouse_pos.x, mouse_pos.y);
-                //ImGui::Text("Mouse Pos (world): (%.3f, %.3f, %.3f)", world_pos.x, world_pos.y, world_pos.z);
+                stff::ray3 ray = stff::ray3(m_camera.eye, stff::vec3(0, 0, -1));
+                stff::plane plane = stff::plane(stff::vec3(), stff::vec3(0, 0, 1));
+                std::optional<stff::vec3> opt = stf::alg::intersect(ray, plane);
+                if (opt)
+                {
+                    stff::vec3 const& world_pos = *opt;
+                    ImGui::Text("Mouse Pos (world): (%.3f, %.3f, %.3f)", world_pos.x, world_pos.y, world_pos.z);
+                }
 
                 stff::vec3 light_dir = light_direction(m_azimuth, m_altitude);
                 ImGui::Text("Light Direction: (%.3f, %.3f, %.3f)", light_dir.x, light_dir.y, light_dir.z);
