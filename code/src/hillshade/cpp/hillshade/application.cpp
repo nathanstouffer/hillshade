@@ -166,9 +166,11 @@ namespace hillshade
                 ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
                 ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
 
-                ImVec2 mouse_pos = io().MousePos;
+                ImVec2 mouse_pos = ImGui::GetIO().MousePos;
                 ImGui::Text("Mouse Pos (screen): (%.3f, %.3f)", mouse_pos.x, mouse_pos.y);
-                stff::ray3 ray = stff::ray3(m_camera.eye, stff::vec3(0, 0, -1));
+                ImVec2 res = ImGui::GetIO().DisplaySize;
+                stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
+                stff::ray3 ray = m_camera.ray(uv);
                 stff::plane plane = stff::plane(stff::vec3(), stff::vec3(0, 0, 1));
                 std::optional<stff::vec3> opt = stf::alg::intersect(ray, plane);
                 if (opt)
