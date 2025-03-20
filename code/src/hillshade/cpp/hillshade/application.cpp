@@ -164,8 +164,13 @@ namespace hillshade
                 ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
                 ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
 
+                ImVec2 mouse_pos = io().MousePos;
+                ImGui::Text("Mouse Pos (screen): (%.3f, %.3f)", mouse_pos.x, mouse_pos.y);
+                //ImGui::Text("Mouse Pos (world): (%.3f, %.3f, %.3f)", world_pos.x, world_pos.y, world_pos.z);
+
                 stff::vec3 light_dir = light_direction(m_azimuth, m_altitude);
-                ImGui::Text("Light direction: (%.3f, %.3f, %.3f)", light_dir.x, light_dir.y, light_dir.z);
+                ImGui::Text("Light Direction: (%.3f, %.3f, %.3f)", light_dir.x, light_dir.y, light_dir.z);
+
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             }
 
