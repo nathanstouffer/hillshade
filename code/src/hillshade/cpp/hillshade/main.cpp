@@ -42,6 +42,11 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
             s_app->io().AddMouseButtonEvent(1, false);
             return 0;
 
+        case 0x020A:    // TODO (stouff) figure out why we need this (it seems to be an older event code for WM_MOUSEWHEEL
+        case WM_MOUSEHWHEEL:
+            s_app->io().AddMouseWheelEvent(0.f, GET_WHEEL_DELTA_WPARAM(w_param));
+            return 0;
+
         case WM_SIZE: // window size has been changed
             if (s_app) { s_app->resize(LOWORD(l_param), HIWORD(l_param)); }
             return 0;
