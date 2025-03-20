@@ -7,6 +7,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <stf/alg/intersect.hpp>
+
 #include <Common/interface/DataBlobImpl.hpp>
 #include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
 #include <Graphics/GraphicsTools/interface/GraphicsUtilities.h>
@@ -164,8 +166,22 @@ namespace hillshade
                 ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
                 ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
 
+                ImVec2 mouse_pos = ImGui::GetIO().MousePos;
+                ImGui::Text("Mouse Pos (screen): (%.3f, %.3f)", mouse_pos.x, mouse_pos.y);
+                ImVec2 res = ImGui::GetIO().DisplaySize;
+                stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
+                stff::ray3 ray = m_camera.ray(uv);
+                stff::plane plane = stff::plane(stff::vec3(), stff::vec3(0, 0, 1));
+                std::optional<stff::vec3> opt = stf::alg::intersect(ray, plane);
+                if (opt)
+                {
+                    stff::vec3 const& world_pos = *opt;
+                    ImGui::Text("Mouse Pos (world): (%.3f, %.3f, %.3f)", world_pos.x, world_pos.y, world_pos.z);
+                }
+
                 stff::vec3 light_dir = light_direction(m_azimuth, m_altitude);
-                ImGui::Text("Light direction: (%.3f, %.3f, %.3f)", light_dir.x, light_dir.y, light_dir.z);
+                ImGui::Text("Light Direction: (%.3f, %.3f, %.3f)", light_dir.x, light_dir.y, light_dir.z);
+
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             }
 
