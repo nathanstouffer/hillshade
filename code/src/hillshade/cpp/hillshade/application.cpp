@@ -40,6 +40,7 @@ namespace hillshade
     static constexpr double c_min_meters_per_quad = 5.0;
 
     static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
+    static constexpr float c_pan_scalar = 0.0008125f;
 
     struct constants
     {
@@ -132,8 +133,9 @@ namespace hillshade
         if (ImGui::GetIO().MouseDown[0])
         {
             ImVec2 delta = ImGui::GetIO().MouseDelta;
-            m_camera.eye -= delta.x * m_camera.right();
-            m_camera.eye += delta.y * stf::math::cross(stff::vec3(0, 0, 1), m_camera.right());
+            float scalar = c_pan_scalar * m_camera.eye.z;
+            m_camera.eye -= scalar * delta.x * m_camera.right();
+            m_camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), m_camera.right());
         }
 
         if (ImGui::GetIO().MouseDown[1])
