@@ -26,7 +26,7 @@ float3 normal_at(float2 uv, float4 bounds, float delta_uv)
     float2 north_uv = uv - float2(0, delta_uv);
     float2 south_uv = uv + float2(0, delta_uv);
 
-    // sample elevation vlaues
+    // sample elevation values
     float east_z  = g_terrain.Sample(g_terrain_sampler, east_uv).r;
     float west_z  = g_terrain.Sample(g_terrain_sampler, west_uv).r;
     float north_z = g_terrain.Sample(g_terrain_sampler, north_uv).r;

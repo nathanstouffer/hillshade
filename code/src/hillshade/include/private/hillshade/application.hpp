@@ -44,6 +44,8 @@ namespace hillshade
 
         void toggle_ui() { m_render_ui = !m_render_ui; }
 
+        inline void reset_camera();
+
         inline void zoom_in(float const factor) { m_camera.eye.z /= factor; }
         inline void zoom_out(float const factor) { m_camera.eye.z *= factor; }
         inline void pan(stff::vec2 const& factor) { m_camera.eye.xy += m_camera.eye.z * factor; }

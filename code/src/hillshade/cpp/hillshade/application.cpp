@@ -40,6 +40,7 @@ namespace hillshade
     static constexpr double c_min_meters_per_quad = 5.0;
 
     static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
+    static constexpr float c_pan_scalar = 0.0008125f;
 
     struct constants
     {
@@ -108,22 +109,41 @@ namespace hillshade
 
     void application::update()
     {
-        // compute new camera position
-        if (m_update_focus)
+        if (!ImGui::GetIO().WantCaptureMouse)
         {
-            std::optional<stff::vec3> opt = cursor_world_pos();
-            m_focus = (opt) ? *opt : stff::vec3();
-            m_update_focus = false;
-        }
+            if (m_update_focus)
+            {
+                std::optional<stff::vec3> opt = cursor_world_pos();
+                m_focus = (opt) ? *opt : stff::vec3();
+                m_update_focus = false;
+            }
 
-        if (ImGui::GetIO().MouseWheel != stff::constants::zero)
-        {
-            float dist = stf::math::dist(m_camera.eye, m_focus);
-            float log_dist = std::log2(dist);
-            log_dist -= c_wheel_scalar * ImGui::GetIO().MouseWheel;
-            dist = std::pow(2.f, log_dist);
-            stff::vec3 dir = (m_camera.eye - m_focus).normalize();
-            m_camera.eye = m_focus + dist * dir;
+            if (ImGui::GetIO().MouseWheel != stff::constants::zero)
+            {
+                float dist = stf::math::dist(m_camera.eye, m_focus);
+                float log_dist = std::log2(dist);
+                log_dist -= c_wheel_scalar * ImGui::GetIO().MouseWheel;
+                dist = std::pow(2.f, log_dist);
+                stff::vec3 dir = (m_camera.eye - m_focus).normalize();
+                m_camera.eye = m_focus + dist * dir;
+            }
+
+            if (ImGui::GetIO().MouseDown[0])
+            {
+                ImVec2 delta = ImGui::GetIO().MouseDelta;
+                float scalar = c_pan_scalar * m_camera.eye.z;
+                m_camera.eye -= scalar * delta.x * m_camera.right();
+                m_camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), m_camera.right());
+            }
+
+            if (ImGui::GetIO().MouseDown[1])
+            {
+                ImVec2 delta = ImGui::GetIO().MouseDelta;
+                ImVec2 size = ImGui::GetIO().DisplaySize;
+                float delta_theta = -delta.x / size.x * stff::constants::pi;
+                float delta_phi = delta.y / size.y * stff::constants::half_pi;
+                m_camera = stf::cam::orbit(m_camera, m_focus, delta_phi, delta_theta);
+            }
         }
     }
 
@@ -277,6 +297,20 @@ namespace hillshade
         }
     }
 
+    void application::reset_camera()
+    {
+        if (m_terrain)
+        {
+            float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
+            stff::vec3 eye(0, 0, z);
+            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
+        }
+        else
+        {
+            m_camera = stff::scamera(stff::vec3(0, 0, 3000), stff::constants::half_pi, stff::constants::pi, 0.1f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
+        }
+    }
+
     void application::create_resources()
     {
         Diligent::GraphicsPipelineStateCreateInfo pso_info;
@@ -307,7 +341,7 @@ namespace hillshade
             std::string path = std::string(c_shader_dir) + "/hillshade.vsh";
             shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
             shader_info.EntryPoint = "main";
-            shader_info.Desc.Name = "quad vertex shader";
+            shader_info.Desc.Name = "terrain vertex shader";
             shader_info.FilePath = path.c_str();
             m_device->CreateShader(shader_info, &vertex_shader);
         }
@@ -318,7 +352,7 @@ namespace hillshade
             std::string path = std::string(c_shader_dir) + "/hillshade.psh";
             shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
             shader_info.EntryPoint = "main";
-            shader_info.Desc.Name = "quad pixel shader";
+            shader_info.Desc.Name = "terrain pixel shader";
             shader_info.FilePath = path.c_str();
             m_device->CreateShader(shader_info, &pixel_shader);
         }
@@ -386,12 +420,7 @@ namespace hillshade
         m_dem_path = path;
         m_terrain = std::make_unique<terrain>(m_dem_path);
 
-        // compute camera information
-        {
-            float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
-            stff::vec3 eye(0, 0, z);
-            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
-        }
+        reset_camera();
 
         // compute and load vertex/index buffer
         {

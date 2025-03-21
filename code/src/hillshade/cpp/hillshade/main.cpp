@@ -27,20 +27,24 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         }
 
         case WM_LBUTTONDOWN:
+            SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(0, true);
             s_app->update_focus();
             return 0;
 
         case WM_LBUTTONUP:
+            ReleaseCapture();
             s_app->io().AddMouseButtonEvent(0, false);
             return 0;
 
         case WM_RBUTTONDOWN:
+            SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(1, true);
             s_app->update_focus();
             return 0;
 
         case WM_RBUTTONUP:
+            ReleaseCapture();
             s_app->io().AddMouseButtonEvent(1, false);
             return 0;
 
@@ -75,6 +79,8 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
             if (w_param == L'A') { s_app->pan(stff::vec2(-c_big_pan_factor, 0.0f             )); }
             if (w_param == L'S') { s_app->pan(stff::vec2(0.0f,              -c_big_pan_factor)); }
             if (w_param == L'D') { s_app->pan(stff::vec2( c_big_pan_factor, 0.0f             )); }
+            // reset camera
+            if (w_param == L'r') { s_app->reset_camera(); }
             return 0;
 
         case WM_DESTROY:
