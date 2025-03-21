@@ -27,20 +27,24 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         }
 
         case WM_LBUTTONDOWN:
+            SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(0, true);
             s_app->update_focus();
             return 0;
 
         case WM_LBUTTONUP:
+            ReleaseCapture();
             s_app->io().AddMouseButtonEvent(0, false);
             return 0;
 
         case WM_RBUTTONDOWN:
+            SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(1, true);
             s_app->update_focus();
             return 0;
 
         case WM_RBUTTONUP:
+            ReleaseCapture();
             s_app->io().AddMouseButtonEvent(1, false);
             return 0;
 
