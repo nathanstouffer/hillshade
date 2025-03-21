@@ -342,7 +342,7 @@ namespace hillshade
             std::string path = std::string(c_shader_dir) + "/hillshade.vsh";
             shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
             shader_info.EntryPoint = "main";
-            shader_info.Desc.Name = "quad vertex shader";
+            shader_info.Desc.Name = "terrain vertex shader";
             shader_info.FilePath = path.c_str();
             m_device->CreateShader(shader_info, &vertex_shader);
         }
@@ -353,7 +353,7 @@ namespace hillshade
             std::string path = std::string(c_shader_dir) + "/hillshade.psh";
             shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
             shader_info.EntryPoint = "main";
-            shader_info.Desc.Name = "quad pixel shader";
+            shader_info.Desc.Name = "terrain pixel shader";
             shader_info.FilePath = path.c_str();
             m_device->CreateShader(shader_info, &pixel_shader);
         }
