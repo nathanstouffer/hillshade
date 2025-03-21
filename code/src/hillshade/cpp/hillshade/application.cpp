@@ -144,7 +144,7 @@ namespace hillshade
             ImVec2 pos = ImGui::GetIO().MousePos;
             stff::vec2 delta = stff::vec2(pos.x, pos.y) - m_mouse_down_pos;
             ImVec2 size = ImGui::GetIO().DisplaySize;
-            float delta_theta = delta.x / size.x * stff::constants::pi;
+            float delta_theta = -delta.x / size.x * stff::constants::pi;
             float delta_phi = delta.y / size.y * stff::constants::half_pi;
             m_camera = stf::cam::orbit(m_interaction_camera, m_focus, delta_phi, delta_theta);
         }
