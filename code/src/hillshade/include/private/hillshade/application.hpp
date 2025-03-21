@@ -78,8 +78,6 @@ namespace hillshade
         stff::scamera m_camera;
         
         stff::vec3 m_focus;
-        stff::scamera m_interaction_camera;
-        stff::vec2 m_mouse_down_pos;
         bool m_update_focus;
 
         std::string m_dem_path;
