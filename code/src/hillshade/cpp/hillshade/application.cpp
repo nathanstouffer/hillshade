@@ -215,8 +215,6 @@ namespace hillshade
                 ImGui::Text("Light Direction: (%.3f, %.3f, %.3f)", light_dir.x, light_dir.y, light_dir.z);
 
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-                ImGui::Text(ImGui::GetIO().WantCaptureMouse ? "true" : "false");
             }
 
             ImGui::End();
