@@ -304,11 +304,11 @@ namespace hillshade
         {
             float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
             stff::vec3 eye(0, 0, z);
-            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
+            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
         else
         {
-            m_camera = stff::scamera(stff::vec3(0, 0, 3000), stff::constants::half_pi, stff::constants::pi, 0.1f, 10000.f, aspect_ratio(), stff::scamera::c_default_fov);
+            m_camera = stff::scamera(stff::vec3(0, 0, 3000), stff::constants::half_pi, stff::constants::pi, 0.1f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
     }
 
