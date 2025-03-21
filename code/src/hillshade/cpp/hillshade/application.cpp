@@ -109,41 +109,41 @@ namespace hillshade
 
     void application::update()
     {
-        // compute new camera position
-        if (m_update_focus)
+        if (!ImGui::GetIO().WantCaptureMouse)
         {
-            std::optional<stff::vec3> opt = cursor_world_pos();
-            m_focus = (opt) ? *opt : stff::vec3();
-            m_update_focus = false;
-        }
+            if (m_update_focus)
+            {
+                std::optional<stff::vec3> opt = cursor_world_pos();
+                m_focus = (opt) ? *opt : stff::vec3();
+                m_update_focus = false;
+            }
 
-        // TODO (stouff) have ImGui eat input when appropriate
+            if (ImGui::GetIO().MouseWheel != stff::constants::zero)
+            {
+                float dist = stf::math::dist(m_camera.eye, m_focus);
+                float log_dist = std::log2(dist);
+                log_dist -= c_wheel_scalar * ImGui::GetIO().MouseWheel;
+                dist = std::pow(2.f, log_dist);
+                stff::vec3 dir = (m_camera.eye - m_focus).normalize();
+                m_camera.eye = m_focus + dist * dir;
+            }
 
-        if (ImGui::GetIO().MouseWheel != stff::constants::zero)
-        {
-            float dist = stf::math::dist(m_camera.eye, m_focus);
-            float log_dist = std::log2(dist);
-            log_dist -= c_wheel_scalar * ImGui::GetIO().MouseWheel;
-            dist = std::pow(2.f, log_dist);
-            stff::vec3 dir = (m_camera.eye - m_focus).normalize();
-            m_camera.eye = m_focus + dist * dir;
-        }
+            if (ImGui::GetIO().MouseDown[0])
+            {
+                ImVec2 delta = ImGui::GetIO().MouseDelta;
+                float scalar = c_pan_scalar * m_camera.eye.z;
+                m_camera.eye -= scalar * delta.x * m_camera.right();
+                m_camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), m_camera.right());
+            }
 
-        if (ImGui::GetIO().MouseDown[0])
-        {
-            ImVec2 delta = ImGui::GetIO().MouseDelta;
-            float scalar = c_pan_scalar * m_camera.eye.z;
-            m_camera.eye -= scalar * delta.x * m_camera.right();
-            m_camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), m_camera.right());
-        }
-
-        if (ImGui::GetIO().MouseDown[1])
-        {
-            ImVec2 delta = ImGui::GetIO().MouseDelta;
-            ImVec2 size = ImGui::GetIO().DisplaySize;
-            float delta_theta = -delta.x / size.x * stff::constants::pi;
-            float delta_phi = delta.y / size.y * stff::constants::half_pi;
-            m_camera = stf::cam::orbit(m_camera, m_focus, delta_phi, delta_theta);
+            if (ImGui::GetIO().MouseDown[1])
+            {
+                ImVec2 delta = ImGui::GetIO().MouseDelta;
+                ImVec2 size = ImGui::GetIO().DisplaySize;
+                float delta_theta = -delta.x / size.x * stff::constants::pi;
+                float delta_phi = delta.y / size.y * stff::constants::half_pi;
+                m_camera = stf::cam::orbit(m_camera, m_focus, delta_phi, delta_theta);
+            }
         }
     }
 
@@ -215,6 +215,8 @@ namespace hillshade
                 ImGui::Text("Light Direction: (%.3f, %.3f, %.3f)", light_dir.x, light_dir.y, light_dir.z);
 
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+                ImGui::Text(ImGui::GetIO().WantCaptureMouse ? "true" : "false");
             }
 
             ImGui::End();
