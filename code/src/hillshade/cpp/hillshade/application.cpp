@@ -129,7 +129,6 @@ namespace hillshade
             m_camera.eye = m_focus + dist * dir;
         }
 
-        // TODO (stouff) scale panning based on z-height
         if (ImGui::GetIO().MouseDown[0])
         {
             ImVec2 delta = ImGui::GetIO().MouseDelta;

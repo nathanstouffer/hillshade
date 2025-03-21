@@ -49,7 +49,7 @@ namespace hillshade::mesh
     std::vector<uint32_t> index_strip(size_t resolution)
     {
         std::vector<uint32_t> buffer;
-        buffer.reserve(6 * resolution * resolution);    // TODO (stouff) correct computation here
+        buffer.reserve(resolution * (2 * resolution + 4));
 
         size_t fenceposts = resolution + 1;
         size_t offset = 0;
