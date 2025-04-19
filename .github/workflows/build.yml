@@ -20,8 +20,7 @@ jobs:
         # image states
         # windows-2022: https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
         host:
-          # cl configurations
-          - { cpp_compiler: cl,         c_compiler: cl,       image: windows-2022, generator: Visual Studio 17 2022 }
+          - { cpp_compiler: cl, c_compiler: cl, image: windows-2022, generator: Visual Studio 17 2022 }
 
     steps:
       - name: checkout
