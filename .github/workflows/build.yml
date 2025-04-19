@@ -44,11 +44,11 @@ jobs:
           path: ${{ steps.strings.outputs.build-output-dir }}/vcpkg_installed
           key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ matrix.build_type }}-${{ hashFiles('vcpkg.json') }}-v0
 
-      - name: Restore Dependency Cache (FetchContent)
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.strings.outputs.build-output-dir }}/_deps
-          key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ matrix.build_type }}-${{ hashFiles('code/deps/CMakeLists.txt') }}-v0
+      # - name: Restore Dependency Cache (FetchContent)
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ steps.strings.outputs.build-output-dir }}/_deps
+      #     key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ matrix.build_type }}-${{ hashFiles('code/deps/CMakeLists.txt') }}-v0
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
