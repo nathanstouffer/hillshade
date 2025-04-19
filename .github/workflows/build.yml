@@ -43,7 +43,7 @@ jobs:
         with:
           path: |
             ${{ steps.strings.outputs.build-output-dir }}/_deps 
-          key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ hashFiles('code/deps/CMakeLists.txt') }}
+          key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ matrix.build_type }}-${{ hashFiles('code/deps/CMakeLists.txt') }}
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
