@@ -41,13 +41,13 @@ jobs:
       - name: Restore Dependency Cache (FetchContent)
         uses: actions/cache@v4
         with:
-          path: ${{ steps.strings.outputs.build-output-dir }}/_deps 
+          path: ${{ steps.strings.outputs.build-output-dir }}/_deps
           key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ matrix.build_type }}-${{ hashFiles('code/deps/CMakeLists.txt') }}
 
       - name: Restore Dependency Cache (vcpkg)
         uses: actions/cache@v4
         with:
-          path: ${{ steps.strings.outputs.build-output-dir }}/vcpkg_installed 
+          path: ${{ steps.strings.outputs.build-output-dir }}/vcpkg_installed
           key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ matrix.build_type }}-${{ hashFiles('vcpkg.json') }}
 
       - name: Configure CMake
