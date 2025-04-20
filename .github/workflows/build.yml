@@ -82,3 +82,6 @@ jobs:
 
       - name: Build Docker image
         run: docker compose build
+
+      - name: Run Docker container
+        run: docker compose run --rm convert
