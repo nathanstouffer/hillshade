@@ -49,6 +49,10 @@ jobs:
           path: ${{ steps.strings.outputs.build-output-dir }}/_deps
           key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ matrix.build_type }}-${{ hashFiles('code/deps/CMakeLists.txt') }}-v0
 
+      # Use this to set up an open ssh debugging session with CI
+      - name: Setup ssh session
+        uses: lhotari/action-upterm@v1
+
       - name: Remove diligent cache (TEMP)
         run: rm -rf ${{ steps.strings.outputs.build-output-dir }}/_deps/diligent*
 
