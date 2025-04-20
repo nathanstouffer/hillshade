@@ -20,7 +20,6 @@ file(CREATE_LINK "${CMAKE_SOURCE_DIR}/terrarium" "${CMAKE_CURRENT_BINARY_DIR}/te
 target_compile_definitions(hillshade
     PRIVATE
     PLATFORM_WIN32=1
-    ENGINE_DLL=1
 )
 
 # TODO figure out why we need to explicitly make this available here

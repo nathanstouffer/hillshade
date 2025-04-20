@@ -48,7 +48,7 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
             s_app->io().AddMouseButtonEvent(1, false);
             return 0;
 
-        case 0x020A:    // TODO (stouff) figure out why we need this (it seems to be an older event code for WM_MOUSEWHEEL)
+        case 0x020A:    // TODO figure out why we need this (it seems to be an older event code for WM_MOUSEWHEEL)
         case WM_MOUSEHWHEEL:
             s_app->io().AddMouseWheelEvent(0.f, GET_WHEEL_DELTA_WPARAM(w_param));
             s_app->update_focus();
