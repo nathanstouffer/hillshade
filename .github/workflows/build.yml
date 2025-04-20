@@ -2,13 +2,13 @@ name: build
 
 on:
   push:
-    branches: ["master"]
+    branches: ["main"]
   pull_request:
-    branches: ["master"]
+    branches: ["main"]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
+  hillshader:
+    runs-on: ${{ matrix.host.image }}
 
     strategy:
       # Cancel all in-progress and queued jobs in the matrix if any job in the matrix fails
@@ -16,26 +16,11 @@ jobs:
 
       # Set up a matrix to run the different configurations:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [Debug, Release]
-        c_compiler: [gcc, clang, cl]
-        include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
+        build_type: [Debug, RelWithDebInfo, Release, MinSizeRel]
+        # image states
+        # windows-2022: https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
+        host:
+          - { cpp_compiler: cl, c_compiler: cl, image: windows-2022, generator: Visual Studio 17 2022 }
 
     steps:
       - name: checkout
@@ -52,16 +37,54 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
+      - name: Restore Dependency Cache (vcpkg)
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.strings.outputs.build-output-dir }}/vcpkg_installed
+          key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ matrix.build_type }}-${{ hashFiles('vcpkg.json') }}-v0
+
+      # TODO restore cache for dependencies added with FetchContent (I hit issues with git when attempting this)
+      # - name: Restore Dependency Cache (FetchContent)
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ steps.strings.outputs.build-output-dir }}/_deps
+      #     key: ${{ matrix.host.image }}-${{ matrix.host.cpp_compiler }}-${{ matrix.build_type }}-${{ hashFiles('code/deps/CMakeLists.txt') }}-v0
+
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          cmake
           -S ${{ github.workspace }}
+          -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.host.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.host.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
 
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+  transform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      # Use this to set up an open ssh debugging session with CI
+      # - name: Setup ssh session
+      #   uses: lhotari/action-upterm@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build services
+        run: docker compose build
+
+      - name: Run cut service
+        run: docker compose run --rm cut --image_bounds 0.25 0.25 0.75 0.75 tiff/example.tif tiff/cut.tif
+
+      - name: Run convert service
+        run: docker compose run --rm convert
