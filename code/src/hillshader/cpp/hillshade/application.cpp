@@ -33,9 +33,9 @@ namespace
 namespace hillshade
 {
 
-    static constexpr char* c_start_up_file = "startup.json";
-    static constexpr char* c_shader_dir = "shaders";
-    static constexpr char* c_terrarium_dir = "terrarium";
+    static constexpr char const* c_start_up_file = "startup.json";
+    static constexpr char const* c_shader_dir = "shaders";
+    static constexpr char const* c_terrarium_dir = "terrarium";
 
     static constexpr double c_min_meters_per_quad = 5.0;
 
@@ -263,7 +263,7 @@ namespace hillshade
 
             uint64_t const offset = 0;
             Diligent::IBuffer* buffers[] = { m_vertex_buffer };
-            m_immediate_context->SetVertexBuffers(0, 1, buffers, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+            m_immediate_context->SetVertexBuffers(0, 1, buffers, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
             m_immediate_context->SetIndexBuffer(m_index_buffer, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
             // set the pipeline state in the immediate context
