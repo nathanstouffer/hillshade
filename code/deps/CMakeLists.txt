@@ -11,9 +11,8 @@ FetchContent_MakeAvailable(stf)
 # declare and populate DiligentCore and DiligentTools
 FetchContent_Declare(
     DiligentCore
-    GIT_REPOSITORY https://github.com/DiligentGraphics/DiligentCore.git
-    GIT_TAG v2.5.4
-    SOURCE_DIR _deps/DiligentCore
+    URL https://github.com/DiligentGraphics/DiligentCore/releases/download/v2.5.4/DiligentCore_v2.5.4.zip
+    URL_HASH SHA256=c27638b2c0582fa44b26e36c2212b7ac5fb4bcac93a94b91e9e68ad23c5df04e
 )
 FetchContent_Declare(
     DiligentTools
