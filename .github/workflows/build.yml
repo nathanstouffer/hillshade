@@ -84,7 +84,7 @@ jobs:
         run: docker compose build
 
       - name: Run cut service
-        run: docker compose run --rm cut --image_bounds 0.25 0.25 0.75 0.75 tiff/toy.tif tiff/cut.tif
+        run: docker compose run --rm cut --image_bounds 0.25 0.25 0.75 0.75 tiff/default.tif tiff/cut.tif
 
       - name: Run convert service
         run: docker compose run --rm convert
