@@ -4,7 +4,7 @@ An exploration in hillshading for topographic maps
 
 ## Building
 
-1. Put tiffs in `./tiff`
+1. Put desired tiffs in `./tiff` directory
 1. `docker compose build && docker compose run --rm convert`
 1. Generate VS project file with `make generate-vs-project`
     - note: relies on a symbolic link (you may need to enable `For developers` on Windows)
