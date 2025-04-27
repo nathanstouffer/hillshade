@@ -303,6 +303,10 @@ namespace hillshade
         {
             float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
             stff::vec3 eye(0, 0, z);
+            if (m_flag_3d)
+            {
+                eye.z += m_terrain->sample(eye.xy);
+            }
             m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
         else
