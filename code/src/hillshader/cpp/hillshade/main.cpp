@@ -58,6 +58,42 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
             if (s_app) { s_app->resize(LOWORD(l_param), HIWORD(l_param)); }
             return 0;
 
+        case WM_KEYDOWN:
+            if (s_app->io().WantCaptureKeyboard)
+            {
+                switch (w_param)
+                {
+                    case VK_BACK:   s_app->io().AddKeyEvent(ImGuiKey_Backspace,  true); break;
+                    case VK_DELETE: s_app->io().AddKeyEvent(ImGuiKey_Delete,     true); break;
+                    case VK_SPACE:  s_app->io().AddKeyEvent(ImGuiKey_Space,      true); break;
+                    case VK_ESCAPE: s_app->io().AddKeyEvent(ImGuiKey_Escape,     true); break;
+                    case VK_RETURN: s_app->io().AddKeyEvent(ImGuiKey_Enter,      true); break;
+                    case VK_LEFT:   s_app->io().AddKeyEvent(ImGuiKey_LeftArrow,  true); break;
+                    case VK_RIGHT:  s_app->io().AddKeyEvent(ImGuiKey_RightArrow, true); break;
+                    case VK_UP:     s_app->io().AddKeyEvent(ImGuiKey_UpArrow,    true); break;
+                    case VK_DOWN:   s_app->io().AddKeyEvent(ImGuiKey_DownArrow,  true); break;
+                }
+            }
+            return 0;
+
+        case WM_KEYUP:
+            if (s_app->io().WantCaptureKeyboard)
+            {
+                switch (w_param)
+                {
+                    case VK_BACK:   s_app->io().AddKeyEvent(ImGuiKey_Backspace,  false); break;
+                    case VK_DELETE: s_app->io().AddKeyEvent(ImGuiKey_Delete,     false); break;
+                    case VK_SPACE:  s_app->io().AddKeyEvent(ImGuiKey_Space,      false); break;
+                    case VK_ESCAPE: s_app->io().AddKeyEvent(ImGuiKey_Escape,     false); break;
+                    case VK_RETURN: s_app->io().AddKeyEvent(ImGuiKey_Enter,      false); break;
+                    case VK_LEFT:   s_app->io().AddKeyEvent(ImGuiKey_LeftArrow,  false); break;
+                    case VK_RIGHT:  s_app->io().AddKeyEvent(ImGuiKey_RightArrow, false); break;
+                    case VK_UP:     s_app->io().AddKeyEvent(ImGuiKey_UpArrow,    false); break;
+                    case VK_DOWN:   s_app->io().AddKeyEvent(ImGuiKey_DownArrow,  false); break;
+                }
+            }
+            return 0;
+
         case WM_CHAR:
             if (!s_app->io().WantCaptureKeyboard)
             {
@@ -83,6 +119,10 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 if (w_param == L'D') { s_app->pan(stff::vec2(c_big_pan_factor, 0.0f)); }
                 // reset camera
                 if (w_param == L'r') { s_app->reset_camera(); }
+            }
+            else
+            {
+                s_app->io().AddInputCharacter(static_cast<unsigned int>(w_param));
             }
             return 0;
 
