@@ -83,7 +83,7 @@ namespace hillshade
         factory->CreateDeviceAndSwapChainGL(info, &m_device, &m_immediate_context, desc, &m_swap_chain);
 
         // set up imgui
-        m_imgui_impl = std::make_unique<Diligent::ImGuiImplWin32>(Diligent::ImGuiDiligentCreateInfo(&*m_device, desc), hWnd);
+        m_imgui_impl = std::make_unique<Diligent::ImGuiImplWin32>(Diligent::ImGuiDiligentCreateInfo(m_device.RawPtr(), desc), hWnd);
         ImGui::StyleColorsDark();
         ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize = { static_cast<float>(m_width), static_cast<float>(m_height) };
