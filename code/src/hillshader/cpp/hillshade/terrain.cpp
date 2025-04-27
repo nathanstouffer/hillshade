@@ -67,4 +67,25 @@ namespace hillshade
         }
     }
 
+    float terrain::sample(stff::vec2 const& query) const
+    {
+        stff::aabb2 const bounds = m_bounds.as<float>();
+        if (bounds.contains(query))
+        {
+            // for the most part, we are dealing with really fine-grained resolution DEMs so we will just use nearest sampling
+            stff::vec2 top_left(bounds.min.x, bounds.max.y);
+            stff::vec2 bottom_right(bounds.max.x, bounds.min.y);
+
+            stff::vec2 uv = (query - top_left) / (bottom_right - top_left);
+            size_t i = static_cast<size_t>(std::clamp(uv.x * m_width, 0.f, static_cast<float>(m_width - 1)));
+            size_t j = static_cast<size_t>(std::clamp(uv.y * m_height, 0.f, static_cast<float>(m_height - 1)));
+
+            return m_values[i + m_height * j];
+        }
+        else
+        {
+            return 0.f;
+        }
+    }
+
 }
