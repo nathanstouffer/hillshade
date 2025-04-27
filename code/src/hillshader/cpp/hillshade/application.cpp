@@ -225,7 +225,7 @@ namespace hillshade
     {
         // start the ImGui frame (even if we're not going to render it) so that input is refreshed
         m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
-        
+
         update();
 
         // set render targets before issuing any draw command.
@@ -323,7 +323,7 @@ namespace hillshade
         pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
         pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
         pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_BACK;
-        pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
+        pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
 
         // create dynamic uniform buffer that will store shader constants
         Diligent::CreateUniformBuffer(m_device, sizeof(constants), "Global shader constants CB", &m_shader_constants);
