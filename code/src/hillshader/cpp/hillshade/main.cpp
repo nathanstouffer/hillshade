@@ -58,29 +58,72 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
             if (s_app) { s_app->resize(LOWORD(l_param), HIWORD(l_param)); }
             return 0;
 
+        case WM_KEYDOWN:
+            if (s_app->io().WantCaptureKeyboard)
+            {
+                switch (w_param)
+                {
+                    case VK_BACK:   s_app->io().AddKeyEvent(ImGuiKey_Backspace,  true); break;
+                    case VK_DELETE: s_app->io().AddKeyEvent(ImGuiKey_Delete,     true); break;
+                    case VK_SPACE:  s_app->io().AddKeyEvent(ImGuiKey_Space,      true); break;
+                    case VK_ESCAPE: s_app->io().AddKeyEvent(ImGuiKey_Escape,     true); break;
+                    case VK_RETURN: s_app->io().AddKeyEvent(ImGuiKey_Enter,      true); break;
+                    case VK_LEFT:   s_app->io().AddKeyEvent(ImGuiKey_LeftArrow,  true); break;
+                    case VK_RIGHT:  s_app->io().AddKeyEvent(ImGuiKey_RightArrow, true); break;
+                    case VK_UP:     s_app->io().AddKeyEvent(ImGuiKey_UpArrow,    true); break;
+                    case VK_DOWN:   s_app->io().AddKeyEvent(ImGuiKey_DownArrow,  true); break;
+                }
+            }
+            return 0;
+
+        case WM_KEYUP:
+            if (s_app->io().WantCaptureKeyboard)
+            {
+                switch (w_param)
+                {
+                    case VK_BACK:   s_app->io().AddKeyEvent(ImGuiKey_Backspace,  false); break;
+                    case VK_DELETE: s_app->io().AddKeyEvent(ImGuiKey_Delete,     false); break;
+                    case VK_SPACE:  s_app->io().AddKeyEvent(ImGuiKey_Space,      false); break;
+                    case VK_ESCAPE: s_app->io().AddKeyEvent(ImGuiKey_Escape,     false); break;
+                    case VK_RETURN: s_app->io().AddKeyEvent(ImGuiKey_Enter,      false); break;
+                    case VK_LEFT:   s_app->io().AddKeyEvent(ImGuiKey_LeftArrow,  false); break;
+                    case VK_RIGHT:  s_app->io().AddKeyEvent(ImGuiKey_RightArrow, false); break;
+                    case VK_UP:     s_app->io().AddKeyEvent(ImGuiKey_UpArrow,    false); break;
+                    case VK_DOWN:   s_app->io().AddKeyEvent(ImGuiKey_DownArrow,  false); break;
+                }
+            }
+            return 0;
+
         case WM_CHAR:
-            if (w_param == VK_ESCAPE) { PostQuitMessage(0); }
-            if (w_param == L'q') { PostQuitMessage(0); }
-            // hide/show ui
-            if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
-            // small zooming
-            if (w_param == L'=') { s_app->zoom_in (c_small_zoom_factor); }
-            if (w_param == L'-') { s_app->zoom_out(c_small_zoom_factor); }
-            // big zooming
-            if (w_param == L'+') { s_app->zoom_in (c_big_zoom_factor); }
-            if (w_param == L'_') { s_app->zoom_out(c_big_zoom_factor); }
-            // wasd movement (small)
-            if (w_param == L'w') { s_app->pan(stff::vec2(               0.0f, c_small_pan_factor )); }
-            if (w_param == L'a') { s_app->pan(stff::vec2(-c_small_pan_factor, 0.0f               )); }
-            if (w_param == L's') { s_app->pan(stff::vec2(               0.0f, -c_small_pan_factor)); }
-            if (w_param == L'd') { s_app->pan(stff::vec2( c_small_pan_factor, 0.0f               )); }
-            // WASD movment (big)
-            if (w_param == L'W') { s_app->pan(stff::vec2(0.0f,              c_big_pan_factor )); }
-            if (w_param == L'A') { s_app->pan(stff::vec2(-c_big_pan_factor, 0.0f             )); }
-            if (w_param == L'S') { s_app->pan(stff::vec2(0.0f,              -c_big_pan_factor)); }
-            if (w_param == L'D') { s_app->pan(stff::vec2( c_big_pan_factor, 0.0f             )); }
-            // reset camera
-            if (w_param == L'r') { s_app->reset_camera(); }
+            if (!s_app->io().WantCaptureKeyboard)
+            {
+                if (w_param == VK_ESCAPE) { PostQuitMessage(0); }
+                if (w_param == L'q') { PostQuitMessage(0); }
+                // hide/show ui
+                if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
+                // small zooming
+                if (w_param == L'=') { s_app->zoom_in(c_small_zoom_factor); }
+                if (w_param == L'-') { s_app->zoom_out(c_small_zoom_factor); }
+                // big zooming
+                if (w_param == L'+') { s_app->zoom_in(c_big_zoom_factor); }
+                if (w_param == L'_') { s_app->zoom_out(c_big_zoom_factor); }
+                // wasd movement (small)
+                if (w_param == L'w') { s_app->pan(stff::vec2(0.0f, c_small_pan_factor)); }
+                if (w_param == L'a') { s_app->pan(stff::vec2(-c_small_pan_factor, 0.0f)); }
+                if (w_param == L's') { s_app->pan(stff::vec2(0.0f, -c_small_pan_factor)); }
+                if (w_param == L'd') { s_app->pan(stff::vec2(c_small_pan_factor, 0.0f)); }
+                // WASD movment (big)
+                if (w_param == L'W') { s_app->pan(stff::vec2(0.0f, c_big_pan_factor)); }
+                if (w_param == L'A') { s_app->pan(stff::vec2(-c_big_pan_factor, 0.0f)); }
+                if (w_param == L'S') { s_app->pan(stff::vec2(0.0f, -c_big_pan_factor)); }
+                if (w_param == L'D') { s_app->pan(stff::vec2(c_big_pan_factor, 0.0f)); }
+                // reset camera
+                if (w_param == L'r') { s_app->reset_camera(); }
+            }
+            else
+            {
+                s_app->io().AddInputCharacter(static_cast<unsigned int>(w_param));
+            }
             return 0;
 
         case WM_DESTROY:
