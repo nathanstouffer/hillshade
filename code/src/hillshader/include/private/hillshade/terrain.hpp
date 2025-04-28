@@ -2,6 +2,7 @@
 
 #include <array>
 #include <filesystem>
+#include <optional>
 
 #include <stf/stf.hpp>
 
@@ -15,6 +16,8 @@ namespace hillshade
         terrain(std::filesystem::path const& path);
 
         float sample(stff::vec2 const& query) const;
+
+        std::optional<stff::vec3> intersect(stff::ray3 const& ray) const;
 
         inline size_t width() const { return m_width; }
         inline size_t height() const { return m_height; }

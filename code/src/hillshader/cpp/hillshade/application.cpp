@@ -434,6 +434,16 @@ namespace hillshade
         ImVec2 res = ImGui::GetIO().DisplaySize;
         stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
         stff::ray3 ray = m_camera.ray(uv);
+
+        if (m_terrain && m_flag_3d)
+        {
+            std::optional<stff::vec3> focus = m_terrain->intersect(ray);
+            if (focus.has_value())
+            {
+                return focus;
+            }
+        }
+        // fall-through case
         stff::plane plane = stff::plane(stff::vec3(), stff::vec3(0, 0, 1));
         return stf::alg::intersect(ray, plane);
     }

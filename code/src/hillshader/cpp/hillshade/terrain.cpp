@@ -88,4 +88,26 @@ namespace hillshade
         }
     }
 
+    std::optional<stff::vec3> terrain::intersect(stff::ray3 const& ray) const
+    {
+        // this algorithm marches along a ray until the ray crosses the terrain or until the maximum distance is reached
+        float initial_step = 0.1f;
+        bool initially_above = ray.origin.z >= sample(ray.origin.xy);
+        float dist = initial_step;
+        for (size_t i = 1; dist <= 100'000.f; ++i)
+        {
+            size_t scaler = i * i;  // the scaler grows quadratically because detail decreases at that rate
+            dist = static_cast<float>(scaler) * initial_step;
+            stff::vec3 position = ray.origin + dist * ray.direction;
+            bool above = position.z >= sample(position.xy);
+            if (above != initially_above)
+            {
+                return position;
+            }
+        }
+
+        // fall-through case
+        return {};
+    }
+
 }
