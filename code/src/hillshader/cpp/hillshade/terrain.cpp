@@ -67,4 +67,47 @@ namespace hillshade
         }
     }
 
+    float terrain::sample(stff::vec2 const& query) const
+    {
+        stff::aabb2 const bounds = m_bounds.as<float>();
+        if (bounds.contains(query))
+        {
+            // for the most part, we are dealing with really fine-grained resolution DEMs so we will just use nearest sampling
+            stff::vec2 top_left(bounds.min.x, bounds.max.y);
+            stff::vec2 bottom_right(bounds.max.x, bounds.min.y);
+
+            stff::vec2 uv = (query - top_left) / (bottom_right - top_left);
+            size_t i = static_cast<size_t>(std::clamp(uv.x * m_width, 0.f, static_cast<float>(m_width - 1)));
+            size_t j = static_cast<size_t>(std::clamp(uv.y * m_height, 0.f, static_cast<float>(m_height - 1)));
+
+            return m_values[i + m_height * j];
+        }
+        else
+        {
+            return 0.f;
+        }
+    }
+
+    std::optional<stff::vec3> terrain::intersect(stff::ray3 const& ray) const
+    {
+        // this algorithm marches along a ray until the ray crosses the terrain or until the maximum distance is reached
+        float initial_step = 0.1f;
+        bool initially_above = ray.origin.z >= sample(ray.origin.xy);
+        float dist = initial_step;
+        for (size_t i = 1; dist <= 100'000.f; ++i)
+        {
+            size_t scaler = i * i;  // the scaler grows quadratically because detail decreases at that rate
+            dist = static_cast<float>(scaler) * initial_step;
+            stff::vec3 position = ray.origin + dist * ray.direction;
+            bool above = position.z >= sample(position.xy);
+            if (above != initially_above)
+            {
+                return position;
+            }
+        }
+
+        // fall-through case
+        return {};
+    }
+
 }

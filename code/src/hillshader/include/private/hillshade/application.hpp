@@ -94,7 +94,7 @@ namespace hillshade
         float m_ambient_intensity = 0.0f;
         float m_exaggeration = 2.0f;
         float m_step_scalar = 0.001f;
-        bool m_flag_3d = false;
+        bool m_flag_3d = true;
 
         nlohmann::json m_start_up_state;
 

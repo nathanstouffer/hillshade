@@ -39,6 +39,8 @@ namespace hillshade
 
     static constexpr double c_min_meters_per_quad = 5.0;
 
+    static constexpr float c_min_terrain_offset = 0.5;
+
     static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
     static constexpr float c_pan_scalar = 0.0008125f;
 
@@ -83,7 +85,7 @@ namespace hillshade
         factory->CreateDeviceAndSwapChainGL(info, &m_device, &m_immediate_context, desc, &m_swap_chain);
 
         // set up imgui
-        m_imgui_impl = std::make_unique<Diligent::ImGuiImplWin32>(Diligent::ImGuiDiligentCreateInfo(&*m_device, desc), hWnd);
+        m_imgui_impl = std::make_unique<Diligent::ImGuiImplWin32>(Diligent::ImGuiDiligentCreateInfo(m_device.RawPtr(), desc), hWnd);
         ImGui::StyleColorsDark();
         ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize = { static_cast<float>(m_width), static_cast<float>(m_height) };
@@ -131,7 +133,7 @@ namespace hillshade
             if (ImGui::GetIO().MouseDown[0])
             {
                 ImVec2 delta = ImGui::GetIO().MouseDelta;
-                float scalar = c_pan_scalar * m_camera.eye.z;
+                float scalar = c_pan_scalar * stf::math::dist(m_camera.eye, m_focus);
                 m_camera.eye -= scalar * delta.x * m_camera.right();
                 m_camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), m_camera.right());
             }
@@ -143,6 +145,25 @@ namespace hillshade
                 float delta_theta = -delta.x / size.x * stff::constants::pi;
                 float delta_phi = delta.y / size.y * stff::constants::half_pi;
                 m_camera = stf::cam::orbit(m_camera, m_focus, delta_phi, delta_theta);
+            }
+        }
+
+        // very rudimentary terrain collision
+        {
+            if (m_terrain && m_flag_3d)
+            {
+                if (m_terrain->bounds().contains(m_camera.eye.xy.as<double>()))
+                {
+                    m_camera.eye.z = std::max(m_terrain->sample(m_camera.eye.xy) + c_min_terrain_offset, m_camera.eye.z);
+                }
+                else
+                {
+                    m_camera.eye.z = std::max(c_min_terrain_offset, m_camera.eye.z);
+                }
+            }
+            else
+            {
+                m_camera.eye.z = std::max(c_min_terrain_offset, m_camera.eye.z);
             }
         }
     }
@@ -225,7 +246,7 @@ namespace hillshade
     {
         // start the ImGui frame (even if we're not going to render it) so that input is refreshed
         m_imgui_impl->NewFrame(m_width, m_height, Diligent::SURFACE_TRANSFORM_IDENTITY);
-        
+
         update();
 
         // set render targets before issuing any draw command.
@@ -303,6 +324,10 @@ namespace hillshade
         {
             float z = std::max(m_terrain->range().b, m_terrain->bounds().as<float>().diagonal().length());
             stff::vec3 eye(0, 0, z);
+            if (m_flag_3d)
+            {
+                eye.z += m_terrain->sample(eye.xy);
+            }
             m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
         else
@@ -322,8 +347,8 @@ namespace hillshade
         pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
         pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
         pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-        pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_BACK;
-        pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::False;
+        pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
+        pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
 
         // create dynamic uniform buffer that will store shader constants
         Diligent::CreateUniformBuffer(m_device, sizeof(constants), "Global shader constants CB", &m_shader_constants);
@@ -409,6 +434,16 @@ namespace hillshade
         ImVec2 res = ImGui::GetIO().DisplaySize;
         stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
         stff::ray3 ray = m_camera.ray(uv);
+
+        if (m_terrain && m_flag_3d)
+        {
+            std::optional<stff::vec3> focus = m_terrain->intersect(ray);
+            if (focus.has_value())
+            {
+                return focus;
+            }
+        }
+        // fall-through case
         stff::plane plane = stff::plane(stff::vec3(), stff::vec3(0, 0, 1));
         return stf::alg::intersect(ray, plane);
     }
