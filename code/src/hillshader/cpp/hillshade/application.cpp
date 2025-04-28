@@ -133,7 +133,7 @@ namespace hillshade
             if (ImGui::GetIO().MouseDown[0])
             {
                 ImVec2 delta = ImGui::GetIO().MouseDelta;
-                float scalar = c_pan_scalar * m_camera.eye.z;
+                float scalar = c_pan_scalar * stf::math::dist(m_camera.eye, m_focus);
                 m_camera.eye -= scalar * delta.x * m_camera.right();
                 m_camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), m_camera.right());
             }
