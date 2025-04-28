@@ -39,6 +39,8 @@ namespace hillshade
 
     static constexpr double c_min_meters_per_quad = 5.0;
 
+    static constexpr float c_min_terrain_offset = 0.5;
+
     static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
     static constexpr float c_pan_scalar = 0.0008125f;
 
@@ -143,6 +145,25 @@ namespace hillshade
                 float delta_theta = -delta.x / size.x * stff::constants::pi;
                 float delta_phi = delta.y / size.y * stff::constants::half_pi;
                 m_camera = stf::cam::orbit(m_camera, m_focus, delta_phi, delta_theta);
+            }
+        }
+
+        // very rudimentary terrain collision
+        {
+            if (m_terrain && m_flag_3d)
+            {
+                if (m_terrain->bounds().contains(m_camera.eye.xy.as<double>()))
+                {
+                    m_camera.eye.z = std::max(m_terrain->sample(m_camera.eye.xy) + c_min_terrain_offset, m_camera.eye.z);
+                }
+                else
+                {
+                    m_camera.eye.z = std::max(c_min_terrain_offset, m_camera.eye.z);
+                }
+            }
+            else
+            {
+                m_camera.eye.z = std::max(c_min_terrain_offset, m_camera.eye.z);
             }
         }
     }
