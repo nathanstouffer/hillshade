@@ -180,7 +180,7 @@ namespace hillshade
         {
             ImGui::BeginMainMenuBar();
 
-            if (ImGui::BeginMenu("terrarium"))
+            if (ImGui::BeginMenu("DEMs"))
             {
                 for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_terrarium_dir))
                 {
