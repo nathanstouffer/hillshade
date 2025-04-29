@@ -158,7 +158,7 @@ namespace hillshade
                 }
                 else
                 {
-                    m_camera.eye.z = std::max(c_min_terrain_offset, m_camera.eye.z);
+                    m_camera.eye.z = std::max(m_terrain->range().a + c_min_terrain_offset, m_camera.eye.z);
                 }
             }
             else

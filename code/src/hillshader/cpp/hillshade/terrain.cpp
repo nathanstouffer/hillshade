@@ -84,7 +84,7 @@ namespace hillshade
         }
         else
         {
-            return 0.f;
+            return m_range.a;
         }
     }
 
