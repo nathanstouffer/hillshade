@@ -62,7 +62,7 @@ namespace hillshade
                 min -= center;
                 max -= center;
 
-                m_bounds = stfd::aabb2(min, max);
+                m_bounds = stff::aabb2(min.as<float>(), max.as<float>());
             }
         }
     }

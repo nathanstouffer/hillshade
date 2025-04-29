@@ -37,7 +37,7 @@ namespace hillshade
     static constexpr char const* c_shader_dir = "shaders";
     static constexpr char const* c_terrarium_dir = "terrarium";
 
-    static constexpr double c_min_meters_per_quad = 5.0;
+    static constexpr float c_min_meters_per_quad = 5.0;
 
     static constexpr float c_min_terrain_offset = 0.5;
 
@@ -152,7 +152,7 @@ namespace hillshade
         {
             if (m_terrain && m_flag_3d)
             {
-                if (m_terrain->bounds().contains(m_camera.eye.xy.as<double>()))
+                if (m_terrain->bounds().contains(m_camera.eye.xy))
                 {
                     m_camera.eye.z = std::max(m_terrain->sample(m_camera.eye.xy) + c_min_terrain_offset, m_camera.eye.z);
                 }
@@ -218,7 +218,7 @@ namespace hillshade
             // info block
             {
                 ImGui::Text("Info");
-                stfd::aabb2 const bounds = (m_terrain) ? m_terrain->bounds() : stfd::aabb2(stfd::vec2(), stfd::vec2());
+                stff::aabb2 const bounds = (m_terrain) ? m_terrain->bounds() : stff::aabb2(stff::vec2(), stff::vec2());
                 ImGui::Text("DEM Bounds: (%.1f, %.1f) - (%.1f, %.1f)", bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y);
                 ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
                 ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
@@ -460,9 +460,9 @@ namespace hillshade
         // compute and load vertex/index buffer
         {
             // compute resolution
-            stfd::vec2 const& diagonal = m_terrain->bounds().diagonal();
-            double meters_per_pixel = std::max(diagonal.x / m_terrain->width(), diagonal.y / m_terrain->height());
-            double meters_per_quad = std::max(meters_per_pixel, c_min_meters_per_quad);
+            stff::vec2 const& diagonal = m_terrain->bounds().diagonal();
+            float meters_per_pixel = std::max(diagonal.x / m_terrain->width(), diagonal.y / m_terrain->height());
+            float meters_per_quad = std::max(meters_per_pixel, c_min_meters_per_quad);
             size_t threshold = static_cast<size_t>(std::min(diagonal.x / meters_per_quad, diagonal.y / meters_per_quad));
             size_t resolution = std::min(threshold, std::max(m_terrain->width(), m_terrain->height()));
 
