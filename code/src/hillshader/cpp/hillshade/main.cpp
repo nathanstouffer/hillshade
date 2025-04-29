@@ -170,7 +170,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     s_app = std::make_unique<hillshade::application>();
     if (!s_app->initialize(wnd))
         return -1;
-    
+
     // Main message loop
     MSG msg = { 0 };
     while (WM_QUIT != msg.message)
