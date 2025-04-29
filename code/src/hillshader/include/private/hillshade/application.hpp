@@ -78,7 +78,7 @@ namespace hillshade
         stff::scamera m_camera;
         
         stff::vec3 m_focus;
-        bool m_update_focus;
+        bool m_update_focus = false;
 
         std::string m_dem_path;
         std::unique_ptr<terrain> m_terrain;
