@@ -1,5 +1,7 @@
 #include "hillshader/camera/controllers/input.hpp"
 
+#include "hillshader/camera/constrainers/collide.hpp"
+
 namespace hillshader::camera::controllers
 {
 
@@ -37,6 +39,7 @@ namespace hillshader::camera::controllers
             float delta_theta = -delta.x / size.x * stff::constants::pi;
             float delta_phi = delta.y / size.y * stff::constants::half_pi;
             camera = stf::cam::orbit(camera, m_focus, delta_phi, delta_theta);
+            camera = constrainers::orbit_collide(camera, m_focus, opts.terrain);
         }
 
         return camera;
