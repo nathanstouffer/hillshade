@@ -30,7 +30,7 @@ namespace
 
 }
 
-namespace hillshade
+namespace hillshader
 {
 
     static constexpr char const* c_start_up_file = "startup.json";

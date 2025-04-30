@@ -22,7 +22,7 @@
 #include "hillshade/mesh.hpp"
 #include "hillshade/terrain.hpp"
 
-namespace hillshade
+namespace hillshader
 {
 
     class application

@@ -6,7 +6,7 @@
 
 #include <stf/stf.hpp>
 
-namespace hillshade
+namespace hillshader
 {
 
     class terrain
