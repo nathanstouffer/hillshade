@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
+#include <memory>
 #include <optional>
+#include <string>
 
 #define NOMINMAX
 #include <Windows.h>
@@ -19,6 +20,7 @@
 #include <stf/stf.hpp>
 #include <stf/gfx/color.hpp>
 
+#include "hillshader/camera/controller.hpp"
 #include "hillshader/mesh.hpp"
 #include "hillshader/terrain.hpp"
 
@@ -76,12 +78,13 @@ namespace hillshader
         bool m_render_ui = true;
 
         stff::scamera m_camera;
-        
+        std::unique_ptr<camera::controller> m_controller;
+
         stff::vec3 m_focus;
         bool m_update_focus = false;
 
         std::string m_dem_path;
-        std::unique_ptr<terrain> m_terrain;
+        std::unique_ptr<terrain const> m_terrain;
         std::vector<mesh::vertex_t> m_vertices;
         std::vector<uint32_t> m_indices;
         Diligent::RefCntAutoPtr<Diligent::ITexture> m_texture;

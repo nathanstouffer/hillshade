@@ -14,7 +14,7 @@ namespace hillshader::camera
         struct options
         {
             stff::scamera const& current;
-            std::unique_ptr<terrain const> const& terrain;
+            terrain const* terrain;
         };
 
     public:

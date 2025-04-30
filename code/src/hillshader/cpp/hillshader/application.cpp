@@ -17,6 +17,8 @@
 #include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
 
+#include "hillshader/camera/animators/identity.hpp"
+
 namespace
 {
 
@@ -62,7 +64,7 @@ namespace hillshader
         bool flag_3d;
     };
 
-    application::application() {}
+    application::application() : m_controller(std::make_unique<camera::animators::identity>()) {}
 
     application::~application()
     {
@@ -148,24 +150,7 @@ namespace hillshader
             }
         }
 
-        // very rudimentary terrain collision
-        {
-            if (m_terrain && m_flag_3d)
-            {
-                if (m_terrain->bounds().contains(m_camera.eye.xy))
-                {
-                    m_camera.eye.z = std::max(m_terrain->sample(m_camera.eye.xy) + c_min_terrain_offset, m_camera.eye.z);
-                }
-                else
-                {
-                    m_camera.eye.z = std::max(m_terrain->range().a + c_min_terrain_offset, m_camera.eye.z);
-                }
-            }
-            else
-            {
-                m_camera.eye.z = std::max(c_min_terrain_offset, m_camera.eye.z);
-            }
-        }
+        m_camera = m_controller->update({ m_camera, (m_flag_3d) ? m_terrain.get() : nullptr});
     }
 
     void application::store_start_up_state()
