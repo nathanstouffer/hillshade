@@ -18,7 +18,7 @@
 #include <imgui.h>
 
 #include "hillshader/camera/controllers/identity.hpp"
-#include "hillshader/camera/controllers/reactors/input.hpp"
+#include "hillshader/camera/controllers/input.hpp"
 
 namespace
 {
@@ -118,7 +118,7 @@ namespace hillshader
             {
                 std::optional<stff::vec3> opt = cursor_world_pos();
                 m_focus = (opt) ? *opt : stff::vec3();
-                m_controller = std::make_unique<camera::controllers::reactors::input>(m_focus);
+                m_controller = std::make_unique<camera::controllers::input>(m_focus);
                 m_update_focus = false;
             }
 

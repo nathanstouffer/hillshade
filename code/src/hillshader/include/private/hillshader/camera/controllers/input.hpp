@@ -2,7 +2,7 @@
 
 #include "hillshader/camera/controllers/controller.hpp"
 
-namespace hillshader::camera::controllers::reactors
+namespace hillshader::camera::controllers
 {
 
     class input final : public controller

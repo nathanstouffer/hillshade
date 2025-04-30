@@ -1,6 +1,6 @@
-#include "hillshader/camera/controllers/reactors/input.hpp"
+#include "hillshader/camera/controllers/input.hpp"
 
-namespace hillshader::camera::controllers::reactors
+namespace hillshader::camera::controllers
 {
 
     static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
