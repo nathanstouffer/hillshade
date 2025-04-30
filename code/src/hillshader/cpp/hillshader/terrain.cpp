@@ -1,4 +1,4 @@
-#include "hillshade/terrain.hpp"
+#include "hillshader/terrain.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -8,7 +8,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-namespace hillshade
+namespace hillshader
 {
 
     terrain::terrain(std::filesystem::path const& path) :
@@ -62,7 +62,7 @@ namespace hillshade
                 min -= center;
                 max -= center;
 
-                m_bounds = stfd::aabb2(min, max);
+                m_bounds = stff::aabb2(min.as<float>(), max.as<float>());
             }
         }
     }
@@ -84,7 +84,7 @@ namespace hillshade
         }
         else
         {
-            return 0.f;
+            return m_range.a;
         }
     }
 

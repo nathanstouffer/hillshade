@@ -4,7 +4,7 @@
 
 #include <stf/stf.hpp>
 
-namespace hillshade::mesh
+namespace hillshader::mesh
 {
 
     struct vertex_t

@@ -4,9 +4,9 @@
 #include <Windows.h>
 #include <crtdbg.h>
 
-#include "hillshade/application.hpp"
+#include "hillshader/application.hpp"
 
-static std::unique_ptr<hillshade::application> s_app = nullptr;
+static std::unique_ptr<hillshader::application> s_app = nullptr;
 
 static float constexpr c_small_zoom_factor = 1.05f;
 static float constexpr c_big_zoom_factor = 2.f;
@@ -167,10 +167,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     ShowWindow(wnd, nShowCmd);
     UpdateWindow(wnd);
 
-    s_app = std::make_unique<hillshade::application>();
+    s_app = std::make_unique<hillshader::application>();
     if (!s_app->initialize(wnd))
         return -1;
-    
+
     // Main message loop
     MSG msg = { 0 };
     while (WM_QUIT != msg.message)

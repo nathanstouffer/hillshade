@@ -1,11 +1,20 @@
 set(HILLSHADER_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/main.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/application.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/terrain.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshade/mesh.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/application.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/terrain.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshade/mesh.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/controllers/controller.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/controllers/input.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/constrainers/collide.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/application.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/terrain.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/mesh.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/config.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/identity.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/constant.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/controller.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/input.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/constrainers/collide.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/application.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/terrain.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/mesh.hpp"
 )
 
 add_executable(hillshader WIN32 ${HILLSHADER_FILES})

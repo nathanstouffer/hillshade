@@ -1,4 +1,4 @@
-#include "hillshade/application.hpp"
+#include "hillshader/application.hpp"
 
 #include <chrono>
 #include <fstream>
@@ -17,6 +17,9 @@
 #include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
 
+#include "hillshader/camera/controllers/identity.hpp"
+#include "hillshader/camera/controllers/input.hpp"
+
 namespace
 {
 
@@ -30,19 +33,16 @@ namespace
 
 }
 
-namespace hillshade
+namespace hillshader
 {
 
     static constexpr char const* c_start_up_file = "startup.json";
     static constexpr char const* c_shader_dir = "shaders";
     static constexpr char const* c_terrarium_dir = "terrarium";
 
-    static constexpr double c_min_meters_per_quad = 5.0;
+    static constexpr float c_min_meters_per_quad = 5.0;
 
     static constexpr float c_min_terrain_offset = 0.5;
-
-    static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
-    static constexpr float c_pan_scalar = 0.0008125f;
 
     struct constants
     {
@@ -62,7 +62,7 @@ namespace hillshade
         bool flag_3d;
     };
 
-    application::application() {}
+    application::application() : m_controller(std::make_unique<camera::controllers::identity>()) {}
 
     application::~application()
     {
@@ -111,60 +111,18 @@ namespace hillshade
 
     void application::update()
     {
-        if (!ImGui::GetIO().WantCaptureMouse)
+        ImGuiIO const& io = this->io();
+        if (!io.WantCaptureMouse)
         {
             if (m_update_focus)
             {
                 std::optional<stff::vec3> opt = cursor_world_pos();
                 m_focus = (opt) ? *opt : stff::vec3();
+                m_controller = std::make_unique<camera::controllers::input>(m_focus);
                 m_update_focus = false;
             }
 
-            if (ImGui::GetIO().MouseWheel != stff::constants::zero)
-            {
-                float dist = stf::math::dist(m_camera.eye, m_focus);
-                float log_dist = std::log2(dist);
-                log_dist -= c_wheel_scalar * ImGui::GetIO().MouseWheel;
-                dist = std::pow(2.f, log_dist);
-                stff::vec3 dir = (m_camera.eye - m_focus).normalize();
-                m_camera.eye = m_focus + dist * dir;
-            }
-
-            if (ImGui::GetIO().MouseDown[0])
-            {
-                ImVec2 delta = ImGui::GetIO().MouseDelta;
-                float scalar = c_pan_scalar * stf::math::dist(m_camera.eye, m_focus);
-                m_camera.eye -= scalar * delta.x * m_camera.right();
-                m_camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), m_camera.right());
-            }
-
-            if (ImGui::GetIO().MouseDown[1])
-            {
-                ImVec2 delta = ImGui::GetIO().MouseDelta;
-                ImVec2 size = ImGui::GetIO().DisplaySize;
-                float delta_theta = -delta.x / size.x * stff::constants::pi;
-                float delta_phi = delta.y / size.y * stff::constants::half_pi;
-                m_camera = stf::cam::orbit(m_camera, m_focus, delta_phi, delta_theta);
-            }
-        }
-
-        // very rudimentary terrain collision
-        {
-            if (m_terrain && m_flag_3d)
-            {
-                if (m_terrain->bounds().contains(m_camera.eye.xy.as<double>()))
-                {
-                    m_camera.eye.z = std::max(m_terrain->sample(m_camera.eye.xy) + c_min_terrain_offset, m_camera.eye.z);
-                }
-                else
-                {
-                    m_camera.eye.z = std::max(c_min_terrain_offset, m_camera.eye.z);
-                }
-            }
-            else
-            {
-                m_camera.eye.z = std::max(c_min_terrain_offset, m_camera.eye.z);
-            }
+            m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr });
         }
     }
 
@@ -180,7 +138,7 @@ namespace hillshade
         {
             ImGui::BeginMainMenuBar();
 
-            if (ImGui::BeginMenu("terrarium"))
+            if (ImGui::BeginMenu("DEMs"))
             {
                 for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_terrarium_dir))
                 {
@@ -218,7 +176,7 @@ namespace hillshade
             // info block
             {
                 ImGui::Text("Info");
-                stfd::aabb2 const bounds = (m_terrain) ? m_terrain->bounds() : stfd::aabb2(stfd::vec2(), stfd::vec2());
+                stff::aabb2 const bounds = (m_terrain) ? m_terrain->bounds() : stff::aabb2(stff::vec2(), stff::vec2());
                 ImGui::Text("DEM Bounds: (%.1f, %.1f) - (%.1f, %.1f)", bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y);
                 ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
                 ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
@@ -460,9 +418,9 @@ namespace hillshade
         // compute and load vertex/index buffer
         {
             // compute resolution
-            stfd::vec2 const& diagonal = m_terrain->bounds().diagonal();
-            double meters_per_pixel = std::max(diagonal.x / m_terrain->width(), diagonal.y / m_terrain->height());
-            double meters_per_quad = std::max(meters_per_pixel, c_min_meters_per_quad);
+            stff::vec2 const& diagonal = m_terrain->bounds().diagonal();
+            float meters_per_pixel = std::max(diagonal.x / m_terrain->width(), diagonal.y / m_terrain->height());
+            float meters_per_quad = std::max(meters_per_pixel, c_min_meters_per_quad);
             size_t threshold = static_cast<size_t>(std::min(diagonal.x / meters_per_quad, diagonal.y / meters_per_quad));
             size_t resolution = std::min(threshold, std::max(m_terrain->width(), m_terrain->height()));
 

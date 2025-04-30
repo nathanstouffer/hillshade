@@ -6,7 +6,7 @@
 
 #include <stf/stf.hpp>
 
-namespace hillshade
+namespace hillshader
 {
 
     class terrain
@@ -24,7 +24,7 @@ namespace hillshade
 
         inline stff::interval const& range() const { return m_range; }
 
-        inline stfd::aabb2 const& bounds() const { return m_bounds; }
+        inline stff::aabb2 const& bounds() const { return m_bounds; }
 
         inline std::vector<float> const& values() const { return m_values; }
 
@@ -36,7 +36,7 @@ namespace hillshade
 
         stff::interval m_range;
 
-        stfd::aabb2 m_bounds;
+        stff::aabb2 m_bounds;
 
     };
 
