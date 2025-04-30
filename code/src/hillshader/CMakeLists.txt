@@ -1,8 +1,12 @@
 set(HILLSHADER_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/controller.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/application.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/terrain.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/mesh.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controller.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/animators/constant.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/animators/identity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/terrain.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/mesh.hpp"
