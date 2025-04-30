@@ -19,8 +19,8 @@
 #include <stf/stf.hpp>
 #include <stf/gfx/color.hpp>
 
-#include "hillshade/mesh.hpp"
-#include "hillshade/terrain.hpp"
+#include "hillshader/mesh.hpp"
+#include "hillshader/terrain.hpp"
 
 namespace hillshader
 {

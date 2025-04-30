@@ -1,6 +1,6 @@
-#include "hillshade/mesh.hpp"
+#include "hillshader/mesh.hpp"
 
-namespace hillshade::mesh
+namespace hillshader::mesh
 {
 
     std::vector<vertex_t> vertices(size_t resolution)

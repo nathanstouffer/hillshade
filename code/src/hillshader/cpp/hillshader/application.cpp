@@ -1,4 +1,4 @@
-#include "hillshade/application.hpp"
+#include "hillshader/application.hpp"
 
 #include <chrono>
 #include <fstream>
