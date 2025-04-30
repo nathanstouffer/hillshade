@@ -1,6 +1,6 @@
-#include "hillshader/camera/controller.hpp"
+#include "hillshader/camera/controllers/controller.hpp"
 
-namespace hillshader::camera
+namespace hillshader::camera::controllers
 {
 
     static constexpr float c_min_terrain_offset = 0.5;

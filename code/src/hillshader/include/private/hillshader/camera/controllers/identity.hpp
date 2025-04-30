@@ -1,8 +1,8 @@
 #pragma once
 
-#include "hillshader/camera/controller.hpp"
+#include "hillshader/camera/controllers/controller.hpp"
 
-namespace hillshader::camera::animators
+namespace hillshader::camera::controllers
 {
 
     class identity final : public controller

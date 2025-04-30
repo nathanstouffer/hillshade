@@ -20,7 +20,7 @@
 #include <stf/stf.hpp>
 #include <stf/gfx/color.hpp>
 
-#include "hillshader/camera/controller.hpp"
+#include "hillshader/camera/controllers/controller.hpp"
 #include "hillshader/mesh.hpp"
 #include "hillshader/terrain.hpp"
 
@@ -78,7 +78,7 @@ namespace hillshader
         bool m_render_ui = true;
 
         stff::scamera m_camera;
-        std::unique_ptr<camera::controller> m_controller;
+        std::unique_ptr<camera::controllers::controller> m_controller;
 
         stff::vec3 m_focus;
         bool m_update_focus = false;

@@ -1,10 +1,12 @@
 #pragma once
 
+#include <imgui.h>
+
 #include <stf/stf.hpp>
 
 #include "hillshader/terrain.hpp"
 
-namespace hillshader::camera
+namespace hillshader::camera::controllers
 {
 
     class controller
@@ -13,6 +15,7 @@ namespace hillshader::camera
 
         struct options
         {
+            ImGuiIO const& io;
             stff::scamera const& current;
             terrain const* terrain;
         };

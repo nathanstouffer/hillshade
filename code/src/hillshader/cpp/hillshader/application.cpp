@@ -17,7 +17,8 @@
 #include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
 
-#include "hillshader/camera/animators/identity.hpp"
+#include "hillshader/camera/controllers/identity.hpp"
+#include "hillshader/camera/controllers/reactors/input.hpp"
 
 namespace
 {
@@ -43,9 +44,6 @@ namespace hillshader
 
     static constexpr float c_min_terrain_offset = 0.5;
 
-    static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
-    static constexpr float c_pan_scalar = 0.0008125f;
-
     struct constants
     {
         stff::mtx4 view_proj;
@@ -64,7 +62,7 @@ namespace hillshader
         bool flag_3d;
     };
 
-    application::application() : m_controller(std::make_unique<camera::animators::identity>()) {}
+    application::application() : m_controller(std::make_unique<camera::controllers::identity>()) {}
 
     application::~application()
     {
@@ -113,44 +111,19 @@ namespace hillshader
 
     void application::update()
     {
-        if (!ImGui::GetIO().WantCaptureMouse)
+        ImGuiIO const& io = this->io();
+        if (!io.WantCaptureMouse)
         {
             if (m_update_focus)
             {
                 std::optional<stff::vec3> opt = cursor_world_pos();
                 m_focus = (opt) ? *opt : stff::vec3();
+                m_controller = std::make_unique<camera::controllers::reactors::input>(m_focus);
                 m_update_focus = false;
             }
 
-            if (ImGui::GetIO().MouseWheel != stff::constants::zero)
-            {
-                float dist = stf::math::dist(m_camera.eye, m_focus);
-                float log_dist = std::log2(dist);
-                log_dist -= c_wheel_scalar * ImGui::GetIO().MouseWheel;
-                dist = std::pow(2.f, log_dist);
-                stff::vec3 dir = (m_camera.eye - m_focus).normalize();
-                m_camera.eye = m_focus + dist * dir;
-            }
-
-            if (ImGui::GetIO().MouseDown[0])
-            {
-                ImVec2 delta = ImGui::GetIO().MouseDelta;
-                float scalar = c_pan_scalar * stf::math::dist(m_camera.eye, m_focus);
-                m_camera.eye -= scalar * delta.x * m_camera.right();
-                m_camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), m_camera.right());
-            }
-
-            if (ImGui::GetIO().MouseDown[1])
-            {
-                ImVec2 delta = ImGui::GetIO().MouseDelta;
-                ImVec2 size = ImGui::GetIO().DisplaySize;
-                float delta_theta = -delta.x / size.x * stff::constants::pi;
-                float delta_phi = delta.y / size.y * stff::constants::half_pi;
-                m_camera = stf::cam::orbit(m_camera, m_focus, delta_phi, delta_theta);
-            }
+            m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr });
         }
-
-        m_camera = m_controller->update({ m_camera, (m_flag_3d) ? m_terrain.get() : nullptr});
     }
 
     void application::store_start_up_state()
