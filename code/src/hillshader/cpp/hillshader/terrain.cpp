@@ -88,15 +88,19 @@ namespace hillshader
             }
             else                                    // otherwise, use bilinear interpolation
             {
+                // read the four surrounding elevation values
                 float a = read(i, j);     float b = read(i + 1, j);
                 float c = read(i, j + 1); float d = read(i + 1, j + 1);
 
+                // compute the interpolation times
                 float s = stf::math::lerp_inv((i + 0.5f), (i + 1.5f), uv.x * m_width);
                 float t = stf::math::lerp_inv((j + 0.5f), (j + 1.5f), uv.y * m_height);
 
                 float top = stf::math::lerp(a, b, s);
                 float bottom = stf::math::lerp(c, d, s);
-                return stf::math::lerp(top, bottom, t);
+
+                float elevation = stf::math::lerp(top, bottom, t);
+                return elevation;
             }
         }
         else
