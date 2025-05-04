@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hillshader/camera/controllers/controller.hpp"
+#include "hillshader/camera/physics/handler.hpp"
 
 namespace hillshader::camera::controllers
 {
@@ -16,6 +17,8 @@ namespace hillshader::camera::controllers
         stff::scamera derived_update(options const& opts) override;
 
         stff::vec3 const m_focus;
+
+        std::unique_ptr<physics::handler> m_physics_handler = nullptr;
 
     };
 

@@ -16,7 +16,7 @@ namespace hillshader::camera::physics
 
         stff::scamera m_camera;
         stff::vec3 m_velocity;
-        float m_timestamp_ms;
+        time_t m_timestamp_ms;
 
     };
 

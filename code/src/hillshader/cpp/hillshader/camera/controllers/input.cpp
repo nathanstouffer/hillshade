@@ -1,6 +1,8 @@
 #include "hillshader/camera/controllers/input.hpp"
 
 #include "hillshader/camera/constraints/collide.hpp"
+#include "hillshader/camera/physics/free_body.hpp"
+#include "hillshader/camera/physics/orbit.hpp"
 
 namespace hillshader::camera::controllers
 {
@@ -30,6 +32,10 @@ namespace hillshader::camera::controllers
             float scalar = c_pan_scalar * stf::math::dist(camera.eye, m_focus);
             camera.eye -= scalar * delta.x * camera.right();
             camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), camera.right());
+            if (!m_physics_handler)
+            {
+                m_physics_handler = std::make_unique<physics::free_body>();
+            }
         }
 
         if (opts.io.MouseDown[1])
@@ -40,6 +46,19 @@ namespace hillshader::camera::controllers
             float delta_phi = delta.y / size.y * stff::constants::half_pi;
             camera = stf::cam::orbit(camera, m_focus, delta_phi, delta_theta);
             camera = constrainers::orbit_collide(camera, m_focus, opts.terrain);
+        }
+
+        if (opts.io.MouseWheel == stff::constants::zero && !opts.io.MouseDown[0] && !opts.io.MouseDown[1])
+        {
+            if (m_physics_handler)
+            {
+                m_physics_handler->set_mode(physics::handler::mode::apply);
+            }
+        }
+
+        if (m_physics_handler)
+        {
+            camera = m_physics_handler->update({ camera, opts.time_ms });
         }
 
         return camera;

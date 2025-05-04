@@ -12,7 +12,7 @@ namespace hillshader::camera::physics
         {
             m_velocity = (opts.candidate.eye - m_camera.eye) / delta_t;
             m_camera = opts.candidate;
-            m_timestamp_ms = static_cast<float>(opts.time_ms);
+            m_timestamp_ms = opts.time_ms;
             return opts.candidate;
         }
         else if (m_mode == mode::apply)

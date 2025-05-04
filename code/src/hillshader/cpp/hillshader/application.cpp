@@ -460,6 +460,7 @@ namespace hillshader
         case focus::center: return center_world_pos(); break;
         case focus::cursor: return cursor_world_pos(); break;
         }
+        return {};
     }
 
     void application::load_dem(std::string const& path)
