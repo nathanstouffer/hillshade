@@ -27,6 +27,12 @@
 namespace hillshader
 {
 
+    enum class focus
+    {
+        center,
+        cursor,
+    };
+
     class application
     {
     public:
@@ -44,17 +50,21 @@ namespace hillshader
 
         void resize(Diligent::Uint32 width, Diligent::Uint32 height);
 
+        void set_controller(std::unique_ptr<camera::controllers::controller> controller) { m_controller = std::move(controller); }
+
         void toggle_ui() { m_render_ui = !m_render_ui; }
 
         inline void reset_camera();
 
-        inline void zoom_in(float const factor) { m_camera.eye.z /= factor; }
-        inline void zoom_out(float const factor) { m_camera.eye.z *= factor; }
-        inline void pan(stff::vec2 const& factor) { m_camera.eye.xy += m_camera.eye.z * factor; }
+        void zoom(float const factor, focus f);
+
+        void orbit(float const delta_theta, float const delta_phi, focus f);
+
+        void orbit_to(float const theta, float const phi, focus f);
 
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 
-        inline void update_focus() { m_update_focus = true; }
+        inline void force_focus_update() { m_update_focus = true; }
         ImGuiIO& io() { return ImGui::GetIO(); }
         Diligent::RENDER_DEVICE_TYPE device_type() const { return m_device_type; }
 
@@ -109,7 +119,13 @@ namespace hillshader
 
         void render_ui();
 
+        std::optional<stff::vec3> world_pos(stff::vec2 const& uv) const;
+
+        std::optional<stff::vec3> center_world_pos() const;
+
         std::optional<stff::vec3> cursor_world_pos() const;
+
+        std::optional<stff::vec3> compute_focus(focus f) const;
 
         void load_dem(std::string const& path);
 

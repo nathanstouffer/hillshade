@@ -5,13 +5,12 @@
 #include <crtdbg.h>
 
 #include "hillshader/application.hpp"
+#include "hillshader/camera/config.hpp"
+#include "hillshader/camera/controllers/animators/animator.hpp"
+#include "hillshader/camera/controllers/animators/orbit.hpp"
+#include "hillshader/camera/controllers/animators/zoom.hpp"
 
 static std::unique_ptr<hillshader::application> s_app = nullptr;
-
-static float constexpr c_small_zoom_factor = 1.05f;
-static float constexpr c_big_zoom_factor = 2.f;
-static float constexpr c_small_pan_factor = 0.01f;
-static float constexpr c_big_pan_factor = 0.1f;
 
 // called every time the NativeNativeAppBase receives a message
 LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_param)
@@ -29,7 +28,7 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case WM_LBUTTONDOWN:
             SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(0, true);
-            s_app->update_focus();
+            s_app->force_focus_update();
             return 0;
 
         case WM_LBUTTONUP:
@@ -40,7 +39,7 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case WM_RBUTTONDOWN:
             SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(1, true);
-            s_app->update_focus();
+            s_app->force_focus_update();
             return 0;
 
         case WM_RBUTTONUP:
@@ -51,7 +50,7 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case 0x020A:    // TODO figure out why we need this (it seems to be an older event code for WM_MOUSEWHEEL)
         case WM_MOUSEHWHEEL:
             s_app->io().AddMouseWheelEvent(0.f, GET_WHEEL_DELTA_WPARAM(w_param));
-            s_app->update_focus();
+            s_app->force_focus_update();
             return 0;
 
         case WM_SIZE: // window size has been changed
@@ -101,22 +100,19 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 if (w_param == L'q') { PostQuitMessage(0); }
                 // hide/show ui
                 if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
-                // small zooming
-                if (w_param == L'=') { s_app->zoom_in(c_small_zoom_factor); }
-                if (w_param == L'-') { s_app->zoom_out(c_small_zoom_factor); }
-                // big zooming
-                if (w_param == L'+') { s_app->zoom_in(c_big_zoom_factor); }
-                if (w_param == L'_') { s_app->zoom_out(c_big_zoom_factor); }
-                // wasd movement (small)
-                if (w_param == L'w') { s_app->pan(stff::vec2(0.0f, c_small_pan_factor)); }
-                if (w_param == L'a') { s_app->pan(stff::vec2(-c_small_pan_factor, 0.0f)); }
-                if (w_param == L's') { s_app->pan(stff::vec2(0.0f, -c_small_pan_factor)); }
-                if (w_param == L'd') { s_app->pan(stff::vec2(c_small_pan_factor, 0.0f)); }
-                // WASD movment (big)
-                if (w_param == L'W') { s_app->pan(stff::vec2(0.0f, c_big_pan_factor)); }
-                if (w_param == L'A') { s_app->pan(stff::vec2(-c_big_pan_factor, 0.0f)); }
-                if (w_param == L'S') { s_app->pan(stff::vec2(0.0f, -c_big_pan_factor)); }
-                if (w_param == L'D') { s_app->pan(stff::vec2(c_big_pan_factor, 0.0f)); }
+                // zooming in
+                if (w_param == L'+') { s_app->zoom(hillshader::camera::config::c_zoom_factor, hillshader::focus::center); }
+                if (w_param == L'=') { s_app->zoom(hillshader::camera::config::c_zoom_factor, hillshader::focus::center); }
+                // zooming out
+                if (w_param == L'-') { s_app->zoom(1.f / hillshader::camera::config::c_zoom_factor, hillshader::focus::center); }
+                if (w_param == L'_') { s_app->zoom(1.f / hillshader::camera::config::c_zoom_factor, hillshader::focus::center); }
+                // wasd movement
+                if (w_param == L'w') { s_app->orbit(0.f, hillshader::camera::config::c_delta_phi,    hillshader::focus::center); }
+                if (w_param == L'a') { s_app->orbit(-hillshader::camera::config::c_delta_theta, 0.f, hillshader::focus::center); }
+                if (w_param == L's') { s_app->orbit(0.f, -hillshader::camera::config::c_delta_phi,   hillshader::focus::center); }
+                if (w_param == L'd') { s_app->orbit(hillshader::camera::config::c_delta_theta, 0.f,  hillshader::focus::center); }
+                // north up
+                if (w_param == L'n') { s_app->orbit_to(stff::constants::pi_halves, stff::constants::pi, hillshader::focus::center); }
                 // reset camera
                 if (w_param == L'r') { s_app->reset_camera(); }
             }
@@ -155,7 +151,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     // create a window
     LONG window_width = 1280;
-    LONG window_height = 1024;
+    LONG window_height = 720;
     RECT rct = { 0, 0, window_width, window_height };
     AdjustWindowRect(&rct, WS_OVERLAPPEDWINDOW, FALSE);
     HWND wnd = CreateWindow("Hillshade", "Hillshader", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rct.right - rct.left, rct.bottom - rct.top, NULL, NULL, hInstance, NULL);
@@ -170,6 +166,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     s_app = std::make_unique<hillshader::application>();
     if (!s_app->initialize(wnd))
         return -1;
+
+    s_app->resize(window_width, window_height);
 
     // Main message loop
     MSG msg = { 0 };

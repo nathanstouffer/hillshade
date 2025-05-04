@@ -1,6 +1,5 @@
 #include "hillshader/application.hpp"
 
-#include <chrono>
 #include <fstream>
 #include <filesystem>
 #include <set>
@@ -17,6 +16,10 @@
 #include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
 
+#include "hillshader/timer.hpp"
+#include "hillshader/camera/config.hpp"
+#include "hillshader/camera/controllers/animators/orbit.hpp"
+#include "hillshader/camera/controllers/animators/zoom.hpp"
 #include "hillshader/camera/controllers/identity.hpp"
 #include "hillshader/camera/controllers/input.hpp"
 
@@ -111,6 +114,7 @@ namespace hillshader
 
     void application::update()
     {
+        time_t time_ms = timer::now_ms();
         ImGuiIO const& io = this->io();
         if (!io.WantCaptureMouse)
         {
@@ -118,11 +122,18 @@ namespace hillshader
             {
                 std::optional<stff::vec3> opt = cursor_world_pos();
                 m_focus = (opt) ? *opt : stff::vec3();
-                m_controller = std::make_unique<camera::controllers::input>(m_focus);
                 m_update_focus = false;
+                if (io.MouseDoubleClicked[0])
+                {
+                    zoom(2.f, focus::cursor);
+                }
+                else
+                {
+                    m_controller = std::make_unique<camera::controllers::input>(m_focus);
+                }
             }
 
-            m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr });
+            m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
         }
     }
 
@@ -292,6 +303,32 @@ namespace hillshader
         {
             m_camera = stff::scamera(stff::vec3(0, 0, 3000), stff::constants::half_pi, stff::constants::pi, 0.01f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
+        m_controller = std::make_unique<camera::controllers::identity>();
+    }
+
+    void application::zoom(float const factor, focus f)
+    {
+        std::optional<stff::vec3> opt = compute_focus(f);
+        if (opt.has_value())
+        {
+            m_controller = std::make_unique<camera::controllers::animators::zoom>(m_camera, opt.value(), factor);
+        }
+    }
+
+    void application::orbit(float const delta_theta, float const delta_phi, focus f)
+    {
+        std::optional<stff::vec3> opt = compute_focus(f);
+        if (opt.has_value())
+        {
+            m_controller = std::make_unique<camera::controllers::animators::orbit>(m_camera, opt.value(), delta_theta, delta_phi);
+        }
+    }
+
+    void application::orbit_to(float const theta, float const phi, focus f)
+    {
+        float delta_theta = theta - m_camera.theta;
+        float delta_phi = phi - m_camera.phi;
+        orbit(delta_theta, delta_phi, f);
     }
 
     void application::create_resources()
@@ -386,11 +423,8 @@ namespace hillshader
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
 
-    std::optional<stff::vec3> application::cursor_world_pos() const
+    std::optional<stff::vec3> application::world_pos(stff::vec2 const& uv) const
     {
-        ImVec2 mouse_pos = ImGui::GetIO().MousePos;
-        ImVec2 res = ImGui::GetIO().DisplaySize;
-        stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
         stff::ray3 ray = m_camera.ray(uv);
 
         if (m_terrain && m_flag_3d)
@@ -404,6 +438,28 @@ namespace hillshader
         // fall-through case
         stff::plane plane = stff::plane(stff::vec3(), stff::vec3(0, 0, 1));
         return stf::alg::intersect(ray, plane);
+    }
+
+    std::optional<stff::vec3> application::center_world_pos() const
+    {
+        return world_pos(stff::vec2(0.5, 0.5));
+    }
+
+    std::optional<stff::vec3> application::cursor_world_pos() const
+    {
+        ImVec2 mouse_pos = ImGui::GetIO().MousePos;
+        ImVec2 res = ImGui::GetIO().DisplaySize;
+        stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
+        return world_pos(uv);
+    }
+
+    std::optional<stff::vec3> application::compute_focus(focus f) const
+    {
+        switch (f)
+        {
+        case focus::center: return center_world_pos(); break;
+        case focus::cursor: return cursor_world_pos(); break;
+        }
     }
 
     void application::load_dem(std::string const& path)
