@@ -27,6 +27,12 @@
 namespace hillshader
 {
 
+    enum class focus
+    {
+        center,
+        cursor,
+    };
+
     class application
     {
     public:
@@ -50,11 +56,11 @@ namespace hillshader
 
         inline void reset_camera();
 
-        void zoom(float const factor);
+        void zoom(float const factor, focus f);
 
-        void orbit(float const delta_theta, float const delta_phi);
+        void orbit(float const delta_theta, float const delta_phi, focus f);
 
-        void orbit_to(float const theta, float const phi);
+        void orbit_to(float const theta, float const phi, focus f);
 
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 
@@ -115,7 +121,11 @@ namespace hillshader
 
         std::optional<stff::vec3> world_pos(stff::vec2 const& uv) const;
 
+        std::optional<stff::vec3> center_world_pos() const;
+
         std::optional<stff::vec3> cursor_world_pos() const;
+
+        std::optional<stff::vec3> compute_focus(focus f) const;
 
         void load_dem(std::string const& path);
 

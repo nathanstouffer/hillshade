@@ -122,8 +122,15 @@ namespace hillshader
             {
                 std::optional<stff::vec3> opt = cursor_world_pos();
                 m_focus = (opt) ? *opt : stff::vec3();
-                m_controller = std::make_unique<camera::controllers::input>(m_focus);
                 m_update_focus = false;
+                if (io.MouseDoubleClicked[0])
+                {
+                    zoom(2.f, focus::cursor);
+                }
+                else
+                {
+                    m_controller = std::make_unique<camera::controllers::input>(m_focus);
+                }
             }
 
             m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
@@ -299,29 +306,29 @@ namespace hillshader
         m_controller = std::make_unique<camera::controllers::identity>();
     }
 
-    void application::zoom(float const factor)
+    void application::zoom(float const factor, focus f)
     {
-        std::optional<stff::vec3> opt = world_pos(stff::vec2(0.5, 0.5));
+        std::optional<stff::vec3> opt = compute_focus(f);
         if (opt.has_value())
         {
             m_controller = std::make_unique<camera::controllers::animators::zoom>(m_camera, opt.value(), factor);
         }
     }
 
-    void application::orbit(float const delta_theta, float const delta_phi)
+    void application::orbit(float const delta_theta, float const delta_phi, focus f)
     {
-        std::optional<stff::vec3> opt = world_pos(stff::vec2(0.5, 0.5));
+        std::optional<stff::vec3> opt = compute_focus(f);
         if (opt.has_value())
         {
             m_controller = std::make_unique<camera::controllers::animators::orbit>(m_camera, opt.value(), delta_theta, delta_phi);
         }
     }
 
-    void application::orbit_to(float const theta, float const phi)
+    void application::orbit_to(float const theta, float const phi, focus f)
     {
         float delta_theta = theta - m_camera.theta;
         float delta_phi = phi - m_camera.phi;
-        orbit(delta_theta, delta_phi);
+        orbit(delta_theta, delta_phi, f);
     }
 
     void application::create_resources()
@@ -433,6 +440,10 @@ namespace hillshader
         return stf::alg::intersect(ray, plane);
     }
 
+    std::optional<stff::vec3> application::center_world_pos() const
+    {
+        return world_pos(stff::vec2(0.5, 0.5));
+    }
 
     std::optional<stff::vec3> application::cursor_world_pos() const
     {
@@ -440,6 +451,15 @@ namespace hillshader
         ImVec2 res = ImGui::GetIO().DisplaySize;
         stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
         return world_pos(uv);
+    }
+
+    std::optional<stff::vec3> application::compute_focus(focus f) const
+    {
+        switch (f)
+        {
+        case focus::center: return center_world_pos(); break;
+        case focus::cursor: return cursor_world_pos(); break;
+        }
     }
 
     void application::load_dem(std::string const& path)

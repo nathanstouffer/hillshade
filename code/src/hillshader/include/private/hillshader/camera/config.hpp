@@ -8,7 +8,9 @@ namespace hillshader::camera
     struct config
     {
         static constexpr float c_min_terrain_offset = 1.f;
-        static constexpr time_t c_default_animation_duration_ms = 300;
+        static float constexpr c_zoom_factor = 1.5f;
+        static float constexpr c_delta_theta = stff::constants::pi_fourths;
+        static float constexpr c_delta_phi = 0.5f * stff::constants::pi_fourths;
     };
 
 }
