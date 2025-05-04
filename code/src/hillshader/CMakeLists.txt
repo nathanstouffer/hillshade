@@ -1,6 +1,5 @@
 set(HILLSHADER_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/controllers/animators/animator.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/controllers/animators/attract.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/controllers/animators/orbit.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/controllers/animators/zoom.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/controllers/controller.cpp"
@@ -13,7 +12,6 @@ set(HILLSHADER_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/mesh.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/config.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/animators/animator.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/animators/attract.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/animators/orbit.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/animators/zoom.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/identity.hpp"
