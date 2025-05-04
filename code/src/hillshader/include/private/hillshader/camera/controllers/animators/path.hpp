@@ -27,7 +27,11 @@ namespace hillshader::camera::controllers::animators
 
         stff::scamera animator_update(options const& opts) override;
 
-        stff::scamera interpolate(options const& opt);
+        stff::scamera interpolate(options const& opt) const;
+
+        stff::scamera derivative(std::vector<anchor>::const_iterator it) const;
+
+        stff::scamera finite_difference(anchor const& lhs, anchor const& rhs) const;
 
     private:
 

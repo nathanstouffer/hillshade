@@ -17,14 +17,14 @@ namespace hillshader::camera::controllers::animators
     stff::scamera path::animator_update(options const& opts)
     {
         stff::scamera interpolated = interpolate(opts);
-        interpolated.near = opts.current.near;
-        interpolated.far = opts.current.far;
-        interpolated.fov = opts.current.fov;
-        interpolated.aspect = opts.current.aspect;
-        return interpolated;
+        stff::scamera camera = opts.current;
+        camera.eye = interpolated.eye;
+        camera.theta = interpolated.theta;
+        camera.phi = interpolated.phi;
+        return camera;
     }
 
-    stff::scamera path::interpolate(options const& opts)
+    stff::scamera path::interpolate(options const& opts) const
     {
         if (m_anchors.empty()) { return opts.current; }
         else if (m_anchors.size() == 1) { return m_anchors.front().camera; }
@@ -32,10 +32,18 @@ namespace hillshader::camera::controllers::animators
         {
             time_t time_ms = opts.time_ms - begin_ms();
             auto next = std::upper_bound(m_anchors.begin(), m_anchors.end(), time_ms, [](time_t lhs, anchor const& rhs) { return lhs < rhs.timestamp_ms; });
-            anchor const& left = *(next - 1);
-            anchor const& right = *next;
-            float t = static_cast<float>(time_ms - left.timestamp_ms) / static_cast<float>(right.timestamp_ms - left.timestamp_ms);
-            return stf::cam::lerp(left.camera, right.camera, t);
+            auto left_iter = next - 1;
+            auto right_iter = next;
+
+            stff::scamera left_deriv = derivative(left_iter);
+            stff::scamera right_deriv = derivative(right_iter);
+
+            float t = static_cast<float>(time_ms - left_iter->timestamp_ms) / static_cast<float>(right_iter->timestamp_ms - left_iter->timestamp_ms);
+            stff::scamera camera = opts.current;
+            camera.eye = stf::math::cubic_hermite_spline(left_iter->camera.eye, left_deriv.eye, right_iter->camera.eye, right_deriv.eye, t);
+            camera.theta = stf::math::cubic_hermite_spline(left_iter->camera.theta, left_deriv.theta, right_iter->camera.theta, right_deriv.theta, t);
+            camera.phi = stf::math::cubic_hermite_spline(left_iter->camera.phi, left_deriv.phi, right_iter->camera.phi, right_deriv.phi, t);
+            return camera;
         }
         else
         {
@@ -43,6 +51,49 @@ namespace hillshader::camera::controllers::animators
         }
     }
 
+    stff::scamera path::derivative(std::vector<anchor>::const_iterator it) const
+    {
+        if (it == m_anchors.cbegin())
+        {
+            anchor const& curr = *it;
+            anchor const& next = *(it + 1);
+            return finite_difference(curr, next);
+        }
+        else if (it + 1 == m_anchors.cend())
+        {
+            anchor const& prev = *(it - 1);
+            anchor const& curr = *it;
+            return finite_difference(prev, curr);
+        }
+        else
+        {
+            anchor const& prev = *(it - 1);
+            anchor const& curr = *it;
+            anchor const& next = *(it + 1);
+
+            stff::scamera left_deriv = finite_difference(prev, curr);
+            stff::scamera right_deriv = finite_difference(curr, next);
+
+            float d = (next.camera.eye - curr.camera.eye).length() - (curr.camera.eye - prev.camera.eye).length();
+            float t = stf::math::sigmoid(d);
+
+            stff::scamera camera = stff::scamera();
+            camera.eye = stf::math::lerp(left_deriv.eye, right_deriv.eye, t);
+            camera.theta = stf::math::lerp(left_deriv.theta, right_deriv.theta, t);
+            camera.phi = stf::math::lerp(left_deriv.phi, right_deriv.phi, t);
+            return camera;
+        }
+    }
+
+    stff::scamera path::finite_difference(anchor const& lhs, anchor const& rhs) const
+    {
+        float delta_t = static_cast<float>(rhs.timestamp_ms - lhs.timestamp_ms);
+        stff::scamera derivative = stff::scamera();
+        derivative.eye = (rhs.camera.eye - lhs.camera.eye) / delta_t;
+        derivative.theta = (rhs.camera.theta - stf::math::closest_equiv_angle(lhs.camera.theta, rhs.camera.theta)) / delta_t;
+        derivative.phi = (rhs.camera.phi - stf::math::closest_equiv_angle(lhs.camera.phi, rhs.camera.phi)) / delta_t;
+        return derivative;
+    }
 
     time_t path::compute_duration(std::vector<anchor> const& anchors)
     {
