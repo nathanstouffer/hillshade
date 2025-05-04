@@ -9,10 +9,13 @@ namespace hillshader::camera::controllers::animators
     {
     public:
 
+        animator(time_t duration_ms);
         animator(time_t begin_ms, time_t duration_ms);
         virtual ~animator();
 
         void restart(time_t const begin_ms) { m_begin_ms = begin_ms; }
+
+        inline time_t duration_ms() const { return m_duration_ms; }
 
     protected:
 
