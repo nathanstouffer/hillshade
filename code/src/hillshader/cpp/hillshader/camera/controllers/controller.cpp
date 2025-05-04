@@ -17,7 +17,12 @@ namespace hillshader::camera::controllers
         {
             threshold += opts.terrain->sample(candidate.eye.xy);
         }
-        return (candidate.eye.z >= threshold) ? candidate : opts.current;
+
+        candidate = (candidate.eye.z >= threshold) ? candidate : opts.current;
+    
+        candidate.theta = stf::math::canonical_angle(candidate.theta);
+        candidate.phi = stf::math::canonical_angle(candidate.phi);
+        return candidate;
     }
 
 }
