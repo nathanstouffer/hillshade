@@ -18,6 +18,7 @@
 
 #include "hillshader/timer.hpp"
 #include "hillshader/camera/config.hpp"
+#include "hillshader/camera/controllers/animators/orbit.hpp"
 #include "hillshader/camera/controllers/animators/zoom.hpp"
 #include "hillshader/camera/controllers/identity.hpp"
 #include "hillshader/camera/controllers/input.hpp"
@@ -305,6 +306,22 @@ namespace hillshader
         {
             m_controller = std::make_unique<camera::controllers::animators::zoom>(m_camera, opt.value(), factor);
         }
+    }
+
+    void application::orbit(float const delta_theta, float const delta_phi)
+    {
+        std::optional<stff::vec3> opt = world_pos(stff::vec2(0.5, 0.5));
+        if (opt.has_value())
+        {
+            m_controller = std::make_unique<camera::controllers::animators::orbit>(m_camera, opt.value(), delta_theta, delta_phi);
+        }
+    }
+
+    void application::orbit_to(float const theta, float const phi)
+    {
+        float delta_theta = theta - m_camera.theta;
+        float delta_phi = phi - m_camera.phi;
+        orbit(delta_theta, delta_phi);
     }
 
     void application::create_resources()

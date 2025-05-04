@@ -52,7 +52,9 @@ namespace hillshader
 
         void zoom(float const factor);
 
-        inline void pan(stff::vec2 const& factor) { m_camera.eye.xy += m_camera.eye.z * factor; }
+        void orbit(float const delta_theta, float const delta_phi);
+
+        void orbit_to(float const theta, float const phi);
 
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 

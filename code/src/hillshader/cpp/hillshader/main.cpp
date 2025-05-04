@@ -13,8 +13,8 @@
 static std::unique_ptr<hillshader::application> s_app = nullptr;
 
 static float constexpr c_zoom_factor = 1.5f;
-static float constexpr c_small_pan_factor = 0.01f;
-static float constexpr c_big_pan_factor = 0.1f;
+static float constexpr c_delta_theta = stff::constants::pi_fourths;
+static float constexpr c_delta_phi = 0.5f * stff::constants::pi_fourths;
 
 // called every time the NativeNativeAppBase receives a message
 LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_param)
@@ -110,16 +110,13 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 // zooming out
                 if (w_param == L'-') { s_app->zoom(1.f / c_zoom_factor); }
                 if (w_param == L'_') { s_app->zoom(1.f / c_zoom_factor); }
-                // wasd movement (small)
-                if (w_param == L'w') { s_app->pan(stff::vec2(0.0f, c_small_pan_factor)); }
-                if (w_param == L'a') { s_app->pan(stff::vec2(-c_small_pan_factor, 0.0f)); }
-                if (w_param == L's') { s_app->pan(stff::vec2(0.0f, -c_small_pan_factor)); }
-                if (w_param == L'd') { s_app->pan(stff::vec2(c_small_pan_factor, 0.0f)); }
-                // WASD movment (big)
-                if (w_param == L'W') { s_app->pan(stff::vec2(0.0f, c_big_pan_factor)); }
-                if (w_param == L'A') { s_app->pan(stff::vec2(-c_big_pan_factor, 0.0f)); }
-                if (w_param == L'S') { s_app->pan(stff::vec2(0.0f, -c_big_pan_factor)); }
-                if (w_param == L'D') { s_app->pan(stff::vec2(c_big_pan_factor, 0.0f)); }
+                // wasd movement
+                if (w_param == L'w') { s_app->orbit(0.f, c_delta_phi); }
+                if (w_param == L'a') { s_app->orbit(-c_delta_theta, 0.f); }
+                if (w_param == L's') { s_app->orbit(0.f, -c_delta_phi); }
+                if (w_param == L'd') { s_app->orbit(c_delta_theta, 0.f); }
+                // north up
+                if (w_param == L'n') { s_app->orbit_to(stff::constants::pi_halves, stff::constants::pi); }
                 // reset camera
                 if (w_param == L'r') { s_app->reset_camera(); }
             }
