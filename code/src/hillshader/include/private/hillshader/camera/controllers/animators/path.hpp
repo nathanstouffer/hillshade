@@ -27,6 +27,8 @@ namespace hillshader::camera::controllers::animators
 
         stff::scamera animator_update(options const& opts) override;
 
+        stff::scamera interpolate(options const& opt);
+
     private:
 
         static time_t compute_duration(std::vector<anchor> const& anchors);
