@@ -15,6 +15,7 @@ namespace hillshader::camera::controllers::animators
 
         void restart(time_t const begin_ms) { m_begin_ms = begin_ms; }
 
+        inline time_t begin_ms() const { return m_begin_ms; }
         inline time_t duration_ms() const { return m_duration_ms; }
 
     protected:

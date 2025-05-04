@@ -457,8 +457,8 @@ namespace hillshader
     {
         switch (f)
         {
-        case focus::center: return center_world_pos(); break;
-        case focus::cursor: return cursor_world_pos(); break;
+            case focus::center: return center_world_pos(); break;
+            case focus::cursor: return cursor_world_pos(); break;
         }
         return {};
     }
