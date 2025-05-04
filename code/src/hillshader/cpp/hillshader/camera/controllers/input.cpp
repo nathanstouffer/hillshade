@@ -1,6 +1,6 @@
 #include "hillshader/camera/controllers/input.hpp"
 
-#include "hillshader/camera/constrainers/collide.hpp"
+#include "hillshader/camera/constraints/collide.hpp"
 
 namespace hillshader::camera::controllers
 {

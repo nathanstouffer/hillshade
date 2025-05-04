@@ -1,4 +1,4 @@
-#include "hillshader/camera/constrainers/collide.hpp"
+#include "hillshader/camera/constraints/collide.hpp"
 
 #include "hillshader/camera/config.hpp"
 
