@@ -12,8 +12,7 @@
 
 static std::unique_ptr<hillshader::application> s_app = nullptr;
 
-static float constexpr c_small_zoom_factor = 1.05f;
-static float constexpr c_big_zoom_factor = 2.f;
+static float constexpr c_zoom_factor = 1.5f;
 static float constexpr c_small_pan_factor = 0.01f;
 static float constexpr c_big_pan_factor = 0.1f;
 
@@ -105,12 +104,12 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 if (w_param == L'q') { PostQuitMessage(0); }
                 // hide/show ui
                 if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
-                // small zooming
-                if (w_param == L'=') { s_app->zoom(c_small_zoom_factor); }
-                if (w_param == L'-') { s_app->zoom(1.f / c_small_zoom_factor); }
-                // big zooming
-                if (w_param == L'+') { s_app->zoom(c_big_zoom_factor); }
-                if (w_param == L'_') { s_app->zoom(1.f / c_big_zoom_factor); }
+                // zooming in
+                if (w_param == L'+') { s_app->zoom(c_zoom_factor); }
+                if (w_param == L'=') { s_app->zoom(c_zoom_factor); }
+                // zooming out
+                if (w_param == L'-') { s_app->zoom(1.f / c_zoom_factor); }
+                if (w_param == L'_') { s_app->zoom(1.f / c_zoom_factor); }
                 // wasd movement (small)
                 if (w_param == L'w') { s_app->pan(stff::vec2(0.0f, c_small_pan_factor)); }
                 if (w_param == L'a') { s_app->pan(stff::vec2(-c_small_pan_factor, 0.0f)); }

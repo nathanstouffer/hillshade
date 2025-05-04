@@ -9,7 +9,7 @@ namespace hillshader::camera::controllers::animators
     {
     public:
 
-        zoom(stff::scamera const& initial, stff::vec3 const& focus, float factor, time_t duration_ms);
+        zoom(stff::scamera const& initial, stff::vec3 const& focus, float factor, time_t duration_ms = 200);
 
     private:
 

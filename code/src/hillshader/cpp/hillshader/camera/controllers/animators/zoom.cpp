@@ -14,7 +14,7 @@ namespace hillshader::camera::controllers::animators
     {
         float scaler = 1.f / m_factor;
         stff::vec3 final_eye = m_focus + scaler * (m_initial.eye - m_focus);
-        float t = progress(opts.time_ms);
+        float t = std::sqrt(progress(opts.time_ms));
         stff::scamera animated = opts.current;
         animated.eye = stf::math::lerp(m_initial.eye, final_eye, t);
         return animated;

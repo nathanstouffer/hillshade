@@ -303,7 +303,7 @@ namespace hillshader
         std::optional<stff::vec3> opt = world_pos(stff::vec2(0.5, 0.5));
         if (opt.has_value())
         {
-            m_controller = std::make_unique<camera::controllers::animators::zoom>(m_camera, opt.value(), factor, camera::config::c_default_animation_duration_ms);
+            m_controller = std::make_unique<camera::controllers::animators::zoom>(m_camera, opt.value(), factor);
         }
     }
 
