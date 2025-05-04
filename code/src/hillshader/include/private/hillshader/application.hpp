@@ -50,8 +50,8 @@ namespace hillshader
 
         inline void reset_camera();
 
-        inline void zoom_in(float const factor) { m_camera.eye.z /= factor; }
-        inline void zoom_out(float const factor) { m_camera.eye.z *= factor; }
+        void zoom(float const factor);
+
         inline void pan(stff::vec2 const& factor) { m_camera.eye.xy += m_camera.eye.z * factor; }
 
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
@@ -110,6 +110,8 @@ namespace hillshader
         void create_resources();
 
         void render_ui();
+
+        std::optional<stff::vec3> world_pos(stff::vec2 const& uv) const;
 
         std::optional<stff::vec3> cursor_world_pos() const;
 

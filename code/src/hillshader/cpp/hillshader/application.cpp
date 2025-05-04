@@ -17,6 +17,8 @@
 #include <imgui.h>
 
 #include "hillshader/timer.hpp"
+#include "hillshader/camera/config.hpp"
+#include "hillshader/camera/controllers/animators/zoom.hpp"
 #include "hillshader/camera/controllers/identity.hpp"
 #include "hillshader/camera/controllers/input.hpp"
 
@@ -293,6 +295,16 @@ namespace hillshader
         {
             m_camera = stff::scamera(stff::vec3(0, 0, 3000), stff::constants::half_pi, stff::constants::pi, 0.01f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
+        m_controller = std::make_unique<camera::controllers::identity>();
+    }
+
+    void application::zoom(float const factor)
+    {
+        std::optional<stff::vec3> opt = world_pos(stff::vec2(0.5, 0.5));
+        if (opt.has_value())
+        {
+            m_controller = std::make_unique<camera::controllers::animators::zoom>(m_camera, opt.value(), factor, camera::config::c_default_animation_duration_ms);
+        }
     }
 
     void application::create_resources()
@@ -387,11 +399,8 @@ namespace hillshader
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
 
-    std::optional<stff::vec3> application::cursor_world_pos() const
+    std::optional<stff::vec3> application::world_pos(stff::vec2 const& uv) const
     {
-        ImVec2 mouse_pos = ImGui::GetIO().MousePos;
-        ImVec2 res = ImGui::GetIO().DisplaySize;
-        stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
         stff::ray3 ray = m_camera.ray(uv);
 
         if (m_terrain && m_flag_3d)
@@ -405,6 +414,15 @@ namespace hillshader
         // fall-through case
         stff::plane plane = stff::plane(stff::vec3(), stff::vec3(0, 0, 1));
         return stf::alg::intersect(ray, plane);
+    }
+
+
+    std::optional<stff::vec3> application::cursor_world_pos() const
+    {
+        ImVec2 mouse_pos = ImGui::GetIO().MousePos;
+        ImVec2 res = ImGui::GetIO().DisplaySize;
+        stff::vec2 uv = stff::vec2(mouse_pos.x / res.x, mouse_pos.y / res.y);
+        return world_pos(uv);
     }
 
     void application::load_dem(std::string const& path)

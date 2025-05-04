@@ -106,11 +106,11 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 // hide/show ui
                 if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
                 // small zooming
-                if (w_param == L'=') { s_app->zoom_in(c_small_zoom_factor); }
-                if (w_param == L'-') { s_app->zoom_out(c_small_zoom_factor); }
+                if (w_param == L'=') { s_app->zoom(c_small_zoom_factor); }
+                if (w_param == L'-') { s_app->zoom(1.f / c_small_zoom_factor); }
                 // big zooming
-                if (w_param == L'+') { s_app->zoom_in(c_big_zoom_factor); }
-                if (w_param == L'_') { s_app->zoom_out(c_big_zoom_factor); }
+                if (w_param == L'+') { s_app->zoom(c_big_zoom_factor); }
+                if (w_param == L'_') { s_app->zoom(1.f / c_big_zoom_factor); }
                 // wasd movement (small)
                 if (w_param == L'w') { s_app->pan(stff::vec2(0.0f, c_small_pan_factor)); }
                 if (w_param == L'a') { s_app->pan(stff::vec2(-c_small_pan_factor, 0.0f)); }
