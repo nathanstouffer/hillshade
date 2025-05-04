@@ -54,7 +54,7 @@ namespace hillshader
 
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 
-        inline void update_focus() { m_update_focus = true; }
+        inline void force_focus_update() { m_update_focus = true; }
         ImGuiIO& io() { return ImGui::GetIO(); }
         Diligent::RENDER_DEVICE_TYPE device_type() const { return m_device_type; }
 
