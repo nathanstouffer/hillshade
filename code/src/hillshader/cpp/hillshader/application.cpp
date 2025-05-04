@@ -286,11 +286,11 @@ namespace hillshader
             {
                 eye.z += m_terrain->sample(eye.xy);
             }
-            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.1f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
+            m_camera = stff::scamera(eye, stff::constants::half_pi, stff::constants::pi, 0.01f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
         else
         {
-            m_camera = stff::scamera(stff::vec3(0, 0, 3000), stff::constants::half_pi, stff::constants::pi, 0.1f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
+            m_camera = stff::scamera(stff::vec3(0, 0, 3000), stff::constants::half_pi, stff::constants::pi, 0.01f, 100000.f, aspect_ratio(), stff::scamera::c_default_fov);
         }
     }
 

@@ -30,6 +30,8 @@ namespace hillshader
 
     private:
 
+        float read(size_t i, size_t j) const { return m_values[i + m_width * j]; }
+
         size_t m_width;
         size_t m_height;
         std::vector<float> m_values;

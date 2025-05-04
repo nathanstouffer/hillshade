@@ -72,15 +72,36 @@ namespace hillshader
         stff::aabb2 const bounds = m_bounds.as<float>();
         if (bounds.contains(query))
         {
-            // for the most part, we are dealing with really fine-grained resolution DEMs so we will just use nearest sampling
             stff::vec2 top_left(bounds.min.x, bounds.max.y);
             stff::vec2 bottom_right(bounds.max.x, bounds.min.y);
 
             stff::vec2 uv = (query - top_left) / (bottom_right - top_left);
-            size_t i = static_cast<size_t>(std::clamp(uv.x * m_width, 0.f, static_cast<float>(m_width - 1)));
-            size_t j = static_cast<size_t>(std::clamp(uv.y * m_height, 0.f, static_cast<float>(m_height - 1)));
+            // compute the index of the pixel that is left and up from the sample location
+            int i = static_cast<int>(uv.x * m_width  - 0.5f);
+            int j = static_cast<int>(uv.y * m_height - 0.5f);
 
-            return m_values[i + m_height * j];
+            int clamped_i = std::clamp(i, 0, static_cast<int>(m_width)  - 2);
+            int clamped_j = std::clamp(j, 0, static_cast<int>(m_height) - 2);
+            if (i != clamped_i || j != clamped_j)   // if we are along a boundary, just use nearest interpolation
+            {
+                return read(clamped_i, clamped_j);
+            }
+            else                                    // otherwise, use bilinear interpolation
+            {
+                // read the four surrounding elevation values
+                float a = read(i, j);     float b = read(i + 1, j);
+                float c = read(i, j + 1); float d = read(i + 1, j + 1);
+
+                // compute the interpolation times
+                float s = stf::math::lerp_inv((i + 0.5f), (i + 1.5f), uv.x * m_width);
+                float t = stf::math::lerp_inv((j + 0.5f), (j + 1.5f), uv.y * m_height);
+
+                float top = stf::math::lerp(a, b, s);
+                float bottom = stf::math::lerp(c, d, s);
+
+                float elevation = stf::math::lerp(top, bottom, t);
+                return elevation;
+            }
         }
         else
         {
