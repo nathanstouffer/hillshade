@@ -20,6 +20,7 @@ set(HILLSHADER_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/controller.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/input.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/constrainers/collide.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/timer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/terrain.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/mesh.hpp"

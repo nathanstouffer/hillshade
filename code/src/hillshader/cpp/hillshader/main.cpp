@@ -5,6 +5,10 @@
 #include <crtdbg.h>
 
 #include "hillshader/application.hpp"
+#include "hillshader/camera/controllers/animators/animator.hpp"
+#include "hillshader/camera/controllers/animators/attract.hpp"
+#include "hillshader/camera/controllers/animators/orbit.hpp"
+#include "hillshader/camera/controllers/animators/zoom.hpp"
 
 static std::unique_ptr<hillshader::application> s_app = nullptr;
 

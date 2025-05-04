@@ -5,6 +5,7 @@
 #include <stf/stf.hpp>
 
 #include "hillshader/terrain.hpp"
+#include "hillshader/timer.hpp"
 
 namespace hillshader::camera::controllers
 {
@@ -18,6 +19,7 @@ namespace hillshader::camera::controllers
             ImGuiIO const& io;
             stff::scamera const& current;
             terrain const* terrain;
+            time_t time_ms;
         };
 
     public:

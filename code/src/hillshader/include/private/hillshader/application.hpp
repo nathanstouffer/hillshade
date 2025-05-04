@@ -44,6 +44,8 @@ namespace hillshader
 
         void resize(Diligent::Uint32 width, Diligent::Uint32 height);
 
+        void set_controller(std::unique_ptr<camera::controllers::controller> controller) { m_controller = std::move(controller); }
+
         void toggle_ui() { m_render_ui = !m_render_ui; }
 
         inline void reset_camera();

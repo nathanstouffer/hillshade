@@ -1,6 +1,5 @@
 #include "hillshader/application.hpp"
 
-#include <chrono>
 #include <fstream>
 #include <filesystem>
 #include <set>
@@ -17,6 +16,7 @@
 #include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
 
+#include "hillshader/timer.hpp"
 #include "hillshader/camera/controllers/identity.hpp"
 #include "hillshader/camera/controllers/input.hpp"
 
@@ -111,6 +111,7 @@ namespace hillshader
 
     void application::update()
     {
+        time_t time_ms = timer::now_ms();
         ImGuiIO const& io = this->io();
         if (!io.WantCaptureMouse)
         {
@@ -122,7 +123,7 @@ namespace hillshader
                 m_update_focus = false;
             }
 
-            m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr });
+            m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
         }
     }
 
