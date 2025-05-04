@@ -7,7 +7,7 @@
 namespace hillshader::camera::controllers
 {
 
-    static constexpr float c_wheel_scalar = 1.f / (12.5f * 120.f);
+    static constexpr float c_wheel_scalar = 1.f / (12.5f * 100.f);
     static constexpr float c_pan_scalar = 0.0008125f;
 
     input::input(stff::vec3 const& focus) : m_focus(focus) {}
@@ -46,6 +46,10 @@ namespace hillshader::camera::controllers
             float delta_phi = delta.y / size.y * stff::constants::half_pi;
             camera = stf::cam::orbit(camera, m_focus, delta_phi, delta_theta);
             camera = constrainers::orbit_collide(camera, m_focus, opts.terrain);
+            if (!m_physics_handler)
+            {
+                m_physics_handler = std::make_unique<physics::orbit>(m_focus);
+            }
         }
 
         if (opts.io.MouseWheel == stff::constants::zero && !opts.io.MouseDown[0] && !opts.io.MouseDown[1])
