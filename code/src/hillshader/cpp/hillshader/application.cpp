@@ -191,7 +191,7 @@ namespace hillshader
                     std::vector<camera::controllers::animators::path::anchor> anchors;
                     anchors.push_back({ stff::scamera(stff::vec3(-248, -82, 4067), stff::constants::pi_halves, stff::constants::pi), 0 });
                     anchors.push_back({ stff::scamera(stff::vec3(-274, -149, 3145), stff::constants::zero, 3.f * stff::constants::pi_fourths), 5000 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 3000), -stff::constants::pi_halves, stff::constants::pi_halves), 10000 });
+                    anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 3000), -stff::constants::pi_halves, stff::constants::pi), 10000 });
                     m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
                 }
                 ImGui::EndMenu();
