@@ -52,7 +52,7 @@ namespace hillshader::camera::controllers
             }
         }
 
-        if (opts.io.MouseWheel == stff::constants::zero && !opts.io.MouseDown[0] && !opts.io.MouseDown[1])
+        if (!detect_active(opts.io))
         {
             if (m_physics_handler)
             {
@@ -66,6 +66,16 @@ namespace hillshader::camera::controllers
         }
 
         return camera;
+    }
+
+    bool input::detect_begin(ImGuiIO const& io)
+    {
+        return io.MouseWheel != stff::constants::zero || io.MouseClicked[0] || io.MouseClicked[1];
+    }
+
+    bool input::detect_active(ImGuiIO const& io)
+    {
+        return io.MouseWheel != stff::constants::zero || io.MouseDown[0] || io.MouseDown[1];
     }
 
 }

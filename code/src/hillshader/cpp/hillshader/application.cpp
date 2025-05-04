@@ -115,27 +115,26 @@ namespace hillshader
 
     void application::update()
     {
-        time_t time_ms = timer::now_ms();
         ImGuiIO const& io = this->io();
         if (!io.WantCaptureMouse)
         {
-            if (m_update_focus)
+            if (camera::controllers::input::detect_begin(io))
             {
                 std::optional<stff::vec3> opt = cursor_world_pos();
                 m_focus = (opt) ? *opt : stff::vec3();
-                m_update_focus = false;
                 if (io.MouseDoubleClicked[0])
                 {
                     zoom(2.f, focus::cursor);
                 }
                 else
                 {
-                    //m_controller = std::make_unique<camera::controllers::input>(m_focus);
+                    m_controller = std::make_unique<camera::controllers::input>(m_focus);
                 }
             }
-
-            m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
         }
+
+        time_t time_ms = timer::now_ms();
+        m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
     }
 
     void application::store_start_up_state()
