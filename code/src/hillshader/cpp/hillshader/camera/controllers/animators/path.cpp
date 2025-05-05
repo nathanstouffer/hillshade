@@ -38,11 +38,12 @@ namespace hillshader::camera::controllers::animators
             stff::scamera left_deriv = derivative(left_iter);
             stff::scamera right_deriv = derivative(right_iter);
 
-            float t = static_cast<float>(time_ms - left_iter->timestamp_ms) / static_cast<float>(right_iter->timestamp_ms - left_iter->timestamp_ms);
+            float delta_t = static_cast<float>(right_iter->timestamp_ms - left_iter->timestamp_ms);
+            float t = static_cast<float>(time_ms - left_iter->timestamp_ms) / delta_t;
             stff::scamera camera = opts.current;
-            camera.eye = stf::math::cubic_hermite_spline(left_iter->camera.eye, left_deriv.eye, right_iter->camera.eye, right_deriv.eye, t);
-            camera.theta = stf::math::cubic_hermite_spline(left_iter->camera.theta, left_deriv.theta, right_iter->camera.theta, right_deriv.theta, t);
-            camera.phi = stf::math::cubic_hermite_spline(left_iter->camera.phi, left_deriv.phi, right_iter->camera.phi, right_deriv.phi, t);
+            camera.eye   = stf::math::cubic_hermite_spline(left_iter->camera.eye,   left_deriv.eye   * delta_t, right_iter->camera.eye,   right_deriv.eye   * delta_t, t);
+            camera.theta = stf::math::cubic_hermite_spline(left_iter->camera.theta, left_deriv.theta * delta_t, right_iter->camera.theta, right_deriv.theta * delta_t, t);
+            camera.phi   = stf::math::cubic_hermite_spline(left_iter->camera.phi,   left_deriv.phi   * delta_t, right_iter->camera.phi,   right_deriv.phi   * delta_t, t);
             return camera;
         }
         else
