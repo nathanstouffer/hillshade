@@ -64,7 +64,6 @@ namespace hillshader
 
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 
-        inline void force_focus_update() { m_update_focus = true; }
         ImGuiIO& io() { return ImGui::GetIO(); }
         Diligent::RENDER_DEVICE_TYPE device_type() const { return m_device_type; }
 
@@ -91,7 +90,6 @@ namespace hillshader
         std::unique_ptr<camera::controllers::controller> m_controller;
 
         stff::vec3 m_focus;
-        bool m_update_focus = false;
 
         std::string m_dem_path;
         std::unique_ptr<terrain const> m_terrain;

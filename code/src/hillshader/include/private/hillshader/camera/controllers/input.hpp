@@ -20,6 +20,11 @@ namespace hillshader::camera::controllers
 
         std::unique_ptr<physics::handler> m_physics_handler = nullptr;
 
+    public:
+
+        static bool detect_begin(ImGuiIO const& io);
+        static bool detect_active(ImGuiIO const& io);
+
     };
 
 }

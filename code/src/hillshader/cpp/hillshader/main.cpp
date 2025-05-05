@@ -28,7 +28,6 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case WM_LBUTTONDOWN:
             SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(0, true);
-            s_app->force_focus_update();
             return 0;
 
         case WM_LBUTTONUP:
@@ -39,7 +38,6 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case WM_RBUTTONDOWN:
             SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(1, true);
-            s_app->force_focus_update();
             return 0;
 
         case WM_RBUTTONUP:
@@ -50,7 +48,6 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case 0x020A:    // TODO figure out why we need this (it seems to be an older event code for WM_MOUSEWHEEL)
         case WM_MOUSEHWHEEL:
             s_app->io().AddMouseWheelEvent(0.f, GET_WHEEL_DELTA_WPARAM(w_param));
-            s_app->force_focus_update();
             return 0;
 
         case WM_SIZE: // window size has been changed
