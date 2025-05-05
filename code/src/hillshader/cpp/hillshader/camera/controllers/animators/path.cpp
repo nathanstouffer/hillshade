@@ -31,6 +31,7 @@ namespace hillshader::camera::controllers::animators
         else if (opts.time_ms < end_ms())
         {
             time_t time_ms = opts.time_ms - begin_ms();
+            // TODO (stouff) possibly use upper bound and lower bound?
             auto next = std::upper_bound(m_anchors.begin(), m_anchors.end(), time_ms, [](time_t lhs, anchor const& rhs) { return lhs < rhs.timestamp_ms; });
             auto left_iter = next - 1;
             auto right_iter = next;
