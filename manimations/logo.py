@@ -2,7 +2,7 @@ from manim import *
 import numpy as np
 from PIL import Image
 
-def mandelbrot(width, height, x_min, x_max, y_min, y_max, max_iter=100):
+def mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(0, 0, 0), max_iter=500):
     """Generate a Mandelbrot set image as a NumPy array."""
     image = np.zeros((height, width, 3), dtype=np.uint8)
 
@@ -17,8 +17,11 @@ def mandelbrot(width, height, x_min, x_max, y_min, y_max, max_iter=100):
                 z = z**2 + c
                 iteration += 1
 
-            color = 255 - int(iteration * 255 / max_iter)
-            image[row, col] = (color, color, color)  # grayscale
+            if abs(z) <= 2:
+                image[row, col] = contained_color
+            else:
+                color = int(iteration * 255 / max_iter)
+                image[row, col] = (color, color, color)  # grayscale
 
     return image
 
@@ -26,7 +29,7 @@ def mandelbrot(width, height, x_min, x_max, y_min, y_max, max_iter=100):
 class Logo(Scene):
     def construct(self):
         # Parameters
-        width, height = 800, 800
+        width, height = 1600, 1600
         x_min, x_max = -2.0, 1.0
         y_min, y_max = -1.5, 1.5
 
