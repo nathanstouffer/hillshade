@@ -25,6 +25,27 @@ def mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(0, 0,
 
     return image
 
+# TODO (stouff) possibly add supersampling
+def generate_frames(width, height, fps, duration):
+    aspect_ratio = height / width
+    x_min, x_max = -3.333333333, 1.0
+    half_height = 0.5 * (x_max - x_min) * aspect_ratio
+    y_min, y_max = -half_height, half_height
+
+    frames_dir = f"{config.media_dir}/logo_frames_{width}x{height}_{fps}fps_{duration}s"
+    if not os.path.isdir(frames_dir):
+        os.mkdir(frames_dir)
+
+    data = mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(0, 0, 0), max_iter=100)
+    img = Image.fromarray(data, mode="RGB")
+    img.save(f"{frames_dir}/frame_0.png")
+
+    data = mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(255, 255, 255), max_iter=100)
+    img = Image.fromarray(data, mode="RGB")
+    img.save(f"{frames_dir}/frame_1.png")
+
+    return frames_dir, 2
+
 
 class Logo(Scene):
     def construct(self):
@@ -36,21 +57,20 @@ class Logo(Scene):
         y_min, y_max = -half_height, half_height
 
         fps = config["frame_rate"]
+        duration = 2
 
-        # Generate Mandelbrot set as NumPy array
-        data = mandelbrot(width, height, x_min, x_max, y_min, y_max, max_iter=100)
-        img = Image.fromarray(data, mode="RGB")
+        frames_dir, num_frames = generate_frames(width, height, fps, duration)
 
-        # Save temporarily (optional, for debugging or saving output)
-        frames_dir = f"{config.media_dir}/frames"
-        if not os.path.isdir(frames_dir):
-            os.mkdir(frames_dir)
-        img.save(f"{frames_dir}/mandelbrot.png")
+        images = [
+            ImageMobject(f"{frames_dir}/frame_{i}.png").stretch_to_fit_width(config["frame_width"]).stretch_to_fit_height(config["frame_height"])
+            for i in range(num_frames)
+        ]
 
-        # Create Manim ImageMobject
-        mandelbrot_img = ImageMobject(img)
-        mandelbrot_img.stretch_to_fit_width(config["frame_width"])  # fit scene
-        mandelbrot_img.stretch_to_fit_height(config["frame_height"])  # fit scene
-        self.add(mandelbrot_img)
+        current = images[0]
+        self.add(current)
+
+        for next_img in images[1:]:
+            next_img.move_to(current)
+            self.play(Transform(current, next_img), run_time=1/fps)
 
         self.wait()
