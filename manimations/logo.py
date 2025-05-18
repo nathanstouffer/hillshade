@@ -29,20 +29,26 @@ def mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(0, 0,
 class Logo(Scene):
     def construct(self):
         # Parameters
-        width, height = 1600, 1600
-        x_min, x_max = -2.0, 1.0
-        y_min, y_max = -1.5, 1.5
+        width, height = config["pixel_width"], config["pixel_height"]
+        aspect_ratio = height / width
+        x_min, x_max = -3.333333333, 1.0
+        half_height = 0.5 * (x_max - x_min) * aspect_ratio
+        y_min, y_max = -half_height, half_height
+
+        fps = config["frame_rate"]
 
         # Generate Mandelbrot set as NumPy array
         data = mandelbrot(width, height, x_min, x_max, y_min, y_max, max_iter=100)
         img = Image.fromarray(data, mode="RGB")
 
         # Save temporarily (optional, for debugging or saving output)
-        img.save("mandelbrot.png")
+        os.mkdir(f"{config.media_dir}/frames")
+        img.save(f"{config.media_dir}/frames/mandelbrot.png")
 
         # Create Manim ImageMobject
         mandelbrot_img = ImageMobject(img)
-        mandelbrot_img.scale(6.5 / mandelbrot_img.get_width())  # fit scene
-
+        mandelbrot_img.stretch_to_fit_width(config["frame_width"])  # fit scene
+        mandelbrot_img.stretch_to_fit_height(config["frame_height"])  # fit scene
         self.add(mandelbrot_img)
+
         self.wait()
