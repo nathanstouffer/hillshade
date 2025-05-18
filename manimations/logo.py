@@ -42,8 +42,10 @@ class Logo(Scene):
         img = Image.fromarray(data, mode="RGB")
 
         # Save temporarily (optional, for debugging or saving output)
-        os.mkdir(f"{config.media_dir}/frames")
-        img.save(f"{config.media_dir}/frames/mandelbrot.png")
+        frames_dir = f"{config.media_dir}/frames"
+        if not os.path.isdir(frames_dir):
+            os.mkdir(frames_dir)
+        img.save(f"{frames_dir}/mandelbrot.png")
 
         # Create Manim ImageMobject
         mandelbrot_img = ImageMobject(img)
