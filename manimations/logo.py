@@ -41,15 +41,14 @@ def generate_frames(width, height, fps, duration):
 
     num_frames = duration * fps
 
-    data = mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(0, 0, 0), max_iter=100)
-    img = Image.fromarray(data, mode="RGB")
-    img.save(f"{frames_dir}/{frame_name(0)}.png")
+    for i in range(num_frames):
+        t = i / (num_frames - 1)
+        v = t * 255
+        data = mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(v, v, v), max_iter=100)
+        img = Image.fromarray(data, mode="RGB")
+        img.save(f"{frames_dir}/{frame_name(i)}.png")
 
-    data = mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(255, 255, 255), max_iter=100)
-    img = Image.fromarray(data, mode="RGB")
-    img.save(f"{frames_dir}/{frame_name(1)}.png")
-
-    return frames_dir, 2
+    return frames_dir, num_frames
 
 
 class Logo(Scene):
@@ -77,6 +76,9 @@ class Logo(Scene):
 
         for next_img in images[1:]:
             next_img.move_to(current)
-            self.play(Transform(current, next_img), run_time=1/fps)
+            self.remove(current)
+            self.add(next_img)
+            current = next_img
+            self.wait(1/fps)  # simulate 30 FPS
 
         self.wait()
