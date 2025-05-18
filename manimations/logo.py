@@ -40,7 +40,7 @@ def generate_frames(width, height, fps, duration):
         os.mkdir(frames_dir)
 
     num_frames = duration * fps
-    
+
     data = mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(0, 0, 0), max_iter=100)
     img = Image.fromarray(data, mode="RGB")
     img.save(f"{frames_dir}/{frame_name(0)}.png")
@@ -49,7 +49,7 @@ def generate_frames(width, height, fps, duration):
     img = Image.fromarray(data, mode="RGB")
     img.save(f"{frames_dir}/{frame_name(1)}.png")
 
-    return frames_dir, num_frames
+    return frames_dir, 2
 
 
 class Logo(Scene):
@@ -67,7 +67,7 @@ class Logo(Scene):
         frames_dir, num_frames = generate_frames(width, height, fps, duration)
         w = config["frame_width"]
         h = config["frame_height"]
-        images = [
+        images = [ 
             ImageMobject(f"{frames_dir}/{frame_name(i)}.png").stretch_to_fit_width(w).stretch_to_fit_height(h)
             for i in range(num_frames)
         ]
