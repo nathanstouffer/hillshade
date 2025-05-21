@@ -34,7 +34,7 @@ class Logo(Scene):
         half_height = 0.5 * (x_max - x_min) * aspect_ratio
         y_min, y_max = -half_height, half_height
 
-        max_iter_tracker = ValueTracker(0)
+        max_iter_tracker = ValueTracker(5)
 
         def compute_fractal():
             max_iter = int(max_iter_tracker.get_value())
@@ -47,6 +47,7 @@ class Logo(Scene):
 
         image = always_redraw(compute_fractal)
         self.add(image)
+        self.play(FadeIn(image, run_time=2))
 
-        self.play(max_iter_tracker.animate.set_value(100), run_time=5)
+        self.play(max_iter_tracker.animate.set_value(50), run_time=2.5, rate_func=rush_from)
         self.wait()
