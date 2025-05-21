@@ -6,7 +6,7 @@ from watchdog.events import FileSystemEventHandler
 
 # TODO (stouff) make the file and scene configurable via command line
 FILE_TO_WATCH = "logo.py"  # your manim file
-RENDER_CMD = ["manim", FILE_TO_WATCH, "Logo", "-ql"]  # change class name and flags
+RENDER_CMD = ["manim", FILE_TO_WATCH, "Logo", "-ql", "--disable_caching"]  # change class name and flags
 
 class ReloadHandler(FileSystemEventHandler):
     def on_modified(self, event):
