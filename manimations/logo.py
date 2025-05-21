@@ -1,7 +1,6 @@
 from manim import *
 from manim.opengl import *
 import cupy as cp
-import numpy as np
 from PIL import Image
 
 # def cpu_mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(0, 0, 0), max_iter=500):
@@ -77,9 +76,7 @@ from PIL import Image
 #         self.add(image)
 #         self.wait(2)
 
-# GPU: Create a 256x256 gradient image
-def generate_gpu_image():
-    height, width = 256, 256
+def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(0, 0, 0), max_iter=500):
     x = cp.linspace(0, 1, width)
     y = cp.linspace(0, 1, height)
     xv, yv = cp.meshgrid(x, y)
@@ -97,47 +94,18 @@ def numpy_to_pil_image(np_array):
     return Image.fromarray(np_array, mode='RGB')  # Assumes shape (H, W, 3)
 
 class Logo(Scene):
-    def construct(self):
-        image_array = generate_gpu_image()  # CUDA -> CPU NumPy
+    def construct(self):# Parameters
+        width, height = config["pixel_width"], config["pixel_height"]
+        aspect_ratio = height / width
+        x_min, x_max = -3.333333333, 1.0
+        half_height = 0.5 * (x_max - x_min) * aspect_ratio
+        y_min, y_max = -half_height, half_height
+
+        image_array = cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, max_iter=100)
         image_pil = numpy_to_pil_image(image_array)  # NumPy -> PIL
 
-        img_mobj = ImageMobject(image_pil).scale(2)
-        self.play(FadeIn(img_mobj))
+        img_mobj = ImageMobject(image_pil)
+        img_mobj.stretch_to_fit_width(config["frame_width"])  # fit scene
+        img_mobj.stretch_to_fit_height(config["frame_height"])  # fit scene
+        self.add(img_mobj)
         self.wait()
-
-# class Logo(Scene):
-#   shader_file = "fractal_shader"
-
-#   def setup(self):
-#     # Import fragment shader from external file
-#     with open(f"./{self.shader_file}.glsl", "r") as file:
-#       self.shader_str = file.read()
-#     self.set_surface()
-
-#   # Create Manim shader
-#   def set_surface(self):
-#     self.surface = FullScreenQuad(
-#       self.renderer.context,
-#       self.shader_str
-#     )
-
-#   def construct(self):
-#     self.add(self.surface)
-#     self.play(self.surface.animate.scale(1.5))
-#     self.wait(2)
-
-
-# class Logo(Scene):
-#     def construct(self):
-#         Image.new("RGB", (1, 1), (0, 0, 0)).save("black.png")
-
-#         shader = FractalShader()
-#         self.add(shader)
-
-#         def update(mob, dt):
-#             mob.center += np.array([dt * 0.2, 0.0])  # pan right
-#             mob.zoom *= (1.0 - dt * 0.05)           # zoom in slowly
-#             mob.update_uniforms()
-
-#         shader.add_updater(update)
-#         self.wait(10)
