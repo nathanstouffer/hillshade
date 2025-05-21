@@ -1,5 +1,4 @@
 from manim import *
-from manim.opengl import *
 import cupy as cp
 from PIL import Image
 
@@ -35,11 +34,19 @@ class Logo(Scene):
         half_height = 0.5 * (x_max - x_min) * aspect_ratio
         y_min, y_max = -half_height, half_height
 
-        image_array = cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, max_iter=100)
-        image_pil = numpy_to_pil_image(image_array)  # NumPy -> PIL
+        max_iter_tracker = ValueTracker(0)
 
-        img_mobj = ImageMobject(image_pil)
-        img_mobj.stretch_to_fit_width(config["frame_width"])  # fit scene
-        img_mobj.stretch_to_fit_height(config["frame_height"])  # fit scene
-        self.add(img_mobj)
+        def compute_fractal():
+            max_iter = int(max_iter_tracker.get_value())
+            image_array = cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, max_iter=max_iter)
+            image_pil = numpy_to_pil_image(image_array)
+            img_mobj = ImageMobject(image_pil)
+            img_mobj.stretch_to_fit_width(config["frame_width"])  # fit scene
+            img_mobj.stretch_to_fit_height(config["frame_height"])  # fit scene
+            return img_mobj
+
+        image = always_redraw(compute_fractal)
+        self.add(image)
+
+        self.play(max_iter_tracker.animate.set_value(100), run_time=5)
         self.wait()
