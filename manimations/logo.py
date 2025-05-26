@@ -58,11 +58,12 @@ class Logo(Scene):
         last_iter = [None] # use a list to work around a Python scoping issue
         def update_fractal(mob, dt):
             current_iter = int(max_iter_tracker.get_value())
-            if not last_iter[0] or current_iter != last_iter:
+            if not last_iter[0] or current_iter != last_iter[0]:
+                print(last_iter[0], current_iter)
                 mob.set_pixel_array(compute_fractal_array())
                 last_iter[0] = current_iter
 
         image.add_updater(update_fractal)
 
-        self.play(max_iter_tracker.animate.set_value(50), run_time=2.5, rate_func=rush_from)
+        self.play(max_iter_tracker.animate.set_value(10), run_time=2.5, rate_func=rush_into)
         self.wait()
