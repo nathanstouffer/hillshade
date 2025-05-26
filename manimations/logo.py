@@ -11,12 +11,17 @@ def mobius_rotation(phi):
 def transform_mobius(z, a, b, c, d):
     return (a * z + b) / (c * z + d)
 
-def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter=500):
+def window(width, height, x_min, x_max, y_min, y_max, phi):
     # Define the region of the complex plane to visualize
     re = cp.linspace(x_min, x_max, width)
     im = cp.linspace(y_min, y_max, height)
     c = re[cp.newaxis, :] + 1j * im[:, cp.newaxis]
     transformed = transform_mobius(c, *mobius_rotation(phi))
+    return transformed
+
+def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter=500):
+    # Define the region of the complex plane to visualize
+    c = window(width, height, x_min, x_max, y_min, y_max, phi)
 
     # Initialize z to zero and an output array to hold iteration counts
     z = cp.zeros_like(c)
@@ -25,7 +30,7 @@ def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter=500
     # Compute Mandelbrot iterations
     for i in range(max_iter):
         mask = cp.abs(z) <= 2
-        z[mask] = z[mask] * z[mask] + transformed[mask]
+        z[mask] = z[mask] * z[mask] + c[mask]
         div_time[mask & (cp.abs(z) > 2)] = i
 
     # Normalize and scale to 0–255 grayscale
