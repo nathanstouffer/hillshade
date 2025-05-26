@@ -64,7 +64,7 @@ class Logo(Scene):
         y_min, y_max = -half_height, half_height
         supersample = get_supersample_from_quality()
 
-        max_iter_tracker = ValueTracker(5)
+        max_iter_tracker = ValueTracker(2)
         phi_tracker = ValueTracker(0)
 
         def get_state():
@@ -86,7 +86,7 @@ class Logo(Scene):
         image.stretch_to_fit_width(config["frame_width"])  # fit scene
         image.stretch_to_fit_height(config["frame_height"])  # fit scene
         self.add(image)
-        self.play(FadeIn(image, run_time=4))
+        self.play(FadeIn(image, run_time=3))
 
         last_state = [None] # use a list to work around a Python scoping issue
         def update_fractal(mob, dt):
@@ -98,9 +98,9 @@ class Logo(Scene):
         image.add_updater(update_fractal)
 
         self.play(
-            max_iter_tracker.animate.set_value(50).set_rate_func(rush_into),
+            max_iter_tracker.animate.set_value(1000).set_rate_func(rush_from),
             # TODO (stouff) decide if we should animate to +pi or -pi
             phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
-            run_time=5
+            run_time=6
         )
         self.wait()
