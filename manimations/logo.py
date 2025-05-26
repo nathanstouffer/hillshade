@@ -31,8 +31,15 @@ def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(
     # Move data back to CPU and return as NumPy array
     return img_rgba.get()
 
-def numpy_to_pil_image(np_array): 
-    return Image.fromarray(np_array, mode='RGBA')  # Assumes shape (H, W, 4)
+def get_supersample_from_quality():
+    quality = config["quality"]  # "low_quality", "medium_quality", etc.
+    
+    return {
+        "low_quality": 2,
+        "medium_quality": 2,
+        "high_quality": 3,
+        "fourk_quality": 4,
+    }.get(quality, 1)  # Default to 1 if unknown
 
 class Logo(Scene):
     def construct(self):
@@ -41,15 +48,20 @@ class Logo(Scene):
         x_min, x_max = -3.333333333, 1.0
         half_height = 0.5 * (x_max - x_min) * aspect_ratio
         y_min, y_max = -half_height, half_height
+        supersample = get_supersample_from_quality()
 
         max_iter_tracker = ValueTracker(5) 
 
         def compute_fractal_array():
             max_iter = int(max_iter_tracker.get_value())
-            image_array = cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, max_iter=max_iter)
-            return image_array
+            w = supersample * width
+            h = supersample * height
+            supersampled_array = cuda_mandelbrot(w, h, x_min, x_max, y_min, y_max, max_iter=max_iter)
+            pil_img = Image.fromarray(supersampled_array, mode='RGBA')
+            downscaled_img = pil_img.resize((width, height), Image.LANCZOS)
+            return np.array(downscaled_img)
 
-        image = ImageMobject(numpy_to_pil_image(compute_fractal_array()))
+        image = ImageMobject(Image.fromarray(compute_fractal_array(), mode='RGBA'))
         image.stretch_to_fit_width(config["frame_width"])  # fit scene
         image.stretch_to_fit_height(config["frame_height"])  # fit scene
         self.add(image)
