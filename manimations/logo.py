@@ -59,7 +59,7 @@ class Logo(Scene):
     def construct(self):
         width, height = config["pixel_width"], config["pixel_height"]
         aspect_ratio = height / width
-        x_min, x_max = -6.0, 3.0
+        x_min, x_max = -5.5, 3.0
         half_height = 0.5 * (x_max - x_min) * aspect_ratio
         y_min, y_max = -half_height, half_height
         supersample = get_supersample_from_quality()
@@ -86,7 +86,7 @@ class Logo(Scene):
         image.stretch_to_fit_width(config["frame_width"])  # fit scene
         image.stretch_to_fit_height(config["frame_height"])  # fit scene
         self.add(image)
-        self.play(FadeIn(image, run_time=2))
+        self.play(FadeIn(image, run_time=4))
 
         last_state = [None] # use a list to work around a Python scoping issue
         def update_fractal(mob, dt):
@@ -98,8 +98,8 @@ class Logo(Scene):
         image.add_updater(update_fractal)
 
         self.play(
-            max_iter_tracker.animate.set_value(100).set_rate_func(rush_into),
+            max_iter_tracker.animate.set_value(50).set_rate_func(rush_into),
             phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
-            run_time=2.5
+            run_time=5
         )
         self.wait()
