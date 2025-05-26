@@ -49,7 +49,7 @@ def get_supersample_from_quality():
     quality = config["quality"]  # "low_quality", "medium_quality", etc.
     
     return {
-        "low_quality": 2,
+        "low_quality": 1,
         "medium_quality": 2,
         "high_quality": 3,
         "fourk_quality": 4,
@@ -59,7 +59,7 @@ class Logo(Scene):
     def construct(self):
         width, height = config["pixel_width"], config["pixel_height"]
         aspect_ratio = height / width
-        x_min, x_max = -3.333333333, 1.0
+        x_min, x_max = -6.0, 3.0
         half_height = 0.5 * (x_max - x_min) * aspect_ratio
         y_min, y_max = -half_height, half_height
         supersample = get_supersample_from_quality()
@@ -98,9 +98,8 @@ class Logo(Scene):
         image.add_updater(update_fractal)
 
         self.play(
-            max_iter_tracker.animate.set_value(100),
-            phi_tracker.animate.set_value(-np.pi),
-            run_time=2.5,
-            rate_func=rush_into
+            max_iter_tracker.animate.set_value(100).set_rate_func(rush_into),
+            phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
+            run_time=2.5
         )
         self.wait()
