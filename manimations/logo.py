@@ -26,8 +26,20 @@ def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter=500
     z = cp.zeros_like(c)
     div_time = cp.zeros(c.shape, dtype=cp.int32)
 
-    # Initialize active mask
-    active = cp.ones(c.shape, dtype=bool)
+    # Precompute coordinates
+    x = c.real
+    y = c.imag
+
+    # Compute distances for the main cardioid test
+    p = cp.sqrt((x - 0.25)**2 + y**2)
+    in_main_cardioid = x <= p - 2 * p**2 + 0.25
+
+    # Compute mask for period-2 bulb
+    in_period_2_bulb = (x + 1)**2 + y**2 <= 0.0625
+
+    # Combine them: pixels that should be skipped
+    in_main_set = in_main_cardioid | in_period_2_bulb
+    active = ~in_main_set  # Only iterate on points outside known areas
 
     for i in range(max_iter):
         # Update only active pixels
@@ -35,11 +47,7 @@ def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter=500
 
         # Compute |z|²
         abs_z_squared = z.real**2 + z.imag**2
-
-        # Find pixels that just escaped
         escaped = abs_z_squared > 4
-
-        # Record when they escaped
         div_time[active & escaped] = i
 
         # Update mask to remove escaped points
@@ -81,7 +89,7 @@ class Logo(Scene):
         y_min, y_max = -half_height, half_height
         supersample = get_supersample_from_quality()
 
-        max_iter_tracker = ValueTracker(2)
+        max_iter_tracker = ValueTracker(50)
         phi_tracker = ValueTracker(0)
 
         def get_state():
@@ -115,7 +123,7 @@ class Logo(Scene):
         image.add_updater(update_fractal)
 
         self.play(
-            max_iter_tracker.animate.set_value(500).set_rate_func(rush_from),
+            max_iter_tracker.animate.set_value(50).set_rate_func(rush_from),
             # TODO (stouff) decide if we should animate to +pi or -pi
             phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
             run_time=6
