@@ -2,11 +2,21 @@ from manim import *
 import cupy as cp
 from PIL import Image
 
-def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(0, 0, 0), max_iter=500):
+def mobius_rotation(phi):
+    """Return a Möbius transformation matrix rotating around the origin by angle phi"""
+    a = np.exp(1j * phi / 2)
+    d = np.exp(-1j * phi / 2)
+    return (a, 0, 0, d)
+
+def transform_mobius(z, a, b, c, d):
+    return (a * z + b) / (c * z + d)
+
+def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter=500):
     # Define the region of the complex plane to visualize
     re = cp.linspace(x_min, x_max, width)
     im = cp.linspace(y_min, y_max, height)
     c = re[cp.newaxis, :] + 1j * im[:, cp.newaxis]
+    transformed = transform_mobius(c, *mobius_rotation(phi))
 
     # Initialize z to zero and an output array to hold iteration counts
     z = cp.zeros_like(c)
@@ -15,7 +25,7 @@ def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(
     # Compute Mandelbrot iterations
     for i in range(max_iter):
         mask = cp.abs(z) <= 2
-        z[mask] = z[mask] * z[mask] + c[mask]
+        z[mask] = z[mask] * z[mask] + transformed[mask]
         div_time[mask & (cp.abs(z) > 2)] = i
 
     # Normalize and scale to 0–255 grayscale
@@ -50,13 +60,20 @@ class Logo(Scene):
         y_min, y_max = -half_height, half_height
         supersample = get_supersample_from_quality()
 
-        max_iter_tracker = ValueTracker(5) 
+        max_iter_tracker = ValueTracker(5)
+        phi_tracker = ValueTracker(0)
+
+        def get_state():
+            return {
+                "max_iter": int(max_iter_tracker.get_value()),
+                "phi": phi_tracker.get_value()
+            }
 
         def compute_fractal_array():
-            max_iter = int(max_iter_tracker.get_value())
+            state = get_state()
             w = supersample * width
             h = supersample * height
-            supersampled_array = cuda_mandelbrot(w, h, x_min, x_max, y_min, y_max, max_iter=max_iter)
+            supersampled_array = cuda_mandelbrot(w, h, x_min, x_max, y_min, y_max, state["phi"], max_iter=state["max_iter"])
             pil_img = Image.fromarray(supersampled_array, mode='RGBA')
             downscaled_img = pil_img.resize((width, height), Image.LANCZOS)
             return np.array(downscaled_img)
@@ -67,14 +84,19 @@ class Logo(Scene):
         self.add(image)
         self.play(FadeIn(image, run_time=2))
 
-        last_iter = [None] # use a list to work around a Python scoping issue
+        last_state = [None] # use a list to work around a Python scoping issue
         def update_fractal(mob, dt):
-            current_iter = int(max_iter_tracker.get_value())
-            if not last_iter[0] or current_iter != last_iter[0]:
+            current_state = get_state()
+            if not last_state[0] or current_state != last_state[0]:
                 mob.set_pixel_array(compute_fractal_array())
-                last_iter[0] = current_iter
+                last_state[0] = current_state
 
         image.add_updater(update_fractal)
 
-        self.play(max_iter_tracker.animate.set_value(100), run_time=2.5, rate_func=rush_into)
+        self.play(
+            max_iter_tracker.animate.set_value(100),
+            phi_tracker.animate.set_value(np.pi),
+            run_time=2.5,
+            rate_func=rush_into
+        )
         self.wait()
