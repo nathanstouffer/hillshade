@@ -99,6 +99,7 @@ class Logo(Scene):
 
         self.play(
             max_iter_tracker.animate.set_value(50).set_rate_func(rush_into),
+            # TODO (stouff) decide if we should animate to +pi or -pi
             phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
             run_time=5
         )
