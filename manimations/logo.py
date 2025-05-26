@@ -32,7 +32,7 @@ def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, contained_color=(
     return img_rgba.get()
 
 def numpy_to_pil_image(np_array): 
-    return Image.fromarray(np_array, mode='RGBA')  # Assumes shape (H, W, 3)
+    return Image.fromarray(np_array, mode='RGBA')  # Assumes shape (H, W, 4)
 
 class Logo(Scene):
     def construct(self):
