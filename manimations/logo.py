@@ -26,11 +26,28 @@ def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter=500
     z = cp.zeros_like(c)
     div_time = cp.zeros(c.shape, dtype=cp.int32)
 
-    # Compute Mandelbrot iterations
+    # Initialize active mask
+    active = cp.ones(c.shape, dtype=bool)
+
     for i in range(max_iter):
-        mask = cp.abs(z) <= 2
-        z[mask] = z[mask] * z[mask] + c[mask]
-        div_time[mask & (cp.abs(z) > 2)] = i
+        # Update only active pixels
+        z[active] = z[active] * z[active] + c[active]
+
+        # Compute |z|²
+        abs_z_squared = z.real**2 + z.imag**2
+
+        # Find pixels that just escaped
+        escaped = abs_z_squared > 4
+
+        # Record when they escaped
+        div_time[active & escaped] = i
+
+        # Update mask to remove escaped points
+        active = active & (~escaped)
+
+        # Optional early bailout if all points have escaped
+        if not cp.any(active):
+            break
 
     # Normalize and scale to 0–255 grayscale
     img = (div_time / max_iter * 255).astype(cp.uint8)
@@ -51,8 +68,8 @@ def get_supersample_from_quality():
     return {
         "low_quality": 1,
         "medium_quality": 2,
-        "high_quality": 3,
-        "fourk_quality": 4,
+        "high_quality": 2,
+        "fourk_quality": 2,
     }.get(quality, 1)  # Default to 1 if unknown
 
 class Logo(Scene):
@@ -98,7 +115,7 @@ class Logo(Scene):
         image.add_updater(update_fractal)
 
         self.play(
-            max_iter_tracker.animate.set_value(1000).set_rate_func(rush_from),
+            max_iter_tracker.animate.set_value(500).set_rate_func(rush_from),
             # TODO (stouff) decide if we should animate to +pi or -pi
             phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
             run_time=6
