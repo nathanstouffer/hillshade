@@ -42,7 +42,7 @@ class Logo(Scene):
         half_height = 0.5 * (x_max - x_min) * aspect_ratio
         y_min, y_max = -half_height, half_height
 
-        max_iter_tracker = ValueTracker(1)
+        max_iter_tracker = ValueTracker(5) 
 
         def compute_fractal_array():
             max_iter = int(max_iter_tracker.get_value())
@@ -59,11 +59,10 @@ class Logo(Scene):
         def update_fractal(mob, dt):
             current_iter = int(max_iter_tracker.get_value())
             if not last_iter[0] or current_iter != last_iter[0]:
-                print(last_iter[0], current_iter)
                 mob.set_pixel_array(compute_fractal_array())
                 last_iter[0] = current_iter
 
         image.add_updater(update_fractal)
 
-        self.play(max_iter_tracker.animate.set_value(10), run_time=2.5, rate_func=rush_into)
+        self.play(max_iter_tracker.animate.set_value(100), run_time=2.5, rate_func=rush_into)
         self.wait()
