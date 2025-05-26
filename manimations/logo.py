@@ -8,16 +8,13 @@ def mobius_rotation(phi):
     d = np.exp(-1j * phi / 2)
     return (a, 0, 0, d)
 
-def transform_mobius(z, a, b, c, d):
-    return (a * z + b) / (c * z + d)
-
 def window(width, height, x_min, x_max, y_min, y_max, phi):
     # Define the region of the complex plane to visualize
     re = cp.linspace(x_min, x_max, width)
     im = cp.linspace(y_min, y_max, height)
-    c = re[cp.newaxis, :] + 1j * im[:, cp.newaxis]
-    transformed = transform_mobius(c, *mobius_rotation(phi))
-    return transformed
+    z = re[cp.newaxis, :] + 1j * im[:, cp.newaxis]
+    a, b, c, d = mobius_rotation(phi)
+    return (a * z + b) / (c * z + d)
 
 def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter=500):
     # Define the region of the complex plane to visualize
