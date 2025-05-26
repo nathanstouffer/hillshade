@@ -3,10 +3,12 @@ import cupy as cp
 from PIL import Image
 
 def mobius_rotation(phi):
-    """Return a Möbius transformation matrix rotating around the origin by angle phi"""
-    a = np.exp(1j * phi / 2)
-    d = np.exp(-1j * phi / 2)
-    return (a, 0, 0, d)
+    """Return a Möbius transformation matrix rotating by angle phi around the great circle on the Riemann sphere that is the real axis"""
+    a = np.cos(phi / 2)
+    b = np.sin(phi / 2)
+    c = -np.sin(phi / 2)
+    d = np.cos(phi / 2)
+    return (a, b, c, d)
 
 def window(width, height, x_min, x_max, y_min, y_max, phi):
     # Define the region of the complex plane to visualize
@@ -97,7 +99,7 @@ class Logo(Scene):
 
         self.play(
             max_iter_tracker.animate.set_value(100),
-            phi_tracker.animate.set_value(np.pi),
+            phi_tracker.animate.set_value(-np.pi),
             run_time=2.5,
             rate_func=rush_into
         )
