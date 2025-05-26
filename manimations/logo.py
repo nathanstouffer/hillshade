@@ -123,9 +123,16 @@ class Logo(Scene):
         image.add_updater(update_fractal)
 
         self.play(
-            max_iter_tracker.animate.set_value(50).set_rate_func(rush_from),
+            max_iter_tracker.animate.set_value(2).set_rate_func(rush_into),
+            run_time=6
+        )
+        self.play(
             # TODO (stouff) decide if we should animate to +pi or -pi
             phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
+            run_time=6
+        )
+        self.play(
+            max_iter_tracker.animate.set_value(50).set_rate_func(rush_from),
             run_time=6
         )
         self.wait()
