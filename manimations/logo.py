@@ -18,7 +18,7 @@ def window(width, height, x_min, x_max, y_min, y_max, phi):
     a, b, c, d = mobius_rotation(phi)
     return (a * z + b) / (c * z + d)
 
-def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter=500):
+def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter):
     # Define the region of the complex plane to visualize
     c = window(width, height, x_min, x_max, y_min, y_max, phi)
 
@@ -80,8 +80,8 @@ def get_supersample_from_quality():
         "fourk_quality": 2,
     }.get(quality, 1)  # Default to 1 if unknown
 
-class Logo(Scene):
-    def construct(self):
+class LogoBase(Scene):
+    def construct(self, initial_max_iter, initial_phi):
         width, height = config["pixel_width"], config["pixel_height"]
         aspect_ratio = height / width
         x_min, x_max = -5.5, 3.0
@@ -89,13 +89,13 @@ class Logo(Scene):
         y_min, y_max = -half_height, half_height
         supersample = get_supersample_from_quality()
 
-        max_iter_tracker = ValueTracker(50)
-        phi_tracker = ValueTracker(0)
+        self.max_iter_tracker = ValueTracker(initial_max_iter)
+        self.phi_tracker = ValueTracker(initial_phi)
 
         def get_state():
             return {
-                "max_iter": int(max_iter_tracker.get_value()),
-                "phi": phi_tracker.get_value()
+                "max_iter": int(self.max_iter_tracker.get_value()),
+                "phi": self.phi_tracker.get_value()
             }
 
         def compute_fractal_array():
@@ -122,17 +122,14 @@ class Logo(Scene):
 
         image.add_updater(update_fractal)
 
+class IterateWhileRotating(LogoBase):
+    def construct(self):
+        super().construct(2, 0)
+
         self.play(
-            max_iter_tracker.animate.set_value(2).set_rate_func(rush_into),
-            run_time=6
-        )
-        self.play(
+            self.max_iter_tracker.animate.set_value(50).set_rate_func(rush_into),
             # TODO (stouff) decide if we should animate to +pi or -pi
-            phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
-            run_time=6
-        )
-        self.play(
-            max_iter_tracker.animate.set_value(50).set_rate_func(rush_from),
+            self.phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
             run_time=6
         )
         self.wait()
