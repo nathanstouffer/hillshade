@@ -70,7 +70,6 @@ def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter):
 
 def get_supersample_from_quality():
     quality = config["quality"]  # "low_quality", "medium_quality", etc.
-    
     return {
         "low_quality": 1,
         "medium_quality": 2,
@@ -128,6 +127,34 @@ class LogoImage(Scene):
         half_height = 0.5 * (x_max - x_min) * aspect_ratio
         y_min, y_max = -half_height, half_height
         supersample = get_supersample_from_quality()
+
+        def compute_fractal_array():
+            max_iter = 300
+            phi = -np.pi
+            w = supersample * width
+            h = supersample * height
+            supersampled_array = cuda_mandelbrot(w, h, x_min, x_max, y_min, y_max, phi, max_iter=max_iter)
+            pil_img = Image.fromarray(supersampled_array, mode='RGBA')
+            downscaled_img = pil_img.resize((width, height), Image.LANCZOS)
+            return np.array(downscaled_img)
+
+        image = ImageMobject(Image.fromarray(compute_fractal_array(), mode='RGBA'))
+        image.stretch_to_fit_width(config["frame_width"])  # fit scene
+        image.stretch_to_fit_height(config["frame_height"])  # fit scene
+        self.add(image)
+
+class LogoWatermark(Scene):
+    def construct(self):
+        width, height = 150, 150
+        config.pixel_width = width
+        config.pixel_heigh = height
+        config.frame_width = 30
+        config.frame_height = 30
+        aspect_ratio = height / width
+        x_min, x_max = -7.0, 4.5
+        half_height = 0.5 * (x_max - x_min) * aspect_ratio
+        y_min, y_max = -half_height, half_height
+        supersample = 8
 
         def compute_fractal_array():
             max_iter = 300
