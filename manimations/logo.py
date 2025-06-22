@@ -24,50 +24,48 @@ def cuda_mandelbrot(width, height, x_min, x_max, y_min, y_max, phi, max_iter):
 
     # Initialize z to zero and an output array to hold iteration counts
     z = cp.zeros_like(c)
-    div_time = cp.zeros(c.shape, dtype=cp.int32)
+    smooth_div_time = cp.full(c.shape, 0.0, dtype=cp.float32)
 
     # Precompute coordinates
     x = c.real
     y = c.imag
 
-    # Compute distances for the main cardioid test
+    # Compute distances for the main cardioid test and period-2 bulb
     p = cp.sqrt((x - 0.25)**2 + y**2)
     in_main_cardioid = x <= p - 2 * p**2 + 0.25
-
-    # Compute mask for period-2 bulb
     in_period_2_bulb = (x + 1)**2 + y**2 <= 0.0625
 
     # Combine them: pixels that should be skipped
-    in_main_set = in_main_cardioid | in_period_2_bulb
-    active = ~in_main_set  # Only iterate on points outside known areas
+    skip = in_main_cardioid | in_period_2_bulb
+    active = ~skip  # Only iterate on points outside known areas
 
     for i in range(max_iter):
-        # Update only active pixels
         z[active] = z[active] * z[active] + c[active]
-
-        # Compute |z|²
         abs_z_squared = z.real**2 + z.imag**2
         escaped = abs_z_squared > 4
-        div_time[active & escaped] = i
 
-        # Update mask to remove escaped points
+        # Only update smooth_div_time when pixels escape for the first time
+        newly_escaped = active & escaped
+        if cp.any(newly_escaped):
+            abs_z = cp.sqrt(abs_z_squared[newly_escaped])
+            # Smooth iteration count formula
+            smooth_iter = i + 1 - cp.log2(cp.log(abs_z + 1e-10))
+            smooth_div_time[newly_escaped] = smooth_iter
+
+        # Remove escaped points from active mask
         active = active & (~escaped)
-
-        # Optional early bailout if all points have escaped
         if not cp.any(active):
             break
 
-    # Normalize and scale to 0–255 grayscale
-    img = (div_time / max_iter * 255).astype(cp.uint8)
-    img_rgb = cp.stack([img] * 3, axis=2)  # Convert to RGB
+    # Normalize the smooth_div_time
+    norm = smooth_div_time / smooth_div_time.max()
 
-    # Create alpha channel (fully opaque)
+    # Scale to 0–255 grayscale
+    img = (norm * 255).astype(cp.uint8)
+    img_rgb = cp.stack([img] * 3, axis=2)
     alpha_channel = cp.full((height, width, 1), 255, dtype=cp.uint8)
-
-    # Concatenate alpha channel to RGB to form RGBA
     img_rgba = cp.concatenate([img_rgb, alpha_channel], axis=2)
 
-    # Move data back to CPU and return as NumPy array
     return img_rgba.get()
 
 def get_supersample_from_quality():
