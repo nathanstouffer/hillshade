@@ -177,16 +177,19 @@ class IterateWhileRotating(LogoBase):
     def construct(self):
         super().construct(2, 0)
 
-        def iteration_rate_func(t):
-            return 0
-
-        # TODO (stouff) decide if we should animate to +pi or -pi
-        rotation = self.phi_tracker.animate.set_value(-np.pi).set_rate_func(there_and_back)
-        iteration = self.max_iter_tracker.animate.set_value(2).set_rate_func(lambda t: 0)
+        rotation = self.phi_tracker.animate.set_value(-np.pi)
+        iteration = self.max_iter_tracker.animate.set_value(20)
 
         self.play(
             rotation,
             iteration,
             run_time=6
         )
+
+        iteration = self.max_iter_tracker.animate.set_value(300)
+        self.play(
+            iteration,
+            run_time=5
+        )
+
         self.wait()
