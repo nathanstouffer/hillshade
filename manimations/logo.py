@@ -122,14 +122,44 @@ class LogoBase(Scene):
 
         image.add_updater(update_fractal)
 
+class LogoImage(Scene):
+    def construct(self):
+        width, height = config["pixel_width"], config["pixel_height"]
+        aspect_ratio = height / width
+        x_min, x_max = -7.0, 5.0
+        half_height = 0.5 * (x_max - x_min) * aspect_ratio
+        y_min, y_max = -half_height, half_height
+        supersample = get_supersample_from_quality()
+
+        def compute_fractal_array():
+            max_iter = 300
+            phi = -np.pi
+            w = supersample * width
+            h = supersample * height
+            supersampled_array = cuda_mandelbrot(w, h, x_min, x_max, y_min, y_max, phi, max_iter=max_iter)
+            pil_img = Image.fromarray(supersampled_array, mode='RGBA')
+            downscaled_img = pil_img.resize((width, height), Image.LANCZOS)
+            return np.array(downscaled_img)
+
+        image = ImageMobject(Image.fromarray(compute_fractal_array(), mode='RGBA'))
+        image.stretch_to_fit_width(config["frame_width"])  # fit scene
+        image.stretch_to_fit_height(config["frame_height"])  # fit scene
+        self.add(image)
+
 class IterateWhileRotating(LogoBase):
     def construct(self):
         super().construct(2, 0)
 
+        def iteration_rate_func(t):
+            return 0
+
+        # TODO (stouff) decide if we should animate to +pi or -pi
+        rotation = self.phi_tracker.animate.set_value(-np.pi).set_rate_func(there_and_back)
+        iteration = self.max_iter_tracker.animate.set_value(2).set_rate_func(lambda t: 0)
+
         self.play(
-            self.max_iter_tracker.animate.set_value(50).set_rate_func(rush_into),
-            # TODO (stouff) decide if we should animate to +pi or -pi
-            self.phi_tracker.animate.set_value(-np.pi).set_rate_func(smooth),
+            rotation,
+            iteration,
             run_time=6
         )
         self.wait()
