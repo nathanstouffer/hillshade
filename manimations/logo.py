@@ -186,6 +186,8 @@ class IterateWhileRotating(LogoBase):
             run_time=6
         )
 
+        self.wait()
+
         iteration = self.max_iter_tracker.animate.set_value(300)
         self.play(
             iteration,
