@@ -178,7 +178,7 @@ class IterateWhileRotating(LogoBase):
         super().construct(2, 0)
 
         rotation = self.phi_tracker.animate.set_value(-np.pi)
-        iteration = self.max_iter_tracker.animate.set_value(15)
+        iteration = self.max_iter_tracker.animate.set_value(15.5)
 
         self.play(
             rotation,
