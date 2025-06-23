@@ -1,7 +1,9 @@
 \documentclass{article}
 
+\usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{xcolor}
+\usepackage[export]{adjustbox}
 \RequirePackage[margin=1in]{geometry}
 
 \newcommand\todo[1]{\textcolor{red}{TODO: #1}}
@@ -31,7 +33,7 @@ You just know it to be true.
 \todo{Be more precise in this intro -- it is likely that the viewer is able to say why they know those features exist, but the point is that they can't give a precise explanation as to why. although even that doesn't cover it -- maybe it would be better to just ask the question ``What is your brain doing?'' instead of postulating that the viewer can't articulate something. It is probably better to ask, how could the viewer build something like this. Assume that they are able to explain that because of the texture of the shading, they know something to be true. But how could they produce it? I think that will be a more effective way of drawing the audience in.}
 
 \begin{center}
-	\includegraphics[width=0.5\textwidth]{assets/hillshade-example.png}
+	\includegraphics[width=0.5\textwidth,frame]{assets/hillshade-example.png}
 \end{center}
 
 \subsection{Background}
@@ -52,6 +54,57 @@ I mean that the actual model that I am rendering is 2D -- I am merely tricking y
 \subsection{Cosine}
 
 \subsection{Law of Cosines $=>$ Dot Product}
+
+We now know that we want to vary the strength of our lighting according to $\cos \theta$.
+But that doesn't really help us that much because we don't know what $\theta$ is.
+All we know are the vectors $l$ and $n$.
+
+The next step is to figure out how to compute $\cos \theta$ based on the two things we know.
+We know the light direction $l$ and the terrain normal $n$.
+
+\todo{figure out some tip to get us to think of law of cosines}
+
+\todo{would it be better to use arbitrary $u,v$ vectors instead of $l,n$}
+
+We can relate $l$ and $n$ with $\cos \theta$ by using the Law of Cosines.
+We already have $\theta$ labeled and we know $|l| = |n| = 1$ because we have constructed them to be unit vectors.
+To do this, we need to figure out what the third leg of our triangle is.
+
+\todo{the wording in this paragraph could use some work:}
+Vectors add by being placed tip to tail.
+This means that the vector $w$, which starts at $l$ and ends at $v$, has the following equality $l = n + w => w = l - n$.
+
+\begin{center}
+	\includegraphics[width=0.2\textwidth,frame]{assets/uv.jpg}
+	\hspace{0.2\textwidth}
+	\includegraphics[width=0.197\textwidth,frame]{assets/uvw.jpg}
+\end{center}
+
+The full Law of Cosines says: $c^2 = a^2 + b^2 - 2ab \cos C$.
+In our case, $c = | l - n |$, $a = l$, $b = n$, and $C = \theta$.
+So we have:
+
+\begin{align*}
+|l-n|^2 = |l|^2 + |n|^2 - 2 |l| |n| \cos \theta & \quad \text{substitute from generalized LoC} \\
+|l-n|^2 = 2 - 2 \cos \theta & \quad \text{since we know } |l| = |n| = 1
+\end{align*}
+
+\todo{introduce the dot product (but don't call it that)}
+
+\begin{align*}
+(l - n) \cdot (l - n) = 2 - 2 \cos \theta & \quad \text{by definition of dot product} \\
+l \cdot l - l \cdot n - n \cdot l + n \cdot n = 2 - 2 \cos \theta & \quad \text{by distributive property of dot product} \\
+1 - 2 l \cdot n + 1 = 2 - 2 \cos \theta & \quad \text{simplyfying} \\
+n \cdot l = \cos \theta & \quad \text{simplifying}
+\end{align*}
+
+\todo{mention how the LoC is true for even degenerate triangles}
+
+\todo{discuss how we didn't even assume dimension}
+
+\todo{discuss the generalized form (non-unit vectors)}
+
+\todo{discuss how surprising the dot product identity is}
 
 \section{Hillshade}
 
