@@ -173,7 +173,7 @@ class LogoWatermark(Scene):
         image.stretch_to_fit_height(config["frame_height"])  # fit scene
         self.add(image)
 
-class IterateWhileRotating(LogoBase):
+class LogoVideo(LogoBase):
     def construct(self):
         super().construct(2, 0)
 
