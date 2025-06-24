@@ -60,19 +60,35 @@ But that doesn't really help us that much because we don't know what $\theta$ is
 All we know are the vectors $l$ and $n$.
 
 The next step is to figure out how to compute $\cos \theta$ based on the two things we know.
-We know the light direction $l$ and the terrain normal $n$.
+Well, what we know the light direction $l$ and the terrain normal $n$.
+At the end of the day, those are just lists of numbers.
+Sure, they have some constraints (like the fact that their length is 1).
+And they also have some geometric meaning.
+But when it comes down to it, we need to turn two lists of numbers into something as complex as the cosine function.
+How are we supposed to do it?
+What is the link between these two vectors and cosine?
 
-\todo{figure out some tip to get us to think of law of cosines}
+One tip that I sometimes find to be very helpful is to zoom out a bit.
+We've already turned our semi-realistic lighting model into a pure geometry problem: what is the cosine of the angle between two unit vectors?
+Let's just run with that for a bit.
+Let our two unit vectors be $u$ and $v$.
 
-\todo{would it be better to use arbitrary $u,v$ vectors instead of $l,n$}
+Now that we've re-labeled, let's take a fresh look at our problem.
+We have our vectors $u$ and $v$ along with our relevant angle $\theta$.
+If you were some early mathematician, at this point in the proof, you would have to start experimenting with ideas and wait for inspiration to strike.
+This sort of thing takes practice and lots of dead ends to feel out.
 
-We can relate $l$ and $n$ with $\cos \theta$ by using the Law of Cosines.
-We already have $\theta$ labeled and we know $|l| = |n| = 1$ because we have constructed them to be unit vectors.
+But if I were to offer one piece of advice, I would say it's usually worth constructing a triangle and using some of the many theorems about them to reason your way towards your goal.
+Triangles are surprisingly effective.
+In this case, we are going to draw the third leg of that triangle and use the Law of Cosines.
+
+We can relate $u$ and $v$ with $\cos \theta$ by using the Law of Cosines.
+We already have $\theta$ labeled and we know $|u| = |v| = 1$ because we have constructed them to be unit vectors.
 To do this, we need to figure out what the third leg of our triangle is.
 
 \todo{the wording in this paragraph could use some work:}
 Vectors add by being placed tip to tail.
-This means that the vector $w$, which starts at $l$ and ends at $v$, has the following equality $l = n + w => w = l - n$.
+This means that the vector $w$, which starts at $u$ and ends at $v$, has the following equality $u = v + w => w = u - v$.
 
 \begin{center}
 	\includegraphics[width=0.2\textwidth,frame]{assets/uv.jpg}
@@ -81,21 +97,21 @@ This means that the vector $w$, which starts at $l$ and ends at $v$, has the fol
 \end{center}
 
 The full Law of Cosines says: $c^2 = a^2 + b^2 - 2ab \cos C$.
-In our case, $c = | l - n |$, $a = l$, $b = n$, and $C = \theta$.
+In our case, $c = | u - v |$, $a = |u|$, $b = |v|$, and $C = \theta$.
 So we have:
 
 \begin{align*}
-|l-n|^2 = |l|^2 + |n|^2 - 2 |l| |n| \cos \theta & \quad \text{substitute from generalized LoC} \\
-|l-n|^2 = 2 - 2 \cos \theta & \quad \text{since we know } |l| = |n| = 1
+|u-v|^2 = |u|^2 + |v|^2 - 2 |u| |v| \cos \theta & \quad \text{substitute from generalized LoC} \\
+|u-v|^2 = 2 - 2 \cos \theta & \quad \text{since we know } |u| = |n| = 1
 \end{align*}
 
 \todo{introduce the dot product (but don't call it that)}
 
 \begin{align*}
-(l - n) \cdot (l - n) = 2 - 2 \cos \theta & \quad \text{by definition of dot product} \\
-l \cdot l - l \cdot n - n \cdot l + n \cdot n = 2 - 2 \cos \theta & \quad \text{by distributive property of dot product} \\
-1 - 2 l \cdot n + 1 = 2 - 2 \cos \theta & \quad \text{simplyfying} \\
-n \cdot l = \cos \theta & \quad \text{simplifying}
+(u - v) \cdot (u - v) = 2 - 2 \cos \theta & \quad \text{by definition of dot product} \\
+u \cdot u - u \cdot v - v \cdot u + v \cdot v = 2 - 2 \cos \theta & \quad \text{by distributive property of dot product} \\
+1 - 2 u \cdot v + 1 = 2 - 2 \cos \theta & \quad \text{simplyfying} \\
+l \cdot v = \cos \theta & \quad \text{simplifying}
 \end{align*}
 
 \todo{mention how the LoC is true for even degenerate triangles}
