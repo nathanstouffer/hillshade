@@ -45,19 +45,19 @@ class CosineThetaToDotProduct(Scene):
             Create(angle_theta),
         )
         self.play(Write(theta_label))
-        self.wait()
+        self.wait(3)
 
         # --- Algebraic proof steps ---
-        # step1 = MathTex("c^{2}", "=", "\\|\\vec{AB}\\|^{2}")
-        # step2 = MathTex("=", "\\|\\vec{AC}-\\vec{BC}\\|^{2}")
-        # step3 = MathTex("=", "\\|\\vec{AC}\\|^{2}+\\|\\vec{BC}\\|^{2}-2\\,\\vec{AC}\\cdot\\vec{BC}")
-        # step4 = MathTex("=", "b^{2} + a^{2} - 2ab\\cos\\gamma")
-        # conclusion = MathTex("\\therefore\\; c^{2} = a^{2} + b^{2} - 2ab\\cos\\gamma")
+        step1 = MathTex("|l-n|^{2}", "=", "|l|^{2} + |n|^{2} - 2 |l| |n| \\cos\\theta")
+        step2 = MathTex("=", "\\|\\vec{AC}-\\vec{BC}\\|^{2}")
+        step3 = MathTex("=", "\\|\\vec{AC}\\|^{2}+\\|\\vec{BC}\\|^{2}-2\\,\\vec{AC}\\cdot\\vec{BC}")
+        step4 = MathTex("=", "b^{2} + a^{2} - 2ab\\cos\\gamma")
+        conclusion = MathTex("\\therefore\\; c^{2} = a^{2} + b^{2} - 2ab\\cos\\gamma")
 
-        # eq_group = VGroup(step1, step2, step3, step4, conclusion).arrange(
-        #     DOWN, aligned_edge=LEFT
-        # ).to_corner(UL)
+        eq_group = VGroup(step1, step2, step3, step4, conclusion).arrange(
+            DOWN, aligned_edge=LEFT
+        ).to_corner(UL)
 
-        # for eq in eq_group:
-        #     self.play(Write(eq))
-        #     self.wait(0.5)
+        for eq in eq_group:
+            self.play(Write(eq))
+            self.wait(0.5)

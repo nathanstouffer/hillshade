@@ -135,13 +135,25 @@ l \cdot l - l \cdot n - n \cdot l + n \cdot n = 2 - 2 \cos \theta & \quad \text{
 l \cdot n = \cos \theta & \quad \text{simplifying}
 \end{align*}
 
-\todo{mention how the LoC is true for even degenerate triangles}
+\subsubsection{Takeaways}
 
-\todo{discuss how we didn't even assume dimension}
+I want you to take away a few things from this proof.
 
-\todo{discuss the generalized form (non-unit vectors)}
+First: The Law of Cosines is true for all triangles -- even degenerate triangles (ones where the three points are co-linear or even identical)!
+So no matter what $\theta$ is, we can always just compute the dot product $l \cdot n$ and use that to vary the strength of our lighting.
 
-\todo{discuss how surprising the dot product identity is}
+Second: At no point in this proof did we assume the dimension of the vectors involved.
+All we did was compute the length of a vector.
+This means that our result holds for any dimension.
+
+Third: We did assume that our two vectors had unit length.
+But this relationship has a more general form.
+All we need to do is scale $\cos \theta$ by the lengths of the relevant vectors.
+Given any two vectors $ a, b \in \mathbf{R}^n$: $a \cdot b = |a| |b| \cos \theta$.
+
+Finally: I'd like you to recognize how surprising and elegant this result is.
+I mean, it's crazy that combining two lists of numbers in this really simple way exactly matches $\cos \theta$.
+Sometimes simple operations are really powerful.
 
 \section{Hillshade}
 
