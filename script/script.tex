@@ -8,6 +8,8 @@
 
 \newcommand\todo[1]{\textcolor{red}{TODO: #1}}
 
+\newcommand\animation[1]{\textcolor{blue}{ANIMATION: #1}}
+
 \begin{document}
 	
 \title{Hillshade Video Script}
@@ -21,29 +23,52 @@
 
 What I'm showing you right now is a map.
 But you probably didn't need to be told that.
-In fact, I would be willing to bet that you not only recognized this as a map, you also instantly discerned many topographic features about this region.
-You probably recognized that this particular spot is relatively flat and that this other area is pretty steep.
-Or that this is a small gully and this is a ridgeline.
-Or that this face is pretty rugged while this slope is not quite as technical.
+In fact, I would be willing to bet that you not only recognized this as a map, you also instantly discerned many features about this region.
+You probably recognized that this particular spot is relatively flat and that this other area is pretty steep, that this is a small gully and this is a ridgeline, or maybe that this face is pretty rugged while this slope is not quite as technical.
 
-You are able to get all that complex information just from a pretty simple grayscale image.
-But what's interesting, is that I bet you can't say precisely \textit{why} you are able to discern those features.
-You just know it to be true.
+You are able to get all that complex information from a pretty simple grayscale image -- despite the fact that there is no precise information like contour lines.
+In fact, I would be willing to bet that your understanding of this map is better than if I had given you the contour lines even though that is a more precise way to convey information.
 
-\todo{Be more precise in this intro -- it is likely that the viewer is able to say why they know those features exist, but the point is that they can't give a precise explanation as to why. although even that doesn't cover it -- maybe it would be better to just ask the question ``What is your brain doing?'' instead of postulating that the viewer can't articulate something. It is probably better to ask, how could the viewer build something like this. Assume that they are able to explain that because of the texture of the shading, they know something to be true. But how could they produce it? I think that will be a more effective way of drawing the audience in.}
+\animation{Bring in more maps (one with just contours and another with contours/hillshade)}
+
+Here is a side-by-side to compare.
+
+That is all by design.
+The map is intentionally set up so that your brain can intuit all that information.
+Modern computers do much of this work today, but cartographers have been using versions of this technique for hundreds of years.
+And many other applications use similar strategies to help convey geometric information to your brain.
+
+The thing I'd like to discuss today is called hillshading.
+We're going to walk through the math behind it and talk about why it's such an effective method of lighting terrain.
 
 \begin{center}
 	\includegraphics[width=0.5\textwidth,frame]{assets/hillshade-example.png}
 \end{center}
 
-\subsection{Background}
+\subsection{The Puzzle}
 
-\todo{Figure out some transition to this}
-What's more, this isn't even a 3-dimensional map.
-And I don't just mean that the screen you're viewing is 2-dimensional.
-I mean that the actual model that I am rendering is 2D -- I am merely tricking your brain into thinking it is 3D.
+\subsubsection{The Problem}
 
-\todo{come up with examples of directional lighting}
+Say you are some cartographer.
+Your goal is to produce maps that help people understand a particular area.
+Essentially, your goal is to convey information.
+You have done research on some area, you know what it looks like.
+And you want to record that information in such a way that anyone can read it and understand what is going on.
+The medium that you happen to use is a map.
+So you want to put all your craft into producing a map that is easy for people to understand.
+
+But, you have a problem.
+Your map is inherently 2D and the terrain is 3D.
+
+\subsubsection{The spark}
+
+Well, you think, everything people perceive with their eyes is essentially in 2-dimensions anyways.
+Your brain is really just receiving signals from your eyes and you reconstruct the 3-dimensional object inside your head.
+What convinces us that things are 3D is the difference in colors as the object moves.
+
+That's really all you need to replicate.
+And, do you really need to replicate it?
+Maybe we can just evoke the essence of that lighting and rely on people's brain to fill in the gaps?
 
 \section{Directional Lighting}
 
@@ -53,42 +78,38 @@ I mean that the actual model that I am rendering is 2D -- I am merely tricking y
 
 \subsection{Cosine}
 
+\todo{We can derive $\cos \theta$ by computing the percentage of directional light that hits a small square based on its surface normal.
+That follows pretty directly from the definition of $\cos$.}
+
+\todo{This is probably the spot to remap $[-1, 1]$ to $[0, 1]$. It is a small piece of the puzzle but this might be a good spot to introduce it.}
+
 \subsection{Law of Cosines $=>$ Dot Product}
 
 We now know that we want to vary the strength of our lighting according to $\cos \theta$.
-But that doesn't really help us that much because we don't know what $\theta$ is.
+But that doesn't really help us much because we don't know what $\theta$ is.
 All we know are the vectors $l$ and $n$.
-
-The next step is to figure out how to compute $\cos \theta$ based on the two things we know.
-Well, what we know the light direction $l$ and the terrain normal $n$.
 At the end of the day, those are just lists of numbers.
 Sure, they have some constraints (like the fact that their length is 1).
-And they also have some geometric meaning.
+And they also have some geometric meaning (they are directions in 3d space).
 But when it comes down to it, we need to turn two lists of numbers into something as complex as the cosine function.
 How are we supposed to do it?
 What is the link between these two vectors and cosine?
 
-One tip that I sometimes find to be very helpful is to zoom out a bit.
-We've already turned our semi-realistic lighting model into a pure geometry problem: what is the cosine of the angle between two unit vectors?
-Let's just run with that for a bit.
-Let our two unit vectors be $u$ and $v$.
-
-Now that we've re-labeled, let's take a fresh look at our problem.
-We have our vectors $u$ and $v$ along with our relevant angle $\theta$.
 If you were some early mathematician, at this point in the proof, you would have to start experimenting with ideas and wait for inspiration to strike.
 This sort of thing takes practice and lots of dead ends to feel out.
+It's sort of one of those things where experience is the best teacher.
 
-But if I were to offer one piece of advice, I would say it's usually worth constructing a triangle and using some of the many theorems about them to reason your way towards your goal.
-Triangles are surprisingly effective.
-In this case, we are going to draw the third leg of that triangle and use the Law of Cosines.
+... But if I were to offer one piece of advice, I would say it's often worth constructing a triangle and using some of the many theorems about them to reason your way towards your goal.
+Maybe it's the types of problems that I tend to interact with, but I find triangles to be a surprisingly effective tool.
+In this case, we are going to draw the third leg of our triangle here and use the Law of Cosines.
 
-We can relate $u$ and $v$ with $\cos \theta$ by using the Law of Cosines.
-We already have $\theta$ labeled and we know $|u| = |v| = 1$ because we have constructed them to be unit vectors.
+We can relate $l$ and $n$ with $\cos \theta$ by using the Law of Cosines.
+We already have $\theta$ labeled and we know $|l| = |n| = 1$ because we have constructed them to be unit vectors.
 To do this, we need to figure out what the third leg of our triangle is.
 
 \todo{the wording in this paragraph could use some work:}
 Vectors add by being placed tip to tail.
-This means that the vector $w$, which starts at $u$ and ends at $v$, has the following equality $u = v + w => w = u - v$.
+This means that the vector $w$, which starts at $l$ and ends at $n$, has the following equality $l = n + w => w = l - n$.
 
 \begin{center}
 	\includegraphics[width=0.2\textwidth,frame]{assets/uv.jpg}
@@ -97,21 +118,21 @@ This means that the vector $w$, which starts at $u$ and ends at $v$, has the fol
 \end{center}
 
 The full Law of Cosines says: $c^2 = a^2 + b^2 - 2ab \cos C$.
-In our case, $c = | u - v |$, $a = |u|$, $b = |v|$, and $C = \theta$.
+In our case, $c = | l - n |$, $a = |l|$, $b = |n|$, and $C = \theta$.
 So we have:
 
 \begin{align*}
-|u-v|^2 = |u|^2 + |v|^2 - 2 |u| |v| \cos \theta & \quad \text{substitute from generalized LoC} \\
-|u-v|^2 = 2 - 2 \cos \theta & \quad \text{since we know } |u| = |n| = 1
+|l-n|^2 = |l|^2 + |n|^2 - 2 |l| |n| \cos \theta & \quad \text{substitute from generalized LoC} \\
+|l-n|^2 = 2 - 2 \cos \theta & \quad \text{since we know } |l| = |n| = 1
 \end{align*}
 
 \todo{introduce the dot product (but don't call it that)}
 
 \begin{align*}
-(u - v) \cdot (u - v) = 2 - 2 \cos \theta & \quad \text{by definition of dot product} \\
-u \cdot u - u \cdot v - v \cdot u + v \cdot v = 2 - 2 \cos \theta & \quad \text{by distributive property of dot product} \\
-1 - 2 u \cdot v + 1 = 2 - 2 \cos \theta & \quad \text{simplyfying} \\
-l \cdot v = \cos \theta & \quad \text{simplifying}
+(l - n) \cdot (l - n) = 2 - 2 \cos \theta & \quad \text{by definition of dot product} \\
+l \cdot l - l \cdot n - n \cdot l + n \cdot n = 2 - 2 \cos \theta & \quad \text{by distributive property of dot product} \\
+1 - 2 l \cdot n + 1 = 2 - 2 \cos \theta & \quad \text{simplyfying} \\
+l \cdot n = \cos \theta & \quad \text{simplifying}
 \end{align*}
 
 \todo{mention how the LoC is true for even degenerate triangles}
@@ -128,12 +149,24 @@ Hillshading isn't just one thing.
 It is actually a term for a family of effects that can be applied to a map.
 We now have the mathematical tools to build towards a very version of hillshading, but there are lots of additional techniques out there.
 
-\section{Footnotes}
+\section{Endnotes}
 
 \subsection{Pseudoscopic Illusion}
 
-\subsection{Multiple Lights}
+\subsection{Modified techniques}
 
-Possibly mention Eduard Imhof.
-	
+Modifications: ambient, multiple lights, colored lights
+
+\todo{Possibly mention Eduard Imhof.}
+
+\subsection{2D vs 3D}
+
+Something that I find really fascinating is the fact that this isn't even a 3-dimensional map.
+And I don't just mean that the screen you're viewing is 2-dimensional.
+I mean that the actual model that I am rendering is 2D.
+
+\animation{Pitch the camera}
+
+\animation{3D flythrough?}
+
 \end{document}
