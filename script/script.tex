@@ -23,23 +23,22 @@
 
 What I'm showing you right now is a map.
 But you probably didn't need to be told that.
-In fact, I would be willing to bet that you not only recognized this as a map, you also instantly discerned many features about this region.
-You can probably see that this particular spot is relatively flat and that this other area is pretty steep, that this is a small gully and this is a ridgeline, or maybe that this face is pretty rugged while this slope is not quite as technical.
+In fact, I would be willing to bet that you know a lot more than that.
+You can probably see that this particular spot is relatively flat and that this other area is pretty steep, that this is a small gully and this is a ridgeline, and that this face is pretty rugged while this slope is not quite as technical.
 
-You are able to get all that complex information from a pretty simple grayscale image -- despite the fact that there is no precise information like contour lines.
+You are able to get all that complex information from a pretty simple grayscale image.
 In fact, I would be willing to bet that your understanding of this map is better than if I had given you the contour lines even though that is a more precise way to convey information.
 
 \animation{Bring in more maps (one with just contours and another with contours/hillshade)}
 
 Here is a side-by-side to compare.
 
-That is all by design.
-The map is intentionally set up so that your brain can intuit all that information.
+This map is intentionally set up so that your brain can intuit the shape of the terrain.
 Modern computers do much of this work today, but cartographers have been using versions of this technique for hundreds of years.
 And many other applications use similar strategies to help convey geometric information to your brain.
 
-The thing I'd like to discuss today is called hillshading.
-We're going to talk about why it's such an effective method of lighting terrain and walk through the math that powers it.
+The topic I'd like to discuss today is a shading technique called hillshade.
+We're going to talk about why it's such an effective method of terrain lighting and walk through the math that powers it.
 
 \begin{center}
 	\includegraphics[width=0.5\textwidth,frame]{assets/hillshade-example.png}
@@ -47,41 +46,16 @@ We're going to talk about why it's such an effective method of lighting terrain 
 
 \subsection{Directional Lighting}
 
-
-
-\subsection{The Puzzle}
-
-\todo{Probably remove this section -- I don't think this section is going to work. By introducing the final product at the beginning of the video, we kind of ruin the mystery of the problem. I am choosing the intro over this puzzle.}
-
-\subsubsection{The Problem}
-
-Say you are some cartographer making maps for adventurers.
-Your goal is to produce maps that help people understand a particular area.
-Essentially, your goal is to convey information.
-You have done research on some area, you know what it looks like.
-And you want to record that information in such a way that anyone can read it and understand what is going on.
-The medium that you happen to use is a map.
-So you want to put all your craft into producing a map that is easy for people to understand.
-
-But, you have a problem.
-Many maps
-Your map is inherently 2D and the terrain is 3D.
-
-\subsubsection{The spark}
-
-Well, you think, everything people perceive with their eyes is essentially in 2-dimensions anyways.
-Your brain is really just receiving signals from your eyes and you reconstruct the 3-dimensional object inside your head.
-What convinces us that things are 3D is the difference in colors as the object moves.
-
-That's really all you need to replicate.
-And, do you really need to replicate it?
-Maybe we can just evoke the essence of that lighting and rely on people's brain to fill in the gaps?
+Hillshading is an example of something called a directional light.
+Directional lights are imitations of 
 
 \section{Directional Lighting}
 
 \subsection{Light Direction}
 
 \subsection{Surface Normal}
+
+\section{Hillshading}
 
 \subsection{Cosine}
 
@@ -114,9 +88,8 @@ We can relate $l$ and $n$ with $\cos \theta$ by using the Law of Cosines.
 We already have $\theta$ labeled and we know $|l| = |n| = 1$ because we have constructed them to be unit vectors.
 To do this, we need to figure out what the third leg of our triangle is.
 
-\todo{the wording in this paragraph could use some work:}
 Vectors add by being placed tip to tail.
-This means that the vector $w$, which starts at $l$ and ends at $n$, has the following equality $l = n + w => w = l - n$.
+This means that the vector $\Delta$, which starts at $n$ and ends at $l$, is the thing that you can add to $n$ to get $l$: $l = n + \Delta => \Delta = l - n$.
 
 \begin{center}
 	\includegraphics[width=0.3\textwidth,frame]{assets/ln.jpg}
@@ -124,7 +97,7 @@ This means that the vector $w$, which starts at $l$ and ends at $n$, has the fol
 	\includegraphics[width=0.2735\textwidth,frame]{assets/lnw.jpg}
 \end{center}
 
-The full Law of Cosines says: $c^2 = a^2 + b^2 - 2ab \cos C$.
+The full Law of Cosines says that for any triangle with angles/sides labeled like so, we have $c^2 = a^2 + b^2 - 2ab \cos C$.
 In our case, $c = | l - n |$, $a = |l|$, $b = |n|$, and $C = \theta$.
 So we have:
 
@@ -133,14 +106,23 @@ So we have:
 |l-n|^2 = 2 - 2 \cos \theta & \quad \text{since we know } |l| = |n| = 1
 \end{align*}
 
-\todo{introduce the dot product (but don't call it that)}
+To help with this next part, I'm going to introduce some shorthand notation for an operation that we are performing.
+The operation takes two vectors, performs a pairwise multiplication and sums the entries of the resulting vector.
+The notation I will use to signify this is a $\cdot$ between two vectors: $a \cdot b$.
+
+If we expand $|l - n|^2$ as $\sqrt{(l_x - n_x)^2 + (l_y - n_y)^2 + (l_z - n_z)^2} ^2$, our new notation comes in handy right away because we can rewrite that big expression as $\sqrt{(l - n) \cdot (l - n)}^2 = (l-n) \cdot (l - n)$.
 
 \begin{align*}
-(l - n) \cdot (l - n) = 2 - 2 \cos \theta & \quad \text{by definition of dot product} \\
-l \cdot l - l \cdot n - n \cdot l + n \cdot n = 2 - 2 \cos \theta & \quad \text{by distributive property of dot product} \\
+(l - n) \cdot (l - n) = 2 - 2 \cos \theta & \quad \text{by using our new notation} \\
+l \cdot l - l \cdot n - n \cdot l + n \cdot n = 2 - 2 \cos \theta & \quad \text{under the hood, this is happening each dimension and this is the result} \\
+|l|^2 - 2 l \cdot n + |n|^2 = 2 - 2 \cos \theta & \quad \text{reversing our new notation} \\
 1 - 2 l \cdot n + 1 = 2 - 2 \cos \theta & \quad \text{simplyfying} \\
 l \cdot n = \cos \theta & \quad \text{simplifying}
 \end{align*}
+
+Many of you have seen this result before.
+For those of you who haven't, that ``dot'' symbol that represents the operation of pairwise multiplying two vectors and summing the result is known as the dot product.
+It is an exceedingly useful operation in mathematics and computer science, in large part because of the property that we just proved: that the dot product of two unit vectors is equal to the cosine of the angle between them.
 
 \subsubsection{Takeaways}
 
@@ -149,8 +131,8 @@ I want you to take away a few things from this proof.
 First: The Law of Cosines is true for all triangles -- even degenerate triangles (ones where the three points are co-linear or even identical)!
 So no matter what our two vectors are, we can compute the dot product $l \cdot n$ and it will always be $\cos \theta$!
 
-Second: At no point in this proof did we assume the dimension of the vectors involved.
-This means that our result holds for any dimension.
+Second: We didn't really assume that our vector had to be in 3-dimensions.
+We did only expand our vector for x, y, and z but the same argument will hold for any dimension.
 
 Third: We did assume that our two vectors had unit length.
 But this relationship also has a more general form.
@@ -162,10 +144,9 @@ Finally: I'd like you to recognize how surprising and elegant this result is.
 I mean, it's crazy that combining two lists of numbers in this really simple way exactly matches $\cos \theta$.
 Sometimes simple operations are really powerful.
 
-\section{Hillshade}
+\section{Final product}
 
-So now let's get back to the problem at hand: shading the map.
-Given a particular lighting configuration, we know how strongly ...
+And there you have it.
 
 \section{Endnotes}
 
