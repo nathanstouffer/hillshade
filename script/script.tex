@@ -24,7 +24,7 @@
 What I'm showing you right now is a map.
 But you probably didn't need to be told that.
 In fact, I would be willing to bet that you not only recognized this as a map, you also instantly discerned many features about this region.
-You probably recognized that this particular spot is relatively flat and that this other area is pretty steep, that this is a small gully and this is a ridgeline, or maybe that this face is pretty rugged while this slope is not quite as technical.
+You can probably see that this particular spot is relatively flat and that this other area is pretty steep, that this is a small gully and this is a ridgeline, or maybe that this face is pretty rugged while this slope is not quite as technical.
 
 You are able to get all that complex information from a pretty simple grayscale image -- despite the fact that there is no precise information like contour lines.
 In fact, I would be willing to bet that your understanding of this map is better than if I had given you the contour lines even though that is a more precise way to convey information.
@@ -39,17 +39,23 @@ Modern computers do much of this work today, but cartographers have been using v
 And many other applications use similar strategies to help convey geometric information to your brain.
 
 The thing I'd like to discuss today is called hillshading.
-We're going to walk through the math behind it and talk about why it's such an effective method of lighting terrain.
+We're going to talk about why it's such an effective method of lighting terrain and walk through the math that powers it.
 
 \begin{center}
 	\includegraphics[width=0.5\textwidth,frame]{assets/hillshade-example.png}
 \end{center}
 
+\subsection{Directional Lighting}
+
+
+
 \subsection{The Puzzle}
+
+\todo{Probably remove this section -- I don't think this section is going to work. By introducing the final product at the beginning of the video, we kind of ruin the mystery of the problem. I am choosing the intro over this puzzle.}
 
 \subsubsection{The Problem}
 
-Say you are some cartographer.
+Say you are some cartographer making maps for adventurers.
 Your goal is to produce maps that help people understand a particular area.
 Essentially, your goal is to convey information.
 You have done research on some area, you know what it looks like.
@@ -58,6 +64,7 @@ The medium that you happen to use is a map.
 So you want to put all your craft into producing a map that is easy for people to understand.
 
 But, you have a problem.
+Many maps
 Your map is inherently 2D and the terrain is 3D.
 
 \subsubsection{The spark}
@@ -140,16 +147,16 @@ l \cdot n = \cos \theta & \quad \text{simplifying}
 I want you to take away a few things from this proof.
 
 First: The Law of Cosines is true for all triangles -- even degenerate triangles (ones where the three points are co-linear or even identical)!
-So no matter what $\theta$ is, we can always just compute the dot product $l \cdot n$ and use that to vary the strength of our lighting.
+So no matter what our two vectors are, we can compute the dot product $l \cdot n$ and it will always be $\cos \theta$!
 
 Second: At no point in this proof did we assume the dimension of the vectors involved.
-All we did was compute the length of a vector.
 This means that our result holds for any dimension.
 
 Third: We did assume that our two vectors had unit length.
-But this relationship has a more general form.
+But this relationship also has a more general form.
 All we need to do is scale $\cos \theta$ by the lengths of the relevant vectors.
 Given any two vectors $ a, b \in \mathbf{R}^n$: $a \cdot b = |a| |b| \cos \theta$.
+It might be a fun exercise for you to build on this proof and show why that is the case.
 
 Finally: I'd like you to recognize how surprising and elegant this result is.
 I mean, it's crazy that combining two lists of numbers in this really simple way exactly matches $\cos \theta$.
@@ -157,27 +164,42 @@ Sometimes simple operations are really powerful.
 
 \section{Hillshade}
 
-Hillshading isn't just one thing.
-It is actually a term for a family of effects that can be applied to a map.
-We now have the mathematical tools to build towards a very version of hillshading, but there are lots of additional techniques out there.
+So now let's get back to the problem at hand: shading the map.
+Given a particular lighting configuration, we know how strongly ...
 
 \section{Endnotes}
 
-\subsection{Pseudoscopic Illusion}
-
 \subsection{Modified techniques}
 
-Modifications: ambient, multiple lights, colored lights
+Hillshading isn't just one thing.
+It is actually a term for a family of effects that can be applied to a map.
+There are a lot of variations out there, and you now have the mathematical framework that sits behind all of them.
+Some examples include ambient lighting, exaggerating the normal vector, using multiple light sources, and playing around with colored lights.
 
 \todo{Possibly mention Eduard Imhof.}
 
+\subsection{Pseudoscopic Illusion}
+
+In mapping, the light source for hillshade is typically placed in the northwest.
+This is because many maps use a north-up convention, placing the light source in the top left.
+Broadly speaking, people recognize features better when this is the case.
+
+However, this can some backfire when a map with static hillshade is oriented with a south-up convention.
+When that occurs, your brain might interpret everything backwards (valleys as ridges and ridges and valleys).
+This is called a pseudoscopic illusion.
+
+\animation{Show a south-up map light from the northwest and then fade in the same map (still south up) with a southeast (top left) light}.
+
 \subsection{2D vs 3D}
 
-Something that I find really fascinating is the fact that this isn't even a 3-dimensional map.
+I'd like to end the video by making one last comment on the simplicity of this effect: this is not a 3-dimensional map.
 And I don't just mean that the screen you're viewing is 2-dimensional.
 I mean that the actual model that I am rendering is 2D.
 
 \animation{Pitch the camera}
+
+Despite that, it is an incredibly effective method of conveying terrain information.
+I find that fascinating.
 
 \animation{3D flythrough?}
 
