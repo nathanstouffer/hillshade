@@ -28,11 +28,9 @@ You can probably see that this particular spot is relatively flat and that this 
 
 You are able to get all that complex information from a pretty simple grayscale image.
 In fact, I would be willing to bet that your understanding of this map is better than if I had given you the contour lines even though that is a more precise way to convey information.
+Here is a side-by-side to compare.
 
 \animation{Bring in more maps (one with just contours and another with contours/hillshade)}
-
-Here is a side-by-side to compare.
-Contours are really useful but they often take a bit more thought to interpret.
 
 This map is intentionally set up so that your brain can intuit the shape of the terrain.
 Modern computers do much of this work today, but cartographers have been using versions of this technique for hundreds of years.
@@ -67,31 +65,29 @@ The shortcuts come in the form of the following assumptions:
 
 \begin{enumerate}
 	
-\item First, we assume that the light source is extremely far away, essentially infinitely far away.
-If that is the case, every point in your scene has light coming from the same direction -- giving the technique gets its name.
-Given this direction, you can imagine a directional light as an effect where we light up areas that face the light and leave areas that don't face the light in shadow.
+\item First, we assume that the light source is extremely far away.
+If that is the case, every point in the scene has light coming from the same direction -- giving the technique its name.
+You can imagine a directional light as an effect where we light up areas that face the light and shadow areas that don't.
 
-\item The second assumption that is typically made when working with directional lights is that we ignore obstructions.
-What this means is that we aren't computing true shadows in the scene -- just whether or not a particular region \textit{faces} the light.
+\item The second assumption is that we ignore obstructions.
+What this means is that we aren't computing true shadows -- just whether or not terrain \textit{faces} the light.
 The direction is all that matters.
 
 \end{enumerate}
 
-In our context, the ``direction'' that the terrain faces is encoded in something called a surface normal.
-The surface normal at a particular point is a vector that is perpendicular (or more precisely, orthogonal) to the face of the terrain at that point.
-The light direction is given to us by configuration.
+The direction that the terrain faces is encoded in something called a surface normal.
+The surface normal at a particular point is a vector that is orthogonal to the face of the terrain.
 
-Though, to make the math a little simpler, I am going to use the negative of the light direction.
+The light direction is given to us by configuration.
+To make the math a little simpler, I am going to use the negative of the light direction.
 This is the vector $l$ that points directly \textit{towards} the light source.
 
 \animation{Show a rotating plane with a surface normal that is lit according to hillshade.}
 
 When zoomed in on a small region of the terrain with surface normal $n$, the effect we are looking for should behave like this:
-If $n$ points in the same direction as $l$, we light that region at full strength.
-If $n$ is set up so that $l$ kind of glances off the terrain, we light that region at medium strength.
-And if $n$ points directly opposite to $l$, we light that region at no strength.
-
-Performing this operation at every pixel in our image results in a lot texture that your brain can intuit to figure out what the terrain looks like in 3-dimensions.
+If $n$ points in the same direction as $l$, we want full-strength light.
+If $l$ kind of glances off the terrain, we want half-strength light.
+And if $n$ points directly opposite to $l$, we want no light at all.
 
 \section{Hillshading}
 
@@ -100,23 +96,21 @@ What are the nuts and bolts that take this effect from a discussion of a loosely
 
 \subsection{Cosine}
 
-We can start by describing exactly how the light strength should vary.
-To reason our way through this, it helps to think of what happens to our plane as $n$ rotates away from $l$.
-If we assume the light hits the plane evenly, then when the surface normal is aligned with $l$, the light is at full strength $S$.
-Then if we watch from the side as we rotate the plane by some angle $\theta$, we can compute the percentage of the original amount of light that hit this plane.
-This falls out from the definition of cosine: it is $\cos \theta$.
-When $\theta > \pi/2$, the plane is facing away from the light and $\cos \theta < 0$.
-Many applications clamp the cosine to $[0, 1]$ because our light strength should always be positive.
+We can start by mathematically describing how the light strength should vary.
+I'm going to gloss over the details, but the gist of the argument relies on the fact that the signed area of our rotated plane's shadow is $\cos \theta * A$ where $A$ is the area of the original plane and the sign encodes whether or not the plane faces the light source.
+If an un-rotated plane gets the full light strength $S$, then a rotated plane gets strength $S * \cos \theta$.
+
+You might notice that $\cos \theta$ can be negative.
+Some directional light models ignore negative light strengths.
+Hillshade takes a slightly different approach.
+Remember, we want effectively light a map so that the reader can see terrain features.
+When we clamp the light strength to the range $[0, 1]$, we effectively remove shading on all terrain that faces away from the light source.
+Instead of clamping, it is more effective to remap the range of cosine to the interval $[0, 1]$.
+This can be done by $\dfrac{1 + \cos \theta}{2}$.
 
 \begin{center}
 	\includegraphics[width=0.75\textwidth,frame]{assets/cosine.jpg}
 \end{center}
-
-That derivation works as-is for some contexts, but hillshade usually makes one tweak to that process.
-Remember, we want effectively light a map so that the map-reader can see the terrain features.
-When we clamp the light strength to the range $[0, 1]$, we effectively remove shading on all terrain that faces away from the light source.
-Instead of clamping, it is usually more effective to remap the range of cosine to the interval $[0, 1]$.
-This can be done by $\dfrac{1 + \cos \theta}{2}$.
 
 \subsection{Law of Cosines $=>$ Dot Product}
 
@@ -146,61 +140,22 @@ In this case, we are going to draw the third leg of our triangle here and use th
 
 The full Law of Cosines says that for any triangle with angles/sides labeled like so, we have $c^2 = a^2 + b^2 - 2ab \cos C$.
 In our case, $a = |l|$, $b = |n|$, and $C = \theta$.
-How can we compute the value of that third side length?
-
-Vectors add by being placed tip to tail.
-This means that the vector $\Delta$, which starts at $n$ and ends at $l$, is the thing that you can add to $n$ to get $l$: $l = n + \Delta => \Delta = l - n$.
-So we have:
+The third side is the difference between $l$ and $n$ so its length is $| l - n | ^ 2$.
 
 \begin{align*}
 |l-n|^2 = |l|^2 + |n|^2 - 2 |l| |n| \cos \theta & \quad \text{substitute from generalized LoC} \\
-|l-n|^2 = 2 - 2 \cos \theta & \quad \text{since we know } |l| = |n| = 1
+|l-n|^2 = 2 - 2 \cos \theta & \quad \text{since we know } |l| = |n| = 1 \\
+\dfrac{2 - |l-n|^2}{2} = \cos \theta & \quad \text{simplifying}
 \end{align*}
 
-To help with this next part, I'm going to introduce some shorthand notation for an operation that we are performing.
-The operation takes two vectors, performs a pairwise multiplication and sums the entries of the resulting vector.
-The notation I will use to signify this is a $\cdot$ between two vectors: $a \cdot b$.
-
-If we expand $|l - n|^2$ as $\sqrt{(l_x - n_x)^2 + (l_y - n_y)^2 + (l_z - n_z)^2} ^2$, our new notation comes in handy right away because we can rewrite that big expression as $\sqrt{(l - n) \cdot (l - n)}^2 = (l-n) \cdot (l - n)$.
-
-\begin{align*}
-(l - n) \cdot (l - n) = 2 - 2 \cos \theta & \quad \text{by using our new notation} \\
-l \cdot l - l \cdot n - n \cdot l + n \cdot n = 2 - 2 \cos \theta & \quad \text{distribute (I'm cheating here for the sake of brevity)} \\
-|l|^2 - 2 l \cdot n + |n|^2 = 2 - 2 \cos \theta & \quad \text{reversing our new notation} \\
-1 - 2 l \cdot n + 1 = 2 - 2 \cos \theta & \quad \text{simplifying} \\
-l \cdot n = \cos \theta & \quad \text{simplifying}
-\end{align*}
-
-Many of you have seen this result before.
-For those of you who haven't, that ``dot'' symbol I introduced represents an operation commonly known as the dot product.
-It is an exceedingly useful operation in mathematics and computer science, in large part because of the property that we just proved: that the dot product of two unit vectors is equal to the cosine of the angle between them.
-
-\subsubsection{Takeaways}
-
-I want you to take away a few things from this proof.
-
-First: The Law of Cosines is true for all triangles -- even degenerate ones where the three points are co-linear or even identical!
-So no matter what our two vectors are, we can compute the dot product $l \cdot n$ and it will always be $\cos \theta$!
-
-Second: We didn't really assume that our vector had to be in 3-dimensions.
-We only expanded our vector for x, y, and z but the same argument will hold for any dimension.
-
-Third: This relationship also has a more general form.
-We assumed that our two vectors had unit length, but we can make a slight tweak and then this result holds for any two vectors.
-All we need to do is scale $\cos \theta$ by the lengths of the relevant vectors.
-Given any two vectors $ a, b \in \mathbf{R}^n$: $a \cdot b = |a| |b| \cos \theta$.
-It might be a fun exercise for you to build on this proof and show why that is the case.
-
-Finally: I'd like you to recognize how surprising and elegant this result is.
-I mean, it's crazy that combining two lists of numbers in this really simple way exactly matches $\cos \theta$.
-Sometimes simple operations are really powerful.
+Using the Law of Cosines, we are now able to compute $\cos \theta$ just from the values of $l$ and $n$.
+Those of you who are familiar with the dot product know that this can be simplified further but I am going to leave it here in the interest of accessibility.
 
 \section{Final product}
 
-So now back to our directional lighting.
-From before, we want to light the terrain according to $\dfrac{1 + \cos \theta}{2}$ and we just proved that $\cos \theta = l \cdot n$.
-Substituting that in, we have the final product, the light strength is $\dfrac{1 + l \cdot n}{2}$.
-That's all it takes to produce the hillshade shown in these images.
+So now we have the final product!
+From earlier, we know that we want to light the terrain according to $\dfrac{1 + \cos \theta}{2}$ and we just proved that we can compute $\cos \theta$ as $\dfrac{2 - |l-n|^2}{2}$.
+That's all it takes to produce the beautiful hillshade effect shown in these images.
 
 \animation{Show a few examples.}
 
