@@ -94,13 +94,15 @@ what are the nuts and bolts that turn this loose discussion into a sequence of m
 
 \subsection{Cosine}
 
-\todo{Improve this.}
-
 We can start by being more precise about describing how the light strength should vary.
-I'm going to gloss over the details, but here's the gist of the argument.
-If we represent a small area of the terrain as a rotated square, the angle between the surface normal $n$ and the vector $l$ (which is the negative of the light direction) 
-relies on the fact that (with a directional light) the signed area of a rotated square's shadow is $\cos \theta * A$ where $A$ is the area of the original plane and the sign encodes whether or not the plane faces the light source.
-If an un-rotated plane gets the full light strength $S$, then a rotated plane gets strength $S * \cos \theta$.
+Let's represent a small area of the terrain as a rotated square.
+When $n$ and $l$ point in the exact same direction, we want to light at full strength.
+And we know we want to decrease the strength of the light as the angle between $n$ and $l$ increases.
+To root some of our model in reality, it would be a good idea to decrease the strength of the shadow based on how much light is blocked by the rotated square.
+The amount of light that is blocked is the area of the shadow.
+
+I won't prove this for you, but it so happens that the signed area of the rotated square's shadow is $\cos \theta * A$ where $A$ is the area of the original plane and the sign encodes whether or not the plane faces the light source.
+If an un-rotated plane gets the full light strength $1$, then a rotated plane gets strength $1 * \cos \theta = \cos \theta$.
 
 You might notice that $\cos \theta$ can be negative.
 What are we to do with a negative light strength?
