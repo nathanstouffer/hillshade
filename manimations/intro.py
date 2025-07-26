@@ -5,7 +5,8 @@ class Motivation(Scene):
         # Load and scale image
         hillshade = ImageMobject("assets/hillshade-example.png")
         hillshade.scale_to_fit_height(6)
-        self.add(hillshade)
+        self.play(FadeIn(hillshade))
+        self.wait(1)
 
         def add_ellipse_label(pos, dim, rotation, text, label_pos, arc):
             # Ellipse
@@ -51,12 +52,20 @@ class Motivation(Scene):
             )
             arrow.tip.set_opacity(opacity)
 
-            self.add(ellipse, label, arrow)
+            self.play(FadeIn(ellipse), Write(label), FadeIn(arrow))
+            #self.add(ellipse, label, arrow)
 
         # --- Call with explicit label positions in the margin ---
+        self.wait(0.5)
         add_ellipse_label([2.35, 0.35, 0], [1.25, 1], PI / 6, "Flat", [4.5, 0, 0], -PI / 8)
+        self.wait(0.5)
         add_ellipse_label([-1.75, -2.1, 0], [1.75, 1], -PI / 6, "Steep", [-4.5, -2.5, 0], PI / 4)
+        self.wait(0.5)
         add_ellipse_label([0.675, 0, 0], [1, 0.5], PI / 6, "Gully", [4.5, 2.5, 0], PI / 4)
+        self.wait(0.5)
         add_ellipse_label([-1.8, 1.9, 0], [2, 0.75], -PI / 96, "Ridgeline", [-5, 3, 0], -PI / 6)
+        self.wait(0.5)
         add_ellipse_label([-1.75, 0.5, 0], [1.5, 1.25], -PI / 6, "Rugged", [-4.75, 0.5, 0], PI / 12)
+        self.wait(0.5)
         add_ellipse_label([2.35, -2.5, 0], [1, 0.9], 0, "Even", [4.5, -2, 0], PI / 12)
+        self.wait(1.5)
