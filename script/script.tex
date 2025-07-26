@@ -103,13 +103,14 @@ We can start by being more precise about describing how the light strength shoul
 Let's represent a small area of the terrain as a rotated square.
 When $n$ and $l$ point in the exact same direction, we want to light at full strength.
 And we know we want to decrease the strength of the light as the angle between $n$ and $l$ increases.
-To root some of our model in reality, it would be a good idea to decrease the intensity of the shading based on how much light is blocked by the rotated square - the area of the shadow.
+To root some of our model in reality, it would be a good idea to decrease the intensity of the shading based on how much light is blocked by the rotated square - ie the area of the shadow.
 
-I won't prove this for you, but it so happens that (with a directional light) the signed area of a rotated square's shadow is $\cos \theta * A$ where $A$ is the area of the original square and the sign encodes whether or not the square faces the light source.
-If an un-rotated square gets the full light strength $1$, then this fact implies that a rotated square gets strength $1 * \cos \theta = \cos \theta$.
+I won't prove this for you, but it so happens that (with a directional light) the signed area of a rotated square's shadow is $\cos \theta * A$ where $A$ is the area of the square, $\theta$ is the angle between $l$ and $n$, and the sign encodes whether or not the square faces the light source (positive means facing the light source and negative means facing away).
+If an un-rotated square gets the full light strength of $1$, then this fact implies that a rotated square gets strength $1 * \cos \theta = \cos \theta$.
 
 You might notice that $\cos \theta$ can be negative.
 What are we to do with a negative light strength?
+Well, it depends on the application.
 Some directional light models ignore negative light strengths.
 Hillshade takes a slightly different approach.
 Our goal is to effectively illuminate a map so that the reader can see terrain features.
@@ -135,7 +136,7 @@ It might take a lot of tries and result in quite a few dead ends.
 It's one of those things where experience is the best teacher.
 
 ... But if I were to offer one piece of advice, I would say it's often worth constructing a triangle.
-Maybe it's the types of problems that I interact with, but I find triangles to be an extremely effective tool.
+Maybe it's the type of problems that I interact with, but I find triangles to be an extremely effective tool.
 In this case, we are going to draw the third leg of our triangle here and use the Law of Cosines.
 
 \begin{center}
@@ -148,23 +149,19 @@ The full Law of Cosines says that for any triangle with sides/angle labeled like
 In our case, $a = |l|$, $b = |n|$, and $C = \theta$.
 The third side of our triangle is the difference between $l$ and $n$ so its length is $| l - n |$.
 
-\todo{explicitly script out the substitution.}
-
 \begin{align*}
 |l-n|^2 = |l|^2 + |n|^2 - 2 |l| |n| \cos \theta & \quad \text{substitute from generalized LoC} \\
 |l-n|^2 = 2 - 2 \cos \theta & \quad \text{didn't discuss this earlier, but } |l| = |n| = 1 \\
 1 - \dfrac{1}{2}|l-n|^2 = \cos \theta & \quad \text{simplifying}
 \end{align*}
 
-\todo{this bit could use some work}
-
-Using the Law of Cosines, we are now able to compute $\cos \theta$ just from the values of $l$ and $n$.
-Those of you familiar with the dot product know that this can be simplified further (resulting in some extremely efficient code).
-But in the interest of accessibility, I am going to leave it here.
+Using the Law of Cosines, we are now able to compute $\cos \theta$ from the values of $l$ and $n$.
+If you are familiar with the dot product, you know that this can be simplified further (resulting in some extremely efficient code).
+In the interest of accessibility, I'm going to leave it here.
 
 \section{Final product (about 30s)}
 
-And there we have it -- the final product!
+And that pretty much wraps it up: here is the final product.
 From our shadow area discussion, we want the strength of our light to be $\dfrac{1}{2}(1 + \cos \theta)$ and we just figured out that $\cos \theta = 1 - \dfrac{1}{2}|l-n|^2$.
 Computing that value for each pixel is all it takes to produce the beautiful hillshades shown in these images.
 It never ceases to amaze me how such simple a computation can produce such stunning and realistic results.
@@ -187,7 +184,7 @@ You now have the mathematical framework that sits behind all of them.
 
 \subsection{Pseudoscopic Illusion (about 30s)}
 
-Most people recognize terrain features better when the light is placed in the top left of an image.
+Most people have an easier time recognize terrain features when the light is placed in the top left of an image.
 Because many maps use a north-up convention, hillshade is typically lit from the northwest.
 
 However, this can sometimes backfire when a map with static hillshade is oriented with a south-up convention.
@@ -198,14 +195,14 @@ This is called a pseudoscopic illusion.
 
 \subsection{Simplicity (about 30s)}
 
-For my final comment, I would like revisit the simplicity of this effect -- I just can't get over it!
-As we've discussed, the math is pretty simple and the results are unreasonably effective.
+For my final comment, I'd like revisit the simplicity of this effect -- I just can't get over it!
+As we've discussed, the math is pretty simple yet the results are unreasonably effective.
 But what's even crazier is the fact that all the maps you've seen in this video are 2-dimensional -- and I don't just mean that the screen you're viewing is 2-dimensional.
 I mean that the actual model that I am rendering is 2D.
 
 \animation{Pitch the camera}
 
-Despite that, it seems pretty realistic.
+Despite that, at least to me, hillshade vividly evokes the 3D nature of terrain.
 I find that fascinating.
 
 \animation{3D flythrough?}
