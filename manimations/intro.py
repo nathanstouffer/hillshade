@@ -55,27 +55,32 @@ class Motivation(Scene):
         hillshade.scale_to_fit_height(6)
         self.add(hillshade)
 
-        def add_ellipse_label(pos, dim, rotation, text):
+        def add_ellipse_label(pos, dim, rotation, text, label_pos, arc):
+            # Ellipse
             ellipse = Ellipse(width=dim[0], height=dim[1], color=GREEN)
             ellipse.rotate(rotation)
             ellipse.move_to(pos)
-            label = Text(text, font_size=24).next_to(ellipse, UP)
-            self.add(ellipse, label)
 
-        # Flat
-        add_ellipse_label([2.35, 0.35, 0], [1.25, 1], PI / 6, "Flat")
+            # Label (placed in margin)
+            label = Text(text, font_size=24, color=WHITE).move_to(label_pos)
 
-        # Steep
-        add_ellipse_label([-1.75, -2.1, 0], [1.75, 1], -PI / 6, "Steep")
+            to_label = label.get_center() - ellipse.get_center()
+            to_ellipse = ellipse.get_center() - label.get_center()
 
-        # Gully
-        add_ellipse_label([0.675, 0, 0], [1, 0.5], PI / 6, "Gully")
+            # Curved arrow from label to ellipse
+            arrow = CurvedArrow(
+                start_point=label.get_boundary_point(to_ellipse),
+                end_point=ellipse.get_boundary_point(to_label),
+                color=WHITE,
+                angle=arc  # adjust angle for curve shape
+            )
 
-        # Ridgeline
-        add_ellipse_label([-1.8, 1.9, 0], [2, 0.75], -PI / 96, "Ridgeline")
+            self.add(ellipse, label, arrow)
 
-        # Rugged
-        add_ellipse_label([-1.75, 0.5, 0], [1.5, 1.25], -PI / 6, "Rugged")
-
-        # Even
-        add_ellipse_label([2.35, -2.5, 0], [1, 0.9], 0, "Even")
+        # --- Call with explicit label positions in the margin ---
+        add_ellipse_label([2.35, 0.35, 0], [1.25, 1], PI / 6, "Flat", [4, 1.5, 0], PI / 8)
+        add_ellipse_label([-1.75, -2.1, 0], [1.75, 1], -PI / 6, "Steep", [-4.5, -2.5, 0], PI / 4)
+        add_ellipse_label([0.675, 0, 0], [1, 0.5], PI / 6, "Gully", [4, 2.5, 0], PI / 4)
+        add_ellipse_label([-1.8, 1.9, 0], [2, 0.75], -PI / 96, "Ridgeline", [-5, 3, 0], -PI / 6)
+        add_ellipse_label([-1.75, 0.5, 0], [1.5, 1.25], -PI / 6, "Rugged", [-4.75, 0.5, 0], PI / 12)
+        add_ellipse_label([2.35, -2.5, 0], [1, 0.9], 0, "Even", [4.5, -2, 0], -PI / 6)
