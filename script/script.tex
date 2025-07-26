@@ -43,8 +43,6 @@ We're going to see why it's an effective method of illumination and walk through
 
 \subsection{Directional Lighting (about 2m 20s)}
 
-\todo{this section could use some clean up}
-
 The particular topic we'll be discussing is hillshade, but it's worth mentioning that hillshade is a very specific example of something called a directional light.
 Directional lights are used all over computer graphics and are themselves just one option for how you might want to light a scene.
 What I find so intriguing about directional lights is that they give you a lot of bang for your buck.
@@ -66,17 +64,16 @@ In the interest of simplicity, directional lights take a few shortcuts:
 \begin{enumerate}
 	
 \item First, they ignore obstructions.
-What this means is that we aren't computing true shadows -- just whether or not an object is looking at the light source.
-This is the piece of directional lights that I find to be the most interesting: even when ignoring obstructions, directional lights give enough hints of realism to trick your brain into thinking objects are in 3-dimensions.
+What this means is that we won't compute true shadows -- just whether or not an object is looking at the light source.
+This is the piece of directional lights that I find to be the most interesting: even when ignoring obstructions, directional lights give enough hints of realism to trick your brain into thinking objects are 3D.
 
 \animation{Demonstrate a simple example of shadows in 2D}.
 	
 \item Second, directional lights assume the light source to be extremely far away.
-If that is the case, every point in the scene has light coming from the same direction.
-This gives the technique its name.
+This assumption means that every point in the scene has light coming from the same direction $l$ -- giving the technique its name.
 
-To make the math a little simpler, I am actually going to use the negative of the light direction.
-This is the vector $l$ that points directly \textit{towards} the light source.
+Though, to make the math a little simpler, I am actually going to use the negative of the light direction.
+So $l$ is the vector that that points directly \textit{towards} the light source.
 
 \end{enumerate}
 
@@ -97,13 +94,11 @@ What are the nuts and bolts that turn this loose discussion into a sequence of m
 
 \subsection{Cosine (about 1m 50s)}
 
-\todo {this section could use clean up}
-
 We can start by being more precise about describing how the light strength should vary.
 Let's represent a small area of the terrain as a rotated square.
 When $n$ and $l$ point in the exact same direction, we want to light at full strength.
 And we know we want to decrease the strength of the light as the angle between $n$ and $l$ increases.
-To root some of our model in reality, it would be a good idea to decrease the intensity of the shading based on how much light is blocked by the rotated square - ie the area of the shadow.
+To root some of our model in reality, it would be a good idea to decrease the intensity of the shading based on how much light is blocked by the rotated square - ie the area of its shadow.
 
 I won't prove this for you, but it so happens that (with a directional light) the signed area of a rotated square's shadow is $\cos \theta * A$ where $A$ is the area of the square, $\theta$ is the angle between $l$ and $n$, and the sign encodes whether or not the square faces the light source (positive means facing the light source and negative means facing away).
 If an un-rotated square gets the full light strength of $1$, then this fact implies that a rotated square gets strength $1 * \cos \theta = \cos \theta$.
@@ -124,7 +119,7 @@ This can be done by first adding 1 to the result and then dividing by 2.
 	\includegraphics[width=0.75\textwidth,frame]{assets/cosine.jpg}
 \end{center}
 
-\subsection{Law of Cosines $=>$ Dot Product (about 2m)}
+\subsection{Law of Cosines (about 2m)}
 
 We now know that we want to vary the strength of our lighting according to $\cos \theta$.
 But that doesn't really help us much because we don't know what $\theta$ is -- all we know are the vectors $l$ and $n$.
@@ -147,7 +142,7 @@ In this case, we are going to draw the third leg of our triangle here and use th
 
 The full Law of Cosines says that for any triangle with sides/angle labeled like so, we have the following equality: $c^2 = a^2 + b^2 - 2ab \cos C$.
 In our case, $a = |l|$, $b = |n|$, and $C = \theta$.
-The third side of our triangle is the difference between $l$ and $n$ so its length is $| l - n |$.
+The third side of our triangle is the difference between $l$ and $n$ so its length is magnitude of that difference.
 
 \begin{align*}
 |l-n|^2 = |l|^2 + |n|^2 - 2 |l| |n| \cos \theta & \quad \text{substitute from generalized LoC} \\
@@ -155,16 +150,18 @@ The third side of our triangle is the difference between $l$ and $n$ so its leng
 1 - \dfrac{1}{2}|l-n|^2 = \cos \theta & \quad \text{simplifying}
 \end{align*}
 
-Using the Law of Cosines, we are now able to compute $\cos \theta$ from the values of $l$ and $n$.
-If you are familiar with the dot product, you know that this can be simplified further (resulting in some extremely efficient code).
-In the interest of accessibility, I'm going to leave it here.
+I didn't mention this earlier, but by convention, $l$ and $n$ are unit vectors -- meaning their magnitude is 1.
+If we use that fact and then simplify, we can compute $\cos \theta$ from values that we already know: the vectors $l$ and $n$.
+
+If you are familiar with the dot product, you know that this can be simplified further.
+But in the interest of accessibility, I'm going to leave it here because we have what we need.
 
 \section{Final product (about 30s)}
 
-And that pretty much wraps it up: here is the final product.
-From our shadow area discussion, we want the strength of our light to be $\dfrac{1}{2}(1 + \cos \theta)$ and we just figured out that $\cos \theta = 1 - \dfrac{1}{2}|l-n|^2$.
-Computing that value for each pixel is all it takes to produce the beautiful hillshades shown in these images.
-It never ceases to amaze me how such simple a computation can produce such stunning and realistic results.
+And that pretty much wraps it up.
+From our shadow area discussion, we know the strength of our light is $\dfrac{1}{2}(1 + \cos \theta)$ and we just figured out how to compute $\cos \theta$ in terms of the two things we know: the vectors $l$ and $n$.
+Computing that value for each pixel is all it takes to produce the beautiful images shown below.
+It never ceases to amaze me how such simple a computation can produce stunning and realistic results.
 
 \animation{Show a few examples.}
 
@@ -175,9 +172,9 @@ I'd like to close the video by making a few comments.
 \subsection{Modifications (about 25s)}
 
 Hillshade isn't just one thing.
-It is actually a term for a family of effects that can be applied to a map.
+It's actually a term for a family of effects that can be applied to a map.
 There are a lot of variations out there.
-Some examples include adding ambient lighting, exaggerating the terrain when computing the normal vector, using multiple light sources, and playing around with colored lights.
+Different models might add ambient light, exaggerate the terrain, use multiple light sources, or play around with colored lights.
 You now have the mathematical framework that sits behind all of them.
 
 \todo{Possibly mention Eduard Imhof.}
