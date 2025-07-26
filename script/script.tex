@@ -48,7 +48,7 @@ We're going to see why it's an effective method of illumination and walk through
 The particular topic we'll be discussing is hillshade, but it's worth mentioning that hillshade is a very specific example of something called a directional light.
 Directional lights are used all over computer graphics and are themselves just one option for how you might want to light a scene.
 What I find so intriguing about directional lights is that they give you a lot of bang for your buck.
-They give you quite a bit of realism for the amount of effort that you need to expend.
+You get a lot of realism for the amount of effort that you need to expend.
 
 \animation{Fade in a graph similar to the below image.}
 
@@ -65,15 +65,15 @@ In the interest of simplicity, directional lights take a few shortcuts:
 
 \begin{enumerate}
 	
-\item First, we ignore obstructions.
-What this means is that we aren't computing true shadows -- just whether or not terrain \textit{faces} the light.
-The direction is all that matters.
+\item First, they ignore obstructions.
+What this means is that we aren't computing true shadows -- just whether or not an object is looking at the light source.
+This is the piece of directional lights that I find to be the most interesting: even when ignoring obstructions, directional lights give enough hints of realism to trick your brain into thinking objects are in 3-dimensions.
 
 \animation{Demonstrate a simple example of shadows in 2D}.
 	
-\item Second, we assume the light source to be extremely far away.
-If that is the case, every point in the scene has light coming from the same direction -- giving the technique its name.
-You can imagine a directional light as an effect where we light up areas that face the light and shadow areas that don't.
+\item Second, directional lights assume the light source to be extremely far away.
+If that is the case, every point in the scene has light coming from the same direction.
+This gives the technique its name.
 
 To make the math a little simpler, I am actually going to use the negative of the light direction.
 This is the vector $l$ that points directly \textit{towards} the light source.
