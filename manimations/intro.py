@@ -76,7 +76,7 @@ class Motivation(Scene):
         self.wait(6.5)
         self.play(*[FadeOut(mob) for mob in self.mobjects if mob != hillshade], run_time=2)
 
-class Title(Scene):
+class Topic(Scene):
     def construct(self): 
         hillshade = ImageMobject("assets/bench-lakes.png")
         hillshade.scale_to_fit_height(6)
