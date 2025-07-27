@@ -4,7 +4,8 @@ import config
 class Motivation(Scene):
     def construct(self):
         # Load and scale image
-        self.add_sound(f"{config.AUDIO_ASSETS}/motivation-0.m4a")
+        if config.INCLUDE_AUDIO:
+            self.add_sound(f"{config.AUDIO_ASSETS}/motivation-0.m4a")
  
         hillshade = ImageMobject("assets/bench-lakes.png")
         hillshade.scale_to_fit_height(6)

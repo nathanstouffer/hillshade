@@ -2,62 +2,54 @@ from manim import *
 import numpy as np
 
 
-class CosineThetaToDotProduct(Scene):
-
-    def place(self, theta, radius, y_translation):
-        x = radius * np.cos(theta)
-        y = radius * np.sin(theta) + y_translation
-        return np.array([x, y, 0])
+class EffectGraph(Scene):
 
     def construct(self):
-        # --- Geometry setup ---
-        RENDER_RADIUS = 5
-        RENDER_SHIFT = -1.5
-        THETA_N = np.pi / 6
-        THETA_L = 3 * np.pi / 4
-        P = np.array([0, RENDER_SHIFT, 0])
-        N = self.place(THETA_N, RENDER_RADIUS, RENDER_SHIFT)
-        L = self.place(THETA_L, RENDER_RADIUS, RENDER_SHIFT)
-
-        # --- Vector representation ---
-        PN_vec = Arrow(P, N, buff=0, color=BLUE)
-        PL_vec = Arrow(P, L, buff=0, color=YELLOW)
-        LN_vec = Arrow(L, N, buff=0, color=GREEN)
-
-        side_n = Line(P, N, color=BLUE)
-        side_w = Line(N, L, color=GREEN)
-        side_l = Line(P, L, color=YELLOW)
-
-        self.play(GrowArrow(PL_vec), Create(side_l), GrowArrow(PN_vec), Create(side_n))
-        self.wait()
-
-        # --- Side and angle labels ---
-        # TODO (stouff) improve label placement
-        n_label = MathTex("n", color=BLUE).next_to(side_n.get_center(), 2 * DOWN)
-        l_label = MathTex("l", color=YELLOW).next_to(side_l.get_center(), 2 * LEFT)
-
-        angle_theta = Angle(Line(P, N), Line(P, L), radius=0.6, other_angle=False, color=WHITE)
-        theta_label = MathTex("\\theta", color=WHITE).next_to(angle_theta, UP)
-
-        self.play(
-            Write(n_label),
-            Write(l_label),
-            Create(angle_theta),
+        # Axes without ticks
+        axes = Axes(
+            x_range=[0, 12],
+            y_range=[0, 6],
+            x_length=12,
+            y_length=6,
+            axis_config={"include_tip": True, "include_ticks": False},
         )
-        self.play(Write(theta_label))
-        self.wait(3)
 
-        # --- Algebraic proof steps ---
-        step1 = MathTex("|l-n|^{2}", "=", "|l|^{2} + |n|^{2} - 2 |l| |n| \\cos\\theta")
-        step2 = MathTex("=", "\\|\\vec{AC}-\\vec{BC}\\|^{2}")
-        step3 = MathTex("=", "\\|\\vec{AC}\\|^{2}+\\|\\vec{BC}\\|^{2}-2\\,\\vec{AC}\\cdot\\vec{BC}")
-        step4 = MathTex("=", "b^{2} + a^{2} - 2ab\\cos\\gamma")
-        conclusion = MathTex("\\therefore\\; c^{2} = a^{2} + b^{2} - 2ab\\cos\\gamma")
+        self.play(Create(axes))
 
-        eq_group = VGroup(step1, step2, step3, step4, conclusion).arrange(
-            DOWN, aligned_edge=LEFT
-        ).to_corner(UL)
+        # Custom axis labels
+        realism_label = Text("realism", font_size=28).next_to(axes.y_axis, LEFT).rotate(PI / 2)
+        realism_label.move_to(axes.y_axis.get_center() + LEFT * 0.4)
 
-        for eq in eq_group:
-            self.play(Write(eq))
-            self.wait(0.5)
+        cost_label = Text("cost (complexity/memory/time)", font_size=24)
+        cost_label.next_to(axes.x_axis, DOWN)
+        cost_label.move_to(axes.x_axis.get_center() + DOWN * 0.4)
+
+        self.play(Write(realism_label), Write(cost_label))
+
+        # Lighting techniques (fade in one-by-one, directional last)
+        labels_and_points = [
+            ("shadow maps", [8, 5]),
+            ("ambient light", [0.75, 0.75]),
+            ("ray tracing", [10, 5.75]),
+            ("directional lights", [1.75, 4]),  # shown last
+        ]
+
+        for label, (x, y) in labels_and_points[:-1]:  # all but directional light
+            dot = Dot(axes.c2p(x, y), color=YELLOW)
+            text = Text(label, font_size=28).next_to(dot, RIGHT + 0.125 * DOWN, buff=0.1)
+            self.play(FadeIn(dot), Write(text))
+            self.wait(0.3)
+
+        # Directional light: last and highlighted
+        label, (x, y) = labels_and_points[-1]
+        directional_dot = Dot(axes.c2p(x, y), color=YELLOW)
+        directional_text = Text(label, font_size=28).next_to(directional_dot, RIGHT + 0.125 * DOWN, buff=0.1)
+
+        self.play(FadeIn(directional_dot), Write(directional_text))
+        self.wait(0.5)
+
+        # Highlight the sweet spot
+        circle = Circle(radius=0.2, color=GREEN).move_to(directional_dot)
+
+        self.play(Create(circle))
+        self.wait(2)
