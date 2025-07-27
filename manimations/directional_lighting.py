@@ -35,9 +35,10 @@ class EffectGraph(Scene):
         cost_label.next_to(axes.x_axis, DOWN)
         cost_label.move_to(axes.x_axis.get_center() + DOWN * 0.4)
 
+        self.wait(2)
         self.play(Write(realism_label))
         
-        self.wait(3)
+        self.wait(1)
         self.play(Write(cost_label))
 
         # Lighting techniques (fade in one-by-one, directional last)
@@ -47,6 +48,8 @@ class EffectGraph(Scene):
             ("ray tracing", [10, 5.75]),
             ("directional lights", [1.75, 4]),  # shown last
         ]
+
+        self.wait(3)
 
         for label, (x, y) in labels_and_points[:-1]:  # all but directional light
             dot = Dot(axes.c2p(x, y), color=YELLOW)
