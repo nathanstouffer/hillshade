@@ -1,11 +1,12 @@
 from manim import *
+import config
 
 class Motivation(Scene):
     def construct(self):
         # Load and scale image
-        self.add_sound("assets/audio/recordings/v1/motivation-0.m4a")
+        self.add_sound(f"{config.AUDIO_ASSETS}/motivation-0.m4a")
  
-        hillshade = ImageMobject("assets/hillshade-example.png")
+        hillshade = ImageMobject("assets/bench-lakes.png")
         hillshade.scale_to_fit_height(6)
         self.play(FadeIn(hillshade))
         self.wait(1)
@@ -74,3 +75,16 @@ class Motivation(Scene):
 
         self.wait(6.5)
         self.play(*[FadeOut(mob) for mob in self.mobjects if mob != hillshade], run_time=2)
+
+class Title(Scene):
+    def construct(self): 
+        hillshade = ImageMobject("assets/bench-lakes.png")
+        hillshade.scale_to_fit_height(6)
+        self.add(hillshade)
+
+        self.play(hillshade.animate.move_to([0, -0.5, 0]))
+
+        text = Text("Topic: Hillshade", font_size=32, color=WHITE).move_to([0, 3.125, 0])
+        underline = Underline(text)
+        self.play(Write(text))
+        self.play(Write(underline))
