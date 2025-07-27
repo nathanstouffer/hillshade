@@ -1,10 +1,21 @@
 from manim import *
-import numpy as np
-
+import config
 
 class EffectGraph(Scene):
 
     def construct(self):
+        if config.INCLUDE_AUDIO:
+            self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-0.m4a")
+
+        self.wait(7)
+        directional_lighting_section = Text("I. Directional Lighting", font_size=32, color=WHITE)
+        self.play(Write(directional_lighting_section))
+        self.wait(1)
+
+        self.play(directional_lighting_section.animate.move_to([0, 3.25, 0]))
+
+        self.wait(16)
+
         # Axes without ticks
         axes = Axes(
             x_range=[0, 12],
@@ -24,7 +35,10 @@ class EffectGraph(Scene):
         cost_label.next_to(axes.x_axis, DOWN)
         cost_label.move_to(axes.x_axis.get_center() + DOWN * 0.4)
 
-        self.play(Write(realism_label), Write(cost_label))
+        self.play(Write(realism_label))
+        
+        self.wait(3)
+        self.play(Write(cost_label))
 
         # Lighting techniques (fade in one-by-one, directional last)
         labels_and_points = [
