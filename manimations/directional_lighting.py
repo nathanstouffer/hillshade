@@ -122,6 +122,61 @@ class Assumptions(Scene):
         self.wait(1)
         self.play(Write(goal))
 
+        ray_color = YELLOW
+        object_color = WHITE
+
+        # Positions
+        wall_x = 5.0
+        wall_min_y = -3.5
+        wall_length = 3
+        obstruction_length = 0.7
+        mid_y = wall_min_y + 0.5 * wall_length
+
+        wall = Line(ORIGIN, wall_length * UP, color=object_color).shift(wall_x * RIGHT + wall_min_y * UP)
+        obstruction = Line(ORIGIN, obstruction_length * UP).shift(UP * (mid_y - 0.5 * obstruction_length))
+
+        start_light_pos = 4.5 * LEFT + mid_y * UP
+        far_light_pos = 150 * LEFT + mid_y * UP
+
+        point_light = Dot(start_light_pos, color=ray_color)
+
+        point_light_label = Text("Light source", font_size=28).next_to(point_light, UP, buff=0.2)
+        wall_label = Text("Object", font_size=28).next_to(wall, UP, buff=0.2)
+        obstruction_label = Text("Obstruction", font_size=28).next_to(obstruction, RIGHT, buff=0.2)
+        self.play(FadeIn(point_light), FadeIn(obstruction), FadeIn(wall))
+
+        self.play(Write(point_light_label))
+        self.play(Write(wall_label))
+        self.play(Write(obstruction_label))
+
+        # === STATE 1: Rays stop at the obstruction ===
+        max_angle = np.atan2(0.5 * wall_length, wall_x - start_light_pos[0])
+        eps = max_angle * 0.05
+        angles = np.linspace(max_angle - eps, -max_angle + eps, 11)
+        rays1 = VGroup()
+
+        padding = 0.075
+        for angle in angles:
+            ray_origin = start_light_pos
+            ray_direction = rotate_vector(RIGHT, angle)
+
+            t = (obstruction.get_center()[0] - ray_origin[0]) / ray_direction[0]
+            y = ray_direction[1] * t
+            threshold = 0.5 * obstruction_length
+            if not (-threshold <= y and y <= threshold):
+                t = (wall.get_center()[0] - ray_origin[0]) / ray_direction[0]
+
+            hit_point = ray_origin + t * ray_direction
+
+            # Intersect approx with front edge of circle
+            src = ray_origin + padding * ray_direction
+            dst = hit_point - padding * ray_direction
+            ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
+            rays1.add(ray)
+
+        self.play(LaggedStart(*[GrowArrow(ray) for ray in rays1], lag_ratio=0.075))
+        self.wait(0.5)
+
         # Create Text objects for the list
         assumption_numberings = [ "#1:", "#2:" ]
         assumption_explanations = [
@@ -167,54 +222,6 @@ class Assumptions(Scene):
 
         self.wait(1)
 
-        ray_color = YELLOW
-        object_color = WHITE
-
-        # Positions
-        wall_x = 5.0
-        wall_min_y = -3.5
-        wall_length = 3
-        obstruction_length = 0.7
-        mid_y = wall_min_y + 0.5 * wall_length
-
-        wall = Line(ORIGIN, wall_length * UP, color=object_color).shift(wall_x * RIGHT + wall_min_y * UP)
-        obstruction = Line(ORIGIN, obstruction_length * UP).shift(UP * (mid_y - 0.5 * obstruction_length))
-
-        start_light_pos = 4.5 * LEFT + mid_y * UP
-        far_light_pos = 150 * LEFT + mid_y * UP
-
-        # Scene elements
-        point_light = Dot(start_light_pos, color=ray_color)
-        self.play(FadeIn(point_light), FadeIn(obstruction), FadeIn(wall))
-
-        # === STATE 1: Rays stop at the obstruction ===
-        max_angle = np.atan2(0.5 * wall_length, wall_x - start_light_pos[0])
-        eps = max_angle * 0.05
-        angles = np.linspace(max_angle - eps, -max_angle + eps, 11)
-        rays1 = VGroup()
-
-        padding = 0.075
-        for angle in angles:
-            ray_origin = start_light_pos
-            ray_direction = rotate_vector(RIGHT, angle)
-
-            t = (obstruction.get_center()[0] - ray_origin[0]) / ray_direction[0]
-            y = ray_direction[1] * t
-            threshold = 0.5 * obstruction_length
-            if not (-threshold <= y and y <= threshold):
-                t = (wall.get_center()[0] - ray_origin[0]) / ray_direction[0]
-
-            hit_point = ray_origin + t * ray_direction
-
-            # Intersect approx with front edge of circle
-            src = ray_origin + padding * ray_direction
-            dst = hit_point - padding * ray_direction
-            ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
-            rays1.add(ray)
-
-        self.play(LaggedStart(*[GrowArrow(ray) for ray in rays1], lag_ratio=0.075))
-        self.wait(0.5)
-
         # === STATE 2: Rays pass through the obstruction and reach the wall ===
         rays2 = VGroup()
         for angle in angles:
@@ -230,7 +237,12 @@ class Assumptions(Scene):
             ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
             rays2.add(ray)
 
-        self.play(ReplacementTransform(rays1, rays2), Write(assumptions_text[0]), run_time=1.0)
+        self.play(
+            ReplacementTransform(rays1, rays2),
+            Write(assumptions_text[0]),
+            FadeOut(obstruction_label),
+            run_time=1.0
+        )
         self.wait(0.5)
 
         # === STATE 3: Light moves far left → nearly parallel rays ===
@@ -255,6 +267,7 @@ class Assumptions(Scene):
 
         self.play(
             point_light.animate.move_to(far_light_pos),
+            point_light_label.animate.move_to(far_light_pos),
             ReplacementTransform(rays2, rays3),
             Write(assumptions_text[1]),
             run_time=1.5
