@@ -272,4 +272,17 @@ class Assumptions(Scene):
             Write(assumptions_text[1]),
             run_time=1.5
         )
-        self.wait()
+        self.wait(1)
+
+        light_direction_arrow = Arrow(start=[1, 1, 0], end=[4, 1, 0], color=YELLOW)
+        light_direction_label = MathTex("l", color=YELLOW).scale(1).next_to(light_direction_arrow, UP + RIGHT, buff=0.1)
+
+        self.play(GrowArrow(light_direction_arrow))
+        self.play(Write(light_direction_label))
+        self.wait(1)
+
+        reversed_light_direction_arrow = Arrow(start=[4, 1, 0], end=[1, 1, 0], color=YELLOW)
+        self.play(
+            ReplacementTransform(light_direction_arrow, reversed_light_direction_arrow),
+            light_direction_label.animate.next_to(reversed_light_direction_arrow, direction=UP + LEFT, buff=0.1)
+        )
