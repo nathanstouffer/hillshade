@@ -110,47 +110,53 @@ class Shortcuts(Scene):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-1.m4a")
 
-        directional_lighting_section = Text("I. Directional Lighting", font_size=32, color=WHITE).move_to([0, 3, 0])
+        directional_lighting_section = Text("I. Directional Lighting", font_size=32).move_to([0, 3, 0])
         self.add(directional_lighting_section)
 
         question = Text("What is a directional light?", font_size=30)
         self.play(Write(question))
         self.wait(1)
-        self.play(FadeOut(question))
+        self.play(FadeOut(directional_lighting_section), FadeOut(question))
+
+        goal = Text("Goal: Pseudo-realistic lighting", font_size=32).move_to([0, 3, 0])
+        self.wait(1)
+        self.play(Write(goal))
 
         # Create Text objects for the list
-        shortcuts = [
+        assumptions = [
             "#1: Ignore obstructions",
             "#2: Infinite distance"
         ]
-        shortcut_texts = [Text(shortcut, font_size=30) for shortcut in shortcuts]
+        assumption_texts = [Text(assumption, font_size=30) for assumption in assumptions]
 
         # Left-align as a VGroup
-        shortcut_list = VGroup(*shortcut_texts).arrange(DOWN, aligned_edge=LEFT, buff=0.2)
-        shortcut_list.move_to(ORIGIN + 4 * LEFT + 0.75 * UP)
+        assumption_list = VGroup(*assumption_texts).arrange(DOWN, aligned_edge=LEFT, buff=0.2)
+        assumption_list.move_to(ORIGIN + 4 * LEFT + 0.75 * UP)
 
         # Header
-        header = Text("Shortcuts", font_size=30)
-        header.next_to(shortcut_list, UP, buff=0.5)
+        header = Text("Assumptions", font_size=30)
+        header.next_to(assumption_list, UP, buff=0.5)
         
-        # Underline (line spans width of the shortcut list)
+        # Underline (line spans width of the assumption list)
         underline = Line(
-            start=shortcut_list.get_left() + 0.25 * LEFT,
-            end=shortcut_list.get_right() + 0.25 * RIGHT,
+            start=assumption_list.get_left() + 0.25 * LEFT,
+            end=assumption_list.get_right() + 0.25 * RIGHT,
             stroke_width=2
         )
         underline.next_to(header, DOWN, buff=0.2)
 
+        # Bounding rectangle
+        assumptions_group = VGroup(header, underline, assumption_list)
+        assumptions_box = SurroundingRectangle(assumptions_group, color=WHITE, buff=0.4)
+
         # Show header, underline, and list one by one
         self.play(Write(header))
-        self.play(Create(underline))
+        self.play(Create(underline)) #, Create(assumptions_box))
         self.wait(0.3)
 
-        for text in shortcut_texts:
+        for text in assumption_texts:
             self.play(Write(text))
             self.wait(0.3)
-
-        # TODO draw a bounding rectangle around the shortcuts list
 
         ray_color = YELLOW
         object_color = WHITE
@@ -166,7 +172,7 @@ class Shortcuts(Scene):
         obstruction = Line(ORIGIN, obstruction_length * UP).shift(UP * (mid_y - 0.5 * obstruction_length))
 
         start_light_pos = 4.5 * LEFT + mid_y * UP
-        far_light_pos = 15 * LEFT + mid_y * UP
+        far_light_pos = 150 * LEFT + mid_y * UP
 
         # Scene elements
         point_light = Dot(start_light_pos, color=ray_color)
