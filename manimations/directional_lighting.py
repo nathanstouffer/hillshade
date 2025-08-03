@@ -286,3 +286,43 @@ class Assumptions(Scene):
             ReplacementTransform(light_direction_arrow, reversed_light_direction_arrow),
             light_direction_label.animate.next_to(reversed_light_direction_arrow, direction=UP + LEFT, buff=0.1)
         )
+
+class DesiredBehavior(Scene):
+
+    def construct(self):
+        if config.INCLUDE_AUDIO:
+            self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-2.m4a")
+
+        goal = Text("Goal: Pseudo-realistic lighting", font_size=32).move_to([0, 3, 0])
+        self.add(goal)
+
+        # Parameters
+        normal_length = 2
+        light_dir = normalize(np.array([-1, 1, 0]))  # Light from top-left
+        light_arrow_color = YELLOW
+        normal_color = BLUE
+
+        # Plane
+        plane = Square(side_length=3, fill_opacity=1, stroke_color=WHITE)
+        plane.set_fill(GREY)
+        plane.move_to(ORIGIN)
+
+        # Light vector (fixed)
+        light_arrow = Arrow(start=plane.get_center() + 3 * light_dir,
+                            end=plane.get_center(),
+                            color=light_arrow_color, buff=0)
+        light_label = MathTex("l").set_color(light_arrow_color)
+        light_label.next_to(light_arrow, LEFT)
+
+        # Initial normal vector
+        normal_vector = OUT  # Initial pointing straight out of screen
+        normal_arrow = Arrow(start=plane.get_center(), 
+                             end=plane.get_center() + normal_length * normal_vector, 
+                             color=normal_color, buff=0)
+        normal_label = MathTex("n").set_color(normal_color)
+        normal_label.next_to(normal_arrow.get_end(), OUT)
+
+        # Add objects
+        self.play(FadeIn(plane), GrowArrow(light_arrow), Write(light_label), 
+                  GrowArrow(normal_arrow), Write(normal_label))
+        self.wait()
