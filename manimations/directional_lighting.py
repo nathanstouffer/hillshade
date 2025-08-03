@@ -105,6 +105,7 @@ class EffectGraph(Scene):
         self.wait(2)
 
 class Shortcuts(Scene):
+
     def construct(self):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-1.m4a")
@@ -125,8 +126,8 @@ class Shortcuts(Scene):
         shortcut_texts = [Text(shortcut, font_size=30) for shortcut in shortcuts]
 
         # Left-align as a VGroup
-        shortcut_list = VGroup(*shortcut_texts).arrange(DOWN, aligned_edge=LEFT, buff=0.4)
-        shortcut_list.move_to(ORIGIN + 4 * LEFT + 0.5 * UP)
+        shortcut_list = VGroup(*shortcut_texts).arrange(DOWN, aligned_edge=LEFT, buff=0.2)
+        shortcut_list.move_to(ORIGIN + 4 * LEFT + 0.75 * UP)
 
         # Header
         header = Text("Shortcuts", font_size=30)
@@ -151,118 +152,91 @@ class Shortcuts(Scene):
 
         # TODO draw a bounding rectangle around the shortcuts list
 
-        # Colors
         ray_color = YELLOW
         object_color = WHITE
 
-        # Common elements
-        circle = Circle(radius=0.5, color=object_color).shift(RIGHT * 2)
-        wall = Line(UP, DOWN, color=object_color).next_to(circle, RIGHT, buff=1)
+        # Positions
+        wall_x = 5.0
+        wall_min_y = -3.5
+        wall_length = 3
+        obstruction_length = 0.7
+        mid_y = wall_min_y + 0.5 * wall_length
 
-        # State 1: Diverging rays from point source
-        point1 = Dot(LEFT * 4, color=ray_color)
-        rays1 = VGroup(*[
-            Line(point1.get_center(), circle.point_from_proportion(p), color=ray_color)
-            for p in [0.2, 0.4, 0.5, 0.6, 0.8]
-        ])
-        rays1.add(Line(point1.get_center(), wall.get_top(), color=ray_color))
-        rays1.add(Line(point1.get_center(), wall.get_bottom(), color=ray_color))
+        wall = Line(ORIGIN, wall_length * UP, color=object_color).shift(wall_x * RIGHT + wall_min_y * UP)
+        obstruction = Line(ORIGIN, obstruction_length * UP).shift(UP * (mid_y - 0.5 * obstruction_length))
 
-        state1 = VGroup(point1, circle.copy(), wall.copy(), rays1)
+        start_light_pos = 4.5 * LEFT + mid_y * UP
+        far_light_pos = 15 * LEFT + mid_y * UP
 
-        # State 2: Rays partially blocked
+        # Scene elements
+        point_light = Dot(start_light_pos, color=ray_color)
+        self.play(FadeIn(point_light), FadeIn(obstruction), FadeIn(wall))
+
+        # === STATE 1: Rays stop at the obstruction ===
+        max_angle = np.atan2(0.5 * wall_length, wall_x - start_light_pos[0])
+        eps = max_angle * 0.05
+        angles = np.linspace(max_angle - eps, -max_angle + eps, 11)
+        rays1 = VGroup()
+
+        padding = 0.075
+        for angle in angles:
+            ray_origin = start_light_pos
+            ray_direction = rotate_vector(RIGHT, angle)
+
+            t = (obstruction.get_center()[0] - ray_origin[0]) / ray_direction[0]
+            y = ray_direction[1] * t
+            threshold = 0.5 * obstruction_length
+            if not (-threshold <= y and y <= threshold):
+                t = (wall.get_center()[0] - ray_origin[0]) / ray_direction[0]
+
+            hit_point = ray_origin + t * ray_direction
+
+            # Intersect approx with front edge of circle
+            src = ray_origin + padding * ray_direction
+            dst = hit_point - padding * ray_direction
+            ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
+            rays1.add(ray)
+
+        self.play(LaggedStart(*[GrowArrow(ray) for ray in rays1], lag_ratio=0.075))
+        self.wait(0.5)
+
+        # === STATE 2: Rays pass through the obstruction and reach the wall ===
         rays2 = VGroup()
-        for p in [0.2, 0.4, 0.5, 0.6, 0.8]:
-            target = circle.point_from_proportion(p)
-            mid = interpolate(point1.get_center(), target, 0.5)
-            rays2.add(Line(point1.get_center(), target, color=ray_color))
+        for angle in angles:
+            ray_origin = start_light_pos
+            ray_direction = rotate_vector(RIGHT, angle)
 
-        rays2.add(Line(point1.get_center(), wall.get_top(), color=ray_color))
-        rays2.add(Line(point1.get_center(), wall.get_bottom(), color=ray_color))
-        state2 = VGroup(point1.copy(), circle.copy(), wall.copy(), rays2)
+            t = (wall.get_center()[0] - ray_origin[0]) / ray_direction[0]
+            hit_point = ray_origin + t * ray_direction
 
-        # State 3: Parallel rays
+            # Intersect approx with front edge of circle
+            src = ray_origin + padding * ray_direction
+            dst = hit_point - padding * ray_direction
+            ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
+            rays2.add(ray)
+
+        self.play(ReplacementTransform(rays1, rays2), run_time=1.0)
+        self.wait(0.5)
+
+        # === STATE 3: Light moves far left → nearly parallel rays ===
+        # recompute angles for new position
+        max_angle = np.atan2(0.5 * wall_length, wall_x - far_light_pos[0])
+        eps = max_angle * 0.05
+        angles = np.linspace(max_angle - eps, -max_angle + eps, 11)
+
         rays3 = VGroup()
-        ray_y = [-0.6, -0.3, 0, 0.3, 0.6]
-        for y in ray_y:
-            rays3.add(Line(LEFT * 4 + UP * y, RIGHT * 4 + UP * y, color=ray_color))
+        for angle in angles:
+            ray_origin = far_light_pos
+            ray_direction = rotate_vector(RIGHT, angle)
 
-        state3 = VGroup(circle.copy(), wall.copy(), rays3)
+            t = (wall.get_center()[0] - ray_origin[0]) / ray_direction[0]
+            hit_point = ray_origin + t * ray_direction
 
-        # Animations
-        self.play(FadeIn(point1), FadeIn(circle), FadeIn(wall), *[Create(ray) for ray in rays1])
-        self.wait(1)
-        self.play(Transform(rays1, rays2))
-        self.wait(1)
-        self.play(
-            FadeOut(point1),
-            FadeOut(rays1),
-            FadeIn(rays3),
-        )
-        self.wait(1)
+            # Intersect approx with front edge of circle
+            src = ray_origin + padding * ray_direction
+            dst = hit_point - padding * ray_direction
+            ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
+            rays3.add(ray)
 
-        # # Title
-        # title = Text("Directional Light", font_size=48).to_edge(UP)
-        # self.play(Write(title))
-        # self.wait(0.5)
-
-        # # Part 1: Ignoring obstructions (shadows demo)
-        # self.play(FadeIn(Text("1. Ignores obstructions").scale(0.7).next_to(title, DOWN)))
-        # self.wait(1)
-
-        # # Terrain bump and light source
-        # bump = Arc(radius=1, start_angle=PI, angle=PI, color=WHITE)
-        # bump.shift(DOWN * 2)
-        # light = Dot(UP * 3 + LEFT * 3, color=YELLOW)
-        # light_label = Tex("Light source").next_to(light, UP)
-
-        # ray1 = Arrow(light.get_center(), bump.point_from_proportion(0.2), buff=0.1, color=YELLOW)
-        # ray2 = Arrow(light.get_center(), bump.point_from_proportion(0.5), buff=0.1, color=YELLOW)
-        # ray3 = Arrow(light.get_center(), bump.point_from_proportion(0.8), buff=0.1, color=YELLOW)
-
-        # self.play(Create(bump), FadeIn(light), Write(light_label))
-        # self.play(GrowArrow(ray1), GrowArrow(ray2), GrowArrow(ray3))
-        # self.wait(1)
-
-        # # Shadow region (fake – no occlusion)
-        # shadow = Rectangle(width=2.5, height=0.4, fill_opacity=0.5, fill_color=BLACK)
-        # shadow.next_to(bump, DOWN, buff=0.05)
-
-        # self.play(FadeIn(shadow))
-        # self.wait(1.5)
-
-        # # Emphasize realism perception
-        # realism_note = Tex(
-        #     "Even without true shadows,\\ directional light suggests 3D shape",
-        #     font_size=36
-        # ).next_to(shadow, DOWN)
-        # self.play(Write(realism_note))
-        # self.wait(2)
-
-        # self.play(*[FadeOut(mob) for mob in [bump, light, light_label, ray1, ray2, ray3, shadow, realism_note]])
-
-        # # Part 2: Light from the same direction
-        # label2 = Text("2. Light from same direction $l$", font_size=30).next_to(title, DOWN)
-        # self.play(TransformFromCopy(title, label2))
-        # self.wait(1)
-
-        # # Draw parallel rays
-        # terrain = Rectangle(width=5, height=0.5, fill_opacity=1, fill_color=GREY)
-        # terrain.shift(DOWN * 2)
-        # rays = VGroup(*[
-        #     Arrow(start=UP * 2 + x * RIGHT, end=ORIGIN + x * RIGHT, color=YELLOW, buff=0.1)
-        #     for x in [-2, -1, 0, 1, 2]
-        # ])
-
-        # self.play(FadeIn(terrain), *[GrowArrow(ray) for ray in rays])
-        # self.wait(0.5)
-
-        # # Label l vector (pointing toward the light source)
-        # l_arrow = Arrow(start=ORIGIN, end=UP * 1.2, color=BLUE, buff=0.1).shift(RIGHT * 3)
-        # l_label = MathTex("l", color=BLUE).next_to(l_arrow, UP)
-        # toward_label = Tex("Direction \\textit{toward} the light source").scale(0.6).next_to(l_arrow, RIGHT)
-
-        # self.play(GrowArrow(l_arrow), FadeIn(l_label), FadeIn(toward_label))
-        # self.wait(2)
-
-        # self.play(*[FadeOut(mob) for mob in [terrain, rays, l_arrow, l_label, toward_label, label2]])
+        self.play(point_light.animate.move_to(far_light_pos), ReplacementTransform(rays2, rays3), run_time=1.5)
+        self.wait()
