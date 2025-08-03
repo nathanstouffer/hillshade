@@ -130,12 +130,12 @@ class Assumptions(Scene):
         ]
 
         numberings_texts = [Text(numbering, font_size=30) for numbering in assumption_numberings]
-        expl_texts = [Text(expl, font_size=30) for expl in assumption_explanations]
+        assumptions_text = [Text(expl, font_size=30) for expl in assumption_explanations]
 
         # Align labels and explanations horizontally
         assumptions_rows = []
-        for label, expl in zip(numberings_texts, expl_texts):
-            row = VGroup(label, expl).arrange(RIGHT, buff=0.4)
+        for numbering, assumption in zip(numberings_texts, assumptions_text):
+            row = VGroup(numbering, assumption).arrange(RIGHT, buff=0.4)
             assumptions_rows.append(row)
 
         # Left-align as a VGroup
@@ -161,14 +161,11 @@ class Assumptions(Scene):
         # Show header, underline, and list one by one
         self.play(Write(header))
         self.play(Create(underline)) #, Create(assumptions_box))
-        self.wait(0.3)
 
         for numbering in numberings_texts:
-            self.play(Write(numbering), run_time=0.4)
+            self.play(Write(numbering), run_time=0.5)
 
-        for explanation in expl_texts:
-            self.play(Write(explanation))
-            self.wait(0.3)
+        self.wait(1)
 
         ray_color = YELLOW
         object_color = WHITE
@@ -233,7 +230,7 @@ class Assumptions(Scene):
             ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
             rays2.add(ray)
 
-        self.play(ReplacementTransform(rays1, rays2), run_time=1.0)
+        self.play(ReplacementTransform(rays1, rays2), Write(assumptions_text[0]), run_time=1.0)
         self.wait(0.5)
 
         # === STATE 3: Light moves far left → nearly parallel rays ===
@@ -256,5 +253,10 @@ class Assumptions(Scene):
             ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
             rays3.add(ray)
 
-        self.play(point_light.animate.move_to(far_light_pos), ReplacementTransform(rays2, rays3), run_time=1.5)
+        self.play(
+            point_light.animate.move_to(far_light_pos),
+            ReplacementTransform(rays2, rays3),
+            Write(assumptions_text[1]),
+            run_time=1.5
+        )
         self.wait()
