@@ -123,14 +123,23 @@ class Assumptions(Scene):
         self.play(Write(goal))
 
         # Create Text objects for the list
-        assumptions = [
-            "#1: Ignore obstructions",
-            "#2: Infinite distance"
+        assumption_numberings = [ "#1:", "#2:" ]
+        assumption_explanations = [
+            "Ignore obstructions",
+            "Infinite distance"
         ]
-        assumption_texts = [Text(assumption, font_size=30) for assumption in assumptions]
+
+        numberings_texts = [Text(numbering, font_size=30) for numbering in assumption_numberings]
+        expl_texts = [Text(expl, font_size=30) for expl in assumption_explanations]
+
+        # Align labels and explanations horizontally
+        assumptions_rows = []
+        for label, expl in zip(numberings_texts, expl_texts):
+            row = VGroup(label, expl).arrange(RIGHT, buff=0.4)
+            assumptions_rows.append(row)
 
         # Left-align as a VGroup
-        assumption_list = VGroup(*assumption_texts).arrange(DOWN, aligned_edge=LEFT, buff=0.2)
+        assumption_list = VGroup(*assumptions_rows).arrange(DOWN, aligned_edge=LEFT, buff=0.2)
         assumption_list.move_to(ORIGIN + 4 * LEFT + 0.75 * UP)
 
         # Header
@@ -154,8 +163,11 @@ class Assumptions(Scene):
         self.play(Create(underline)) #, Create(assumptions_box))
         self.wait(0.3)
 
-        for text in assumption_texts:
-            self.play(Write(text))
+        for numbering in numberings_texts:
+            self.play(Write(numbering), run_time=0.4)
+
+        for explanation in expl_texts:
+            self.play(Write(explanation))
             self.wait(0.3)
 
         ray_color = YELLOW
