@@ -15,7 +15,7 @@ class EffectGraph(Scene):
 
         self.play(directional_lighting_section.animate.move_to([0, 3, 0]))
 
-        self.wait(2.5)
+        self.wait(2)
 
         # Technique labels and their graph positions
         techniques = [
@@ -53,7 +53,7 @@ class EffectGraph(Scene):
             self.play(Write(text))
             self.wait(0.3)
 
-        self.wait(5.5)
+        self.wait(6)
 
         # Construct axes behind the list
         axes = Axes(
@@ -79,7 +79,7 @@ class EffectGraph(Scene):
         self.wait(1)
         self.play(Write(cost_label))
 
-        self.wait(0.5)
+        self.wait(1.5)
         # Fade out the "Techniques" header and underline
         self.play(FadeOut(header), FadeOut(underline))
         self.wait(0.5)
