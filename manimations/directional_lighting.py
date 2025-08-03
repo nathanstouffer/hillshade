@@ -104,7 +104,7 @@ class EffectGraph(Scene):
         self.play(Create(highlight))
         self.wait(2)
 
-class Shortcuts(Scene):
+class Assumptions(Scene):
 
     def construct(self):
         if config.INCLUDE_AUDIO:
