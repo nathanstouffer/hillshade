@@ -110,16 +110,8 @@ class Assumptions(Scene):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-1.m4a")
 
-        directional_lighting_section = Text("I. Directional Lighting", font_size=32).move_to([0, 3, 0])
-        self.add(directional_lighting_section)
-
-        question = Text("What is a directional light?", font_size=30)
-        self.play(Write(question))
-        self.wait(1)
-        self.play(FadeOut(directional_lighting_section), FadeOut(question))
-
+        self.wait(4)
         goal = Text("Goal: Pseudo-realistic lighting", font_size=32).move_to([0, 3, 0])
-        self.wait(1)
         self.play(Write(goal))
 
         ray_color = YELLOW
@@ -145,9 +137,7 @@ class Assumptions(Scene):
         obstruction_label = Text("Obstruction", font_size=28).next_to(obstruction, RIGHT, buff=0.2)
         self.play(FadeIn(point_light), FadeIn(obstruction), FadeIn(wall))
 
-        self.play(Write(point_light_label))
-        self.play(Write(wall_label))
-        self.play(Write(obstruction_label))
+        self.play(Write(point_light_label), Write(wall_label), Write(obstruction_label))
 
         # === STATE 1: Rays stop at the obstruction ===
         max_angle = np.atan2(0.5 * wall_length, wall_x - start_light_pos[0])
@@ -175,7 +165,6 @@ class Assumptions(Scene):
             rays1.add(ray)
 
         self.play(LaggedStart(*[GrowArrow(ray) for ray in rays1], lag_ratio=0.075))
-        self.wait(0.5)
 
         # Create Text objects for the list
         assumption_numberings = [ "#1:", "#2:" ]
@@ -214,8 +203,7 @@ class Assumptions(Scene):
         assumptions_box = SurroundingRectangle(assumptions_group, color=WHITE, buff=0.4)
 
         # Show header, underline, and list one by one
-        self.play(Write(header))
-        self.play(Create(underline)) #, Create(assumptions_box))
+        self.play(Write(header), Create(underline)) #, Create(assumptions_box))
 
         for numbering in numberings_texts:
             self.play(Write(numbering), run_time=0.5)
@@ -237,13 +225,15 @@ class Assumptions(Scene):
             ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
             rays2.add(ray)
 
+        self.play(Write(assumptions_text[0]))
+        self.wait(2)
+
         self.play(
             ReplacementTransform(rays1, rays2),
-            Write(assumptions_text[0]),
             FadeOut(obstruction_label),
-            run_time=1.0
+            run_time=2.5
         )
-        self.wait(0.5)
+        self.wait(14.5)
 
         # === STATE 3: Light moves far left → nearly parallel rays ===
         # recompute angles for new position
@@ -265,21 +255,22 @@ class Assumptions(Scene):
             ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
             rays3.add(ray)
 
+        self.play(Write(assumptions_text[1]))
+        self.wait(0.5)
+
         self.play(
             point_light.animate.move_to(far_light_pos),
             point_light_label.animate.move_to(far_light_pos),
             ReplacementTransform(rays2, rays3),
-            Write(assumptions_text[1]),
-            run_time=1.5
+            run_time=2.5
         )
-        self.wait(1)
 
         light_direction_arrow = Arrow(start=[1, 1, 0], end=[4, 1, 0], color=YELLOW)
         light_direction_label = MathTex("l", color=YELLOW).scale(1).next_to(light_direction_arrow, UP + RIGHT, buff=0.1)
 
         self.play(GrowArrow(light_direction_arrow))
         self.play(Write(light_direction_label))
-        self.wait(1)
+        self.wait(5)
 
         reversed_light_direction_arrow = Arrow(start=[4, 1, 0], end=[1, 1, 0], color=YELLOW)
         self.play(
