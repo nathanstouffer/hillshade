@@ -294,15 +294,15 @@ class DesiredBehavior(ThreeDScene):
             self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-2.m4a")
 
         self.camera.background_color = DARK_GRAY
-        self.set_camera_orientation(phi=70 * DEGREES)
+        self.set_camera_orientation(phi=60 * DEGREES, theta = 0)
 
         # Parameters
-        arrow_length = 2
+        arrow_length = 3
         light_arrow_color = YELLOW
         normal_color = BLUE
 
         light_dir = normalize(np.array([-1, -1, 1]))  # Light from top-left
-        normal_dir = normalize(np.array([0, 0, 1]))
+        normal_dir = normalize(np.array([0.2, 0.05, 1]))
 
         def compute_adjustment(old, new):
             i = 0.5 * (np.dot(light_dir, new) + 1.0)
@@ -313,40 +313,32 @@ class DesiredBehavior(ThreeDScene):
 
         # Square
         # NOTE: swap between Square (for performance) and Cube (for quality)
-        # square = Cube(side_length=3).move_to(ORIGIN).stretch(0.01, 2).shift([0, 0, -3 * 0.5 * 0.01])
-        square = Square(side_length=3, fill_opacity=1)
+        square = Square(side_length=4, fill_opacity=1)
         color, angle, axis = compute_adjustment(OUT, normal_dir)
         square.set_fill(color)
-        # square.rotate(angle, axis)
+        square.rotate(angle, axis)
 
         # Light vector (fixed)
-        # NOTE: swap between Arrow (for performance) and Arrow3D (for quality)
         light_arrow = Arrow(start=square.get_center(),
                             end=square.get_center() + arrow_length * light_dir,
                             color=light_arrow_color, buff=0)
-        # light_arrow = Arrow3D(start=square.get_center(),
-        #                     end=square.get_center() + arrow_length * light_dir,
-        #                     color=light_arrow_color)
 
         # Initial normal vector
-        # NOTE: swap between Arrow (for performance) and Arrow3D (for quality)
         normal_arrow = Arrow(start=square.get_center(), 
                              end=square.get_center() + arrow_length * normal_dir, 
                              color=normal_color, buff=0)
-        # normal_arrow = Arrow3D(start=square.get_center(), 
-        #                      end=square.get_center() + arrow_length * normal_dir, 
-        #                      color=normal_color)
 
         # Add objects
-        self.add(square)
-        self.add(light_arrow, normal_arrow)
-        self.wait(2)
+        self.play(FadeIn(square), run_time=2)
+        self.wait(1)
+        self.play(GrowArrow(normal_arrow), run_time=2)
+        self.wait(1)
 
-        self.begin_ambient_camera_rotation(rate=0.2)
+        self.play(GrowArrow(light_arrow), run_time=2)
+        self.wait(1)
 
-        self.wait(8)
-
-        new_normal = normalize(np.array([1, 0, 0]))
+        # similar vectors vectors
+        new_normal = normalize(np.array([-0.9, -0.7, 1]))
         color, angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
             square.animate.set_fill(color).rotate(angle, axis),
@@ -355,9 +347,10 @@ class DesiredBehavior(ThreeDScene):
         )
         normal_dir = new_normal
 
-        self.wait(8)
+        self.wait(4)
 
-        new_normal = normalize(np.array([1, 1, -1]))
+        # glancing vectors
+        new_normal = normalize(np.array([-0.9, 0.9, 1]))
         color, angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
             square.animate.set_fill(color).rotate(angle, axis),
@@ -365,3 +358,17 @@ class DesiredBehavior(ThreeDScene):
             run_time=3
         )
         normal_dir = new_normal
+
+        self.wait(4)
+
+        # almost opposite vectors
+        new_normal = normalize(np.array([0.9, 0.7, -1]))
+        color, angle, axis = compute_adjustment(normal_dir, new_normal)
+        self.play(
+            square.animate.set_fill(color).rotate(angle, axis),
+            normal_arrow.animate.rotate(angle, axis, ORIGIN),
+            run_time=3
+        )
+        normal_dir = new_normal
+
+        self.wait(4)

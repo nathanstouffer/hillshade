@@ -76,12 +76,12 @@ So $l$ is the vector that that points directly \textit{towards} the light source
 \end{enumerate}
 
 The direction that the terrain faces is encoded in something called a surface normal.
-If we zoom in a very small portion of the terrain, then it can be reasonably approximated as a small plane.
-The surface normal at any particular point is the vector orthogonal to the approximating plane around that point.
+If we zoom in on a very small portion of the terrain, then it can be reasonably approximated as a small plane.
+The outward pointing vector that is orthogonal to the approximating plane is called a surface normal.
 
 \animation{Show a rotating plane with a surface normal that is lit according to hillshade.}
 
-When zoomed in on a small region of the terrain with surface normal $n$, the effect we are looking for should behave like this:
+The effect we are looking for should behave like this:
 If $n$ generally points in the same direction as $l$, we want a strong amount of light.
 If $l$ kind of glances off the terrain, we want a medium amount of light.
 And if $n$ generally points in the opposite of $l$, we want very little light.
