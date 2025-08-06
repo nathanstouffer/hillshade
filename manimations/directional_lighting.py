@@ -287,42 +287,81 @@ class Assumptions(Scene):
             light_direction_label.animate.next_to(reversed_light_direction_arrow, direction=UP + LEFT, buff=0.1)
         )
 
-class DesiredBehavior(Scene):
+class DesiredBehavior(ThreeDScene):
 
     def construct(self):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-2.m4a")
 
-        goal = Text("Goal: Pseudo-realistic lighting", font_size=32).move_to([0, 3, 0])
-        self.add(goal)
+        self.camera.background_color = DARK_GRAY
+        self.set_camera_orientation(phi=70 * DEGREES)
 
         # Parameters
-        normal_length = 2
-        light_dir = normalize(np.array([-1, 1, 0]))  # Light from top-left
+        arrow_length = 2
         light_arrow_color = YELLOW
         normal_color = BLUE
 
-        # Plane
-        plane = Square(side_length=3, fill_opacity=1, stroke_color=WHITE)
-        plane.set_fill(GREY)
-        plane.move_to(ORIGIN)
+        light_dir = normalize(np.array([-1, -1, 1]))  # Light from top-left
+        normal_dir = normalize(np.array([0, 0, 1]))
+
+        def compute_adjustment(old, new):
+            i = 0.5 * (np.dot(light_dir, new) + 1.0)
+            c = interpolate_color(BLACK, WHITE, i)
+            theta = angle_between_vectors(old, new)
+            rotation_axis = np.cross(old, new)
+            return (c, theta, rotation_axis)
+
+        # Square
+        # NOTE: swap between Square (for performance) and Cube (for quality)
+        # square = Cube(side_length=3).move_to(ORIGIN).stretch(0.01, 2).shift([0, 0, -3 * 0.5 * 0.01])
+        square = Square(side_length=3, fill_opacity=1)
+        color, angle, axis = compute_adjustment(OUT, normal_dir)
+        square.set_fill(color)
+        # square.rotate(angle, axis)
 
         # Light vector (fixed)
-        light_arrow = Arrow(start=plane.get_center() + 3 * light_dir,
-                            end=plane.get_center(),
+        # NOTE: swap between Arrow (for performance) and Arrow3D (for quality)
+        light_arrow = Arrow(start=square.get_center(),
+                            end=square.get_center() + arrow_length * light_dir,
                             color=light_arrow_color, buff=0)
-        light_label = MathTex("l").set_color(light_arrow_color)
-        light_label.next_to(light_arrow, LEFT)
+        # light_arrow = Arrow3D(start=square.get_center(),
+        #                     end=square.get_center() + arrow_length * light_dir,
+        #                     color=light_arrow_color)
 
         # Initial normal vector
-        normal_vector = OUT  # Initial pointing straight out of screen
-        normal_arrow = Arrow(start=plane.get_center(), 
-                             end=plane.get_center() + normal_length * normal_vector, 
+        # NOTE: swap between Arrow (for performance) and Arrow3D (for quality)
+        normal_arrow = Arrow(start=square.get_center(), 
+                             end=square.get_center() + arrow_length * normal_dir, 
                              color=normal_color, buff=0)
-        normal_label = MathTex("n").set_color(normal_color)
-        normal_label.next_to(normal_arrow.get_end(), OUT)
+        # normal_arrow = Arrow3D(start=square.get_center(), 
+        #                      end=square.get_center() + arrow_length * normal_dir, 
+        #                      color=normal_color)
 
         # Add objects
-        self.play(FadeIn(plane), GrowArrow(light_arrow), Write(light_label), 
-                  GrowArrow(normal_arrow), Write(normal_label))
-        self.wait()
+        self.add(square)
+        self.add(light_arrow, normal_arrow)
+        self.wait(2)
+
+        self.begin_ambient_camera_rotation(rate=0.2)
+
+        self.wait(8)
+
+        new_normal = normalize(np.array([1, 0, 0]))
+        color, angle, axis = compute_adjustment(normal_dir, new_normal)
+        self.play(
+            square.animate.set_fill(color).rotate(angle, axis),
+            normal_arrow.animate.rotate(angle, axis, ORIGIN),
+            run_time=3
+        )
+        normal_dir = new_normal
+
+        self.wait(8)
+
+        new_normal = normalize(np.array([1, 1, -1]))
+        color, angle, axis = compute_adjustment(normal_dir, new_normal)
+        self.play(
+            square.animate.set_fill(color).rotate(angle, axis),
+            normal_arrow.animate.rotate(angle, axis, ORIGIN),
+            run_time=3
+        )
+        normal_dir = new_normal

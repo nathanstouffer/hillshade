@@ -76,7 +76,8 @@ So $l$ is the vector that that points directly \textit{towards} the light source
 \end{enumerate}
 
 The direction that the terrain faces is encoded in something called a surface normal.
-The surface normal at any particular point is the vector orthogonal to the plane that approximates a very small region around that point.
+If we zoom in a very small portion of the terrain, then it can be reasonably approximated as a small plane.
+The surface normal at any particular point is the vector orthogonal to the approximating plane around that point.
 
 \animation{Show a rotating plane with a surface normal that is lit according to hillshade.}
 
