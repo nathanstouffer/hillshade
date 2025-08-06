@@ -70,8 +70,8 @@ This is the piece of directional lights that I find to be the most interesting: 
 \item Second, directional lights assume the light source to be extremely far away.
 This assumption means that every point in the scene has light coming from the same direction $l$ -- giving the technique its name.
 
-Though, to make the math a little simpler, I am actually going to use the negative of the light direction.
-So $l$ is the vector that that points directly \textit{towards} the light source.
+To make the math a little simpler, I am actually going to use the negative of the light direction.
+This makes $l$ the vector that points directly \textit{towards} the light source.
 
 \end{enumerate}
 
@@ -82,9 +82,9 @@ The outward pointing vector that is orthogonal to the approximating plane is cal
 \animation{Show a rotating plane with a surface normal that is lit according to hillshade.}
 
 The effect we are looking for should behave like this:
-If $n$ generally points in the same direction as $l$, we want a strong amount of light.
-If $l$ kind of glances off the terrain, we want a medium amount of light.
-And if $n$ generally points in the opposite of $l$, we want very little light.
+If the terrain generally points in the same direction as the light, we want the terrain to be pretty bright.
+If the light direction kind of glances off the terrain, we want the terrain to be a tone of grey.
+And if the terrain generally faces away from the light direction, we want the terrain to be dark.
 
 \section{Hillshading}
 
