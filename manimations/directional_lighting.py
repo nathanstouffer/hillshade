@@ -329,14 +329,14 @@ class DesiredBehavior(ThreeDScene):
 
         # Add objects
         self.play(FadeIn(square), run_time=2)
-        self.wait(1)
-        self.play(GrowArrow(normal_arrow), run_time=2)
+        self.wait(5)
+        self.play(GrowArrow(normal_arrow), run_time=3)
+        self.wait(7)
+
+        self.play(GrowArrow(light_arrow), run_time=3)
         self.wait(1)
 
-        self.play(GrowArrow(light_arrow), run_time=2)
-        self.wait(1)
-
-        # similar vectors vectors
+        # similar vectors
         new_normal = normalize(np.array([-0.9, -0.7, 1]))
         color, angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
@@ -346,7 +346,7 @@ class DesiredBehavior(ThreeDScene):
         )
         normal_dir = new_normal
 
-        self.wait(4)
+        self.wait(2)
 
         # glancing vectors
         new_normal = normalize(np.array([-0.9, 0.9, 1]))
@@ -358,7 +358,7 @@ class DesiredBehavior(ThreeDScene):
         )
         normal_dir = new_normal
 
-        self.wait(4)
+        self.wait(2)
 
         # almost opposite vectors
         new_normal = normalize(np.array([0.9, 0.7, -1]))
@@ -370,4 +370,4 @@ class DesiredBehavior(ThreeDScene):
         )
         normal_dir = new_normal
 
-        self.wait(4)
+        self.wait(2)
