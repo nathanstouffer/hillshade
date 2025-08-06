@@ -312,8 +312,7 @@ class DesiredBehavior(ThreeDScene):
             return (c, theta, rotation_axis)
 
         # Square
-        # NOTE: swap between Square (for performance) and Cube (for quality)
-        square = Square(side_length=4, fill_opacity=1)
+        square = Square(side_length=4, fill_opacity=1, stroke_opacity=0.5)
         color, angle, axis = compute_adjustment(OUT, normal_dir)
         square.set_fill(color)
         square.rotate(angle, axis)
