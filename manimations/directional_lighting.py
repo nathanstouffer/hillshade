@@ -110,7 +110,7 @@ class Assumptions(Scene):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-1.m4a")
 
-        self.wait(4)
+        self.wait(3)
         goal = Text("Goal: Pseudo-realistic lighting", font_size=32).move_to([0, 3, 0])
         self.play(Write(goal))
 
@@ -135,9 +135,12 @@ class Assumptions(Scene):
         point_light_label = Text("Light source", font_size=28).next_to(point_light, UP, buff=0.2)
         wall_label = Text("Object", font_size=28).next_to(wall, UP, buff=0.2)
         obstruction_label = Text("Obstruction", font_size=28).next_to(obstruction, RIGHT, buff=0.2)
-        self.play(FadeIn(point_light), FadeIn(obstruction), FadeIn(wall))
 
-        self.play(Write(point_light_label), Write(wall_label), Write(obstruction_label))
+        self.play(FadeIn(point_light), Write(point_light_label))
+
+        self.play(FadeIn(wall), Write(wall_label))
+
+        self.play(FadeIn(obstruction), Write(obstruction_label))
 
         # === STATE 1: Rays stop at the obstruction ===
         max_angle = np.atan2(0.5 * wall_length, wall_x - start_light_pos[0])
