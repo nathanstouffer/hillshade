@@ -51,11 +51,24 @@ class ShadowArea(ThreeDScene):
         lines = [Line(corner, [corner[0], corner[1], 0], color=YELLOW, stroke_width=1, buff=0) for corner in vertices]
         self.play(FadeIn(shadow), AnimationGroup(*[Create(line) for line in lines]), lag_ratio=0)
 
+        def update_shadow_and_lines(mob):
+            # get the square's new vertices after rotation
+            vertices = square.get_vertices()
+            # update shadow polygon points projected onto XY plane
+            new_points = [np.array([pt[0], pt[1], 0]) for pt in vertices]
+            mob.set_points_as_corners(new_points + [new_points[0]])
+            
+            # update each yellow line from the square vertex down to XY plane
+            for line, corner in zip(lines, vertices):
+                line.put_start_and_end_on(corner, np.array([corner[0], corner[1], 0]))
+
         # similar vectors
         new_normal = normalize(np.array([-0.9, -0.7, 1]))
         angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
             square.animate.rotate(angle, axis),
+            UpdateFromFunc(shadow, update_shadow_and_lines),
+            *[UpdateFromFunc(line, update_shadow_and_lines) for line in lines],
             run_time=3
         )
         normal_dir = new_normal
