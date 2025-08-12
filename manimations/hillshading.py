@@ -13,6 +13,8 @@ class ShadowArea(ThreeDScene):
         fixed_arrow.to_corner(UL, buff=0.75)
         self.add_fixed_in_frame_mobjects(fixed_arrow)
 
+        self.begin_ambient_camera_rotation(rate=0.1)
+
         # Grey base rectangle (solid floor)
         base_rect = Rectangle(
             width=20, height=20,
@@ -39,7 +41,7 @@ class ShadowArea(ThreeDScene):
         normal_dir = normalize(np.array([0, 0, 1]))
 
         # Square
-        square = Square(side_length=3, fill_opacity=0.7, stroke_opacity=1)
+        square = Square(side_length=2, fill_opacity=0.7, stroke_opacity=1)
         angle, axis = compute_adjustment(OUT, normal_dir)
         square.rotate(angle, axis)
         square.shift(2*OUT)
@@ -82,7 +84,7 @@ class ShadowArea(ThreeDScene):
         )
         normal_dir = new_normal
 
-        new_normal = normalize(np.array([0, 1, -1]))
+        new_normal = normalize(np.array([0, 1, 1]))
         angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
             square.animate.rotate(angle, axis),
