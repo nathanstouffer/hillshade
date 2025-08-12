@@ -62,8 +62,27 @@ class ShadowArea(ThreeDScene):
             for line, corner in zip(lines, vertices):
                 line.put_start_and_end_on(corner, np.array([corner[0], corner[1], 0]))
 
-        # similar vectors
-        new_normal = normalize(np.array([-0.9, -0.7, 1]))
+        new_normal = normalize(np.array([0, 1, 1]))
+        angle, axis = compute_adjustment(normal_dir, new_normal)
+        self.play(
+            square.animate.rotate(angle, axis),
+            UpdateFromFunc(shadow, update_shadow_and_lines),
+            *[UpdateFromFunc(line, update_shadow_and_lines) for line in lines],
+            run_time=3
+        )
+        normal_dir = new_normal
+
+        new_normal = normalize(np.array([-0.9, 0.5, 1]))
+        angle, axis = compute_adjustment(normal_dir, new_normal)
+        self.play(
+            square.animate.rotate(angle, axis),
+            UpdateFromFunc(shadow, update_shadow_and_lines),
+            *[UpdateFromFunc(line, update_shadow_and_lines) for line in lines],
+            run_time=3
+        )
+        normal_dir = new_normal
+
+        new_normal = normalize(np.array([0, 1, -1]))
         angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
             square.animate.rotate(angle, axis),
