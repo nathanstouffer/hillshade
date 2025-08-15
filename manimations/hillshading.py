@@ -171,7 +171,17 @@ class TransformCosine(Scene):
         self.play(Write(cosine_label), run_time=1)
         self.play(Write(y_label), run_time=1)
 
-        self.wait(26)
+        self.wait(5)
+
+        clamped_graph = axes.plot(lambda x: max(0, np.cos(x)), color=YELLOW, x_range=[0, 2*PI, 0.01])
+        self.play(ReplacementTransform(cosine_graph, clamped_graph))
+
+        self.wait(14)
+
+        cosine_graph = axes.plot(lambda x: np.cos(x), color=YELLOW)
+        self.play(ReplacementTransform(clamped_graph, cosine_graph))
+
+        self.wait(6)
 
         shifted_graph = axes.plot(lambda x: 1 + np.cos(x), color=YELLOW)
         shifted_label = MathTex("f(x) = 1 + \cos \\theta", color=WHITE, font_size=36)
