@@ -97,10 +97,10 @@ We can start by being more precise about describing how the light strength shoul
 Let's represent a small area of the terrain as a rotated square.
 When $n$ and $l$ point in the exact same direction, we want to light at full strength.
 And we know we want to decrease the strength of the light as the angle between $n$ and $l$ increases.
-To root some of our model in reality, it would be a good idea to decrease the intensity of the shading based on how much light is blocked by the rotated square - ie the area of its shadow.
+To root some of our model in reality, we will vary the intensity of the shading based on how much light is blocked by the rotated square - ie the area of its shadow.
 
-I won't prove this for you, but it so happens that (with a directional light) the signed area of a rotated square's shadow is $\cos \theta * A$ where $A$ is the area of the square, $\theta$ is the angle between $l$ and $n$, and the sign encodes whether or not the square faces the light source (positive means facing the light source and negative means facing away).
-If an un-rotated square gets the full light strength of $1$, then this fact implies that a rotated square gets strength $1 * \cos \theta = \cos \theta$.
+I won't prove this for you, but it so happens that (with a directional light) the signed area of a rotated square's shadow is $A * \cos \theta$ where $A$ is the area of the square, $\theta$ is the angle between $l$ and $n$, and the sign encodes whether or not the square faces the light source (positive means facing the light source and negative means facing away).
+If an un-rotated square gets the full light strength of $1$, then this fact implies that a rotated square gets strength $S = 1 * \cos \theta = \cos \theta$.
 
 You might notice that $\cos \theta$ can be negative.
 What are we to do with a negative light strength?

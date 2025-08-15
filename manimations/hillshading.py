@@ -31,16 +31,18 @@ class ShadowArea(ThreeDScene):
                 "stroke_width": 1
             }
         )
-        self.add(base_rect, grid)
+
+        self.wait(2)
+        self.play(FadeIn(base_rect), run_time=2)
+        self.play(Create(grid), run_time=2)
+        self.wait(1)
 
         def compute_adjustment(old, new):
             theta = angle_between_vectors(old, new)
             rotation_axis = np.cross(old, new)
             return (theta, rotation_axis)
 
-        normal_dir = normalize(np.array([0, 0, 1]))
-
-        self.begin_ambient_camera_rotation(rate=0.1)
+        normal_dir = normalize(np.array([0, 1, 1]))
 
         # Square
         square = Square(side_length=2, fill_opacity=0.7, stroke_opacity=1)
@@ -48,6 +50,10 @@ class ShadowArea(ThreeDScene):
         square.rotate(angle, axis)
         square.shift(2*OUT)
         self.play(FadeIn(square))
+
+        self.wait(2)
+        self.begin_ambient_camera_rotation(rate=0.1)
+        self.wait(18)
 
         # Draw polygon of projected points in XY plane
         vertices = square.get_vertices()
@@ -76,7 +82,7 @@ class ShadowArea(ThreeDScene):
         )
         normal_dir = new_normal
 
-        new_normal = normalize(np.array([-0.9, 0.5, 1]))
+        new_normal = normalize(np.array([-0.9, -0.5, 1]))
         angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
             square.animate.rotate(angle, axis),
@@ -86,7 +92,15 @@ class ShadowArea(ThreeDScene):
         )
         normal_dir = new_normal
 
-        new_normal = normalize(np.array([0, 1, 1]))
+        self.wait(3)
+
+        area_label = MathTex("A_s = A * \cos \\theta", font_size=36).to_corner(UR)
+        self.add_fixed_in_frame_mobjects(area_label)
+        self.play(Write(area_label))
+
+        self.wait(4)
+
+        new_normal = normalize(np.array([0, -1, 0.25]))
         angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
             square.animate.rotate(angle, axis),
@@ -95,6 +109,31 @@ class ShadowArea(ThreeDScene):
             run_time=3
         )
         normal_dir = new_normal
+
+        self.wait(11)
+
+        implies_arrow = MathTex(r"\Rightarrow", font_size=36).rotate(-90 * DEGREES)
+        implies_arrow.next_to(area_label, DOWN)
+        self.add_fixed_in_frame_mobjects(implies_arrow)
+        self.play(Write(implies_arrow))
+
+        strength_label = MathTex("S = \cos \\theta", font_size=36).next_to(implies_arrow, DOWN)
+        self.add_fixed_in_frame_mobjects(strength_label)
+        self.play(Write(strength_label))
+
+        self.wait(3)
+
+        new_normal = normalize(np.array([0, 0, 1]))
+        angle, axis = compute_adjustment(normal_dir, new_normal)
+        self.play(
+            square.animate.rotate(angle, axis),
+            UpdateFromFunc(shadow, update_shadow_and_lines),
+            *[UpdateFromFunc(line, update_shadow_and_lines) for line in lines],
+            run_time=3
+        )
+        normal_dir = new_normal
+
+        self.wait(6)
 
 class TransformCosine(Scene):
     def construct(self):
