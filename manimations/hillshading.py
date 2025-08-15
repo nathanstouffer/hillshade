@@ -9,11 +9,11 @@ class ShadowArea(ThreeDScene):
 
         self.set_camera_orientation(phi=72.5 * DEGREES, theta=60 * DEGREES)
 
-        fixed_arrow = Arrow(ORIGIN, DOWN, color=YELLOW, buff=0)
-        fixed_arrow.to_corner(UL, buff=0.75)
-        self.add_fixed_in_frame_mobjects(fixed_arrow)
-
-        self.begin_ambient_camera_rotation(rate=0.1)
+        fixed_arrow = Arrow(ORIGIN, UP, color=YELLOW, buff=0)
+        fixed_arrow.to_corner(UL, buff=0.85)
+        light_label = MathTex("l", color=YELLOW, font_size=50)
+        light_label.next_to(fixed_arrow, RIGHT + 0.1 * UP, buff=0.2)
+        self.add_fixed_in_frame_mobjects(fixed_arrow, light_label)
 
         # Grey base rectangle (solid floor)
         base_rect = Rectangle(
@@ -39,6 +39,8 @@ class ShadowArea(ThreeDScene):
             return (theta, rotation_axis)
 
         normal_dir = normalize(np.array([0, 0, 1]))
+
+        self.begin_ambient_camera_rotation(rate=0.1)
 
         # Square
         square = Square(side_length=2, fill_opacity=0.7, stroke_opacity=1)
@@ -93,3 +95,7 @@ class ShadowArea(ThreeDScene):
             run_time=3
         )
         normal_dir = new_normal
+
+class TransformCosine(Scene):
+    def construct(self):
+        pass
