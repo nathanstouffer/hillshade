@@ -106,8 +106,7 @@ You might notice that $\cos \theta$ can be negative.
 What are we to do with a negative light strength?
 Well, it depends on the application.
 Some directional light models ignore negative light strengths.
-Hillshade takes a slightly different approach.
-Our goal is to effectively illuminate a map so that the reader can see terrain features.
+With hillshade, our goal is to effectively illuminate a map so that the reader can see terrain features.
 When we ignore negative light strength, we effectively remove shading on all terrain that faces away from the light source.
 Instead, it is more effective to remap the range of cosine to the interval $[0, 1]$.
 This can be done by first adding 1 to the result and then dividing by 2.

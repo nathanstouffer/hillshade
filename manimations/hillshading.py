@@ -1,6 +1,12 @@
 from manim import *
 import config
 
+class HillshadingSection(Scene):
+    def construct(self):
+        hillshading_section = Text("II. Hillshading", font_size=32, color=WHITE)
+        self.play(Write(hillshading_section))
+        self.wait(1)
+
 class ShadowArea(ThreeDScene):
 
     def construct(self):
@@ -137,4 +143,52 @@ class ShadowArea(ThreeDScene):
 
 class TransformCosine(Scene):
     def construct(self):
-        pass
+        if config.INCLUDE_AUDIO:
+            self.add_sound(f"{config.AUDIO_ASSETS}/cosine-1.m4a")
+
+        self.wait(1)
+
+        # Create axes
+        axes = Axes(
+            x_range=[0, 2 * np.pi, np.pi / 2],  # x from 0 to 2π with ticks every π/2
+            y_range=[-1.25, 1.25, 0.5],           # y from -1.5 to 1.5 with ticks every 0.5
+            x_length=10,
+            y_length=6,
+            axis_config={"color": WHITE},
+            tips=False
+        )
+
+        y_label = Text("light strength", font_size=24)
+        y_label.rotate(90 * DEGREES)
+        y_label.next_to(axes.y_axis, LEFT)
+
+        cosine_graph = axes.plot(lambda x: np.cos(x), color=YELLOW)
+        cosine_label = MathTex("f(x) = \cos \\theta", color=WHITE, font_size=36)
+        cosine_label.move_to([0, 3, 0])
+
+        self.play(FadeIn(axes), run_time=1.5)
+        self.play(Create(cosine_graph), run_time=1)
+        self.play(Write(cosine_label), run_time=1)
+        self.play(Write(y_label), run_time=1)
+
+        self.wait(26)
+
+        shifted_graph = axes.plot(lambda x: 1 + np.cos(x), color=YELLOW)
+        shifted_label = MathTex("f(x) = 1 + \cos \\theta", color=WHITE, font_size=36)
+        shifted_label.move_to([0, 3, 0])
+
+        self.play(
+            ReplacementTransform(cosine_graph, shifted_graph),
+            ReplacementTransform(cosine_label, shifted_label)
+        )
+        self.wait(0.25)
+
+        transformed_graph = axes.plot(lambda x: (1 + np.cos(x)) / 2, color=YELLOW)
+        transformed_label = MathTex("f(x) = \dfrac{1 + \cos \\theta}{2}", color=WHITE, font_size=36)
+        transformed_label.move_to([0, 3, 0])
+
+        self.play(
+            ReplacementTransform(shifted_graph, transformed_graph),
+            ReplacementTransform(shifted_label, transformed_label)
+        )
+        self.wait(1)
