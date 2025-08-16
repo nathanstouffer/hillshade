@@ -312,15 +312,15 @@ class LawOfCosines(Scene):
         origin = np.array([0, -1.75, 0])
         phi_dir = np.array([np.cos(phi), np.sin(phi), 0])
         rho_dir = np.array([np.cos(rho), np.sin(rho), 0])
-        arrow_length = 4
+        side_length = 4
 
         v0 = origin
-        v1 = origin + arrow_length * rho_dir
-        v2 = origin + arrow_length * phi_dir
+        v1 = origin + side_length * rho_dir
+        v2 = origin + side_length * phi_dir
 
-        light_line = Line(v0, v1, color=YELLOW)
-        normal_line = Line(v0, v2, color=BLUE)
-        delta_line = Line(v2, v1, color=GREEN)
+        orig_light_line = Line(v0, v1, color=YELLOW)
+        orig_normal_line = Line(v0, v2, color=BLUE)
+        orig_delta_line = Line(v2, v1, color=GREEN)
 
         theta_arc = Arc(
                 radius=0.5,
@@ -331,8 +331,23 @@ class LawOfCosines(Scene):
             )
         arc_label = MathTex("\\theta").next_to(theta_arc, UP, buff=0.25)
 
-        self.add(normal_line, light_line, delta_line, theta_arc, arc_label)
+        self.add(orig_light_line, orig_normal_line, orig_delta_line, theta_arc, arc_label)
         self.wait(1)
+
+        side_length = 3
+        v0 = origin
+        v1 = origin + side_length * rho_dir
+        v2 = origin + side_length * phi_dir
+
+        light_line = Line(v0, v1, color=YELLOW)
+        normal_line = Line(v0, v2, color=BLUE)
+        delta_line = Line(v2, v1, color=GREEN)
+
+        self.play(
+            ReplacementTransform(orig_light_line, light_line),
+            ReplacementTransform(orig_normal_line, normal_line),
+            ReplacementTransform(orig_delta_line, delta_line),
+        )
 
         a_label = MathTex("a", color=YELLOW).next_to(light_line.get_center(), DL)
         b_label = MathTex("b", color=BLUE).next_to(normal_line.get_center(), DOWN)
@@ -351,14 +366,14 @@ class LawOfCosines(Scene):
             theta_arc, C_label,
             a_label, b_label, c_label
         )
-        self.play(group.animate.shift(3 * LEFT))
+        self.play(group.animate.shift(4 * LEFT))
 
         steps = [
-            "{c}^2 = {a}^2 + {b}^2 - 2 * {a} * {b} * \cos C",
-            "| {l} - {n} |^2 = |{l}|^2 + |{n}|^2 - 2 * |{l}| * |{n}| * \cos \\theta",
-            "|{l} - {n}|^2 = 1^2 + 1^2 - 2 * \cos \\theta",
-            "- 2 + |{l} - n|^2 = - 2 * \cos \\theta",
-            r"1 - \frac{1}{2} * | {l} - {n} | ^2 = \cos \theta",
+            ("{c}^2 = {a}^2 + {b}^2 - 2 * {a} * {b} * \cos C", 0.3),
+            ("| {l} - {n} |^2 = |{l}|^2 + |{n}|^2 - 2 * |{l}| * |{n}| * \cos \\theta", 0.3),
+            ("|{l} - {n}|^2 = 1^2 + 1^2 - 2 * \cos \\theta", 0.3),
+            ("- 2 + |{l} - {n}|^2 = - 2 * \cos \\theta", 0.3),
+            (r"1 - \frac{1}{2} * | {l} - {n} | ^2 = \cos \theta", 0.3),
         ]
         color_map = {
             "{l}": YELLOW,
@@ -367,10 +382,12 @@ class LawOfCosines(Scene):
             "{b}": BLUE,
             "{c}": GREEN,
         }
-        steps_text = [MathTex(step, tex_to_color_map=color_map, font_size=36) for step in steps]
+        steps_text = [
+            MathTex(step, tex_to_color_map=color_map, font_size=40) for step, _ in steps
+        ]
 
         steps_list = VGroup(*steps_text).arrange(DOWN, aligned_edge=ORIGIN, buff=0.4)
-        steps_list.to_corner(UR).shift(DOWN + LEFT)
+        steps_list.to_corner(UR).shift(DOWN + 0.5 * LEFT)
 
         # Header
         header = Text("Law of Cosines", font_size=30)
@@ -384,15 +401,17 @@ class LawOfCosines(Scene):
         )
         underline.next_to(header, DOWN, buff=0.2)
 
-        self.play(Write(header))
-        self.play(Create(underline))
+        self.play(Write(header), Create(underline))
         self.wait(0.3)
 
         self.play(Write(steps_text[0]))
-        self.wait(0.3)
+        self.wait(steps[0][1])
         for i in range(1, len(steps_text)):
-            self.play(TransformFromCopy(steps_text[i-1], steps_text[i]))
-            self.wait(0.3)
+            prev_text = steps_text[i-1]
+            this_text = steps_text[i]
+            wait = steps[i][1]
+            self.play(TransformFromCopy(prev_text, this_text))
+            self.wait(wait)
 
 class DotProduct(Scene):
     def construct(self):
