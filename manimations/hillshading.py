@@ -306,6 +306,94 @@ class LawOfCosines(Scene):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/law-of-cosines-1.m4a")
 
+        phi = 15 * DEGREES
+        rho = 137 * DEGREES
+
+        origin = np.array([0, -1.75, 0])
+        phi_dir = np.array([np.cos(phi), np.sin(phi), 0])
+        rho_dir = np.array([np.cos(rho), np.sin(rho), 0])
+        arrow_length = 4
+
+        v0 = origin
+        v1 = origin + arrow_length * rho_dir
+        v2 = origin + arrow_length * phi_dir
+
+        light_line = Line(v0, v1, color=YELLOW)
+        normal_line = Line(v0, v2, color=BLUE)
+        delta_line = Line(v2, v1, color=GREEN)
+
+        theta_arc = Arc(
+                radius=0.5,
+                start_angle=phi,
+                angle=rho - phi,
+                color=WHITE,
+                arc_center=v0
+            )
+        arc_label = MathTex("\\theta").next_to(theta_arc, UP, buff=0.25)
+
+        self.add(normal_line, light_line, delta_line, theta_arc, arc_label)
+        self.wait(1)
+
+        a_label = MathTex("a", color=YELLOW).next_to(light_line.get_center(), DL)
+        b_label = MathTex("b", color=BLUE).next_to(normal_line.get_center(), DOWN)
+        c_label = MathTex("c", color=GREEN).next_to(delta_line.get_center(), UP)
+        C_label = MathTex("C").next_to(theta_arc, UP, buff=0.25)
+
+        self.play(
+            Write(a_label),
+            Write(b_label),
+            Write(c_label),
+            ReplacementTransform(arc_label, C_label)
+        )
+
+        group = VGroup(
+            light_line, normal_line, delta_line,
+            theta_arc, C_label,
+            a_label, b_label, c_label
+        )
+        self.play(group.animate.shift(3 * LEFT))
+
+        steps = [
+            "{c}^2 = {a}^2 + {b}^2 - 2 * {a} * {b} * \cos C",
+            "| {l} - {n} |^2 = |{l}|^2 + |{n}|^2 - 2 * |{l}| * |{n}| * \cos \\theta",
+            "|{l} - {n}|^2 = 1^2 + 1^2 - 2 * \cos \\theta",
+            "- 2 + |{l} - n|^2 = - 2 * \cos \\theta",
+            r"1 - \frac{1}{2} * | {l} - {n} | ^2 = \cos \theta",
+        ]
+        color_map = {
+            "{l}": YELLOW,
+            "{n}": BLUE,
+            "{a}": YELLOW,
+            "{b}": BLUE,
+            "{c}": GREEN,
+        }
+        steps_text = [MathTex(step, tex_to_color_map=color_map, font_size=36) for step in steps]
+
+        steps_list = VGroup(*steps_text).arrange(DOWN, aligned_edge=ORIGIN, buff=0.4)
+        steps_list.to_corner(UR).shift(DOWN + LEFT)
+
+        # Header
+        header = Text("Law of Cosines", font_size=30)
+        header.next_to(steps_list, UP, buff=0.5)
+        
+        # Underline (line spans width of the technique list)
+        underline = Line(
+            start=steps_list.get_left() + 0.5 * LEFT,
+            end=steps_list.get_right() + 0.5 * RIGHT,
+            stroke_width=2
+        )
+        underline.next_to(header, DOWN, buff=0.2)
+
+        self.play(Write(header))
+        self.play(Create(underline))
+        self.wait(0.3)
+
+        self.play(Write(steps_text[0]))
+        self.wait(0.3)
+        for i in range(1, len(steps_text)):
+            self.play(TransformFromCopy(steps_text[i-1], steps_text[i]))
+            self.wait(0.3)
+
 class DotProduct(Scene):
     def construct(self):
         if config.INCLUDE_AUDIO:
