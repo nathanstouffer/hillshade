@@ -208,45 +208,40 @@ class WhatIsLink(Scene):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/law-of-cosines-0.m4a")
 
-        # Angle between vectors (in degrees for easier tweaking)
-        normal_angle_deg = 15
-        light_angle_deg = 137
+        def compute(phi, rho):
+            origin = np.array([0, -1.75, 0])
+            phi_dir = np.array([np.cos(phi), np.sin(phi), 0])
+            rho_dir = np.array([np.cos(rho), np.sin(rho), 0])
+            arrow_length = 4
 
-        normal_angle_rad = normal_angle_deg * DEGREES
-        light_angle_rad = light_angle_deg * DEGREES
+            p0 = origin
+            p1 = origin + arrow_length * phi_dir
+            p2 = origin + arrow_length * rho_dir
 
-        # Define two vectors
-        origin = np.array([0, -1.75, 0])
-        normal_dir = np.array([np.cos(normal_angle_rad), np.sin(normal_angle_rad), 0])
-        light_dir = np.array([np.cos(light_angle_rad), np.sin(light_angle_rad), 0])
+            phi_vector = Arrow(start=p0, end=p1, buff=0, color=BLUE)
+            rho_vector = Arrow(start=p0, end=p2, buff=0, color=YELLOW)
 
-        v0 = origin
-        v1 = origin + 4 * normal_dir
-        v2 = origin + 4 * light_dir
+            theta_arc = Arc(
+                radius=0.5,
+                start_angle=phi,
+                angle=rho - phi,
+                color=WHITE,
+                arc_center=p0
+            )
+            theta_label = MathTex("\\theta").next_to(theta_arc, UP, buff=0.25)
 
-        normal_vector = Arrow(start=v0, end=v1, buff=0, color=BLUE)
-        light_vector = Arrow(start=v0, end=v2, buff=0, color=YELLOW)
+            return {
+                "v0": p0, "v1": p1, "v2": p2,
+                "phi_vector": phi_vector, "rho_vector": rho_vector,
+                "theta_arc": theta_arc, "theta_label": theta_label
+            }
 
-        # Create an arc to show the angle
-        angle_arc = Arc(
-            radius=0.5,
-            start_angle=normal_angle_rad,
-            angle=light_angle_rad - normal_angle_rad,
-            color=WHITE,
-            arc_center=v0
-        )
-
-        theta_label = MathTex("\\theta").next_to(angle_arc, UP, buff=0.25)
-        light_label = MathTex("l", color=YELLOW).next_to(light_vector.get_center(), DL, buff=0.2)
-        normal_label = MathTex("n", color=BLUE).next_to(normal_vector.get_center(), DOWN, buff=0.2*np.sqrt(2))
-
+        state = compute(15 * DEGREES, 137 * DEGREES)
         self.play(
-            GrowArrow(light_vector),
-            GrowArrow(normal_vector),
-            Write(light_label),
-            Write(normal_label)
+            GrowArrow(state["phi_vector"]),
+            GrowArrow(state["rho_vector"]),
         )
-        self.play(Create(angle_arc), Write(theta_label))
+        self.play(Create(state["theta_arc"]), Write(state["theta_label"]))
         self.wait()
 
         light_vector_parts = MathTex("l", "=", "[l_x, l_y, l_z]", color=YELLOW).to_corner(UL)
@@ -259,6 +254,33 @@ class WhatIsLink(Scene):
 
         cosine = MathTex("\cos \\theta = \ ?").to_corner(UR)
         self.play(Write(cosine))
+
+        new_state = compute(55 * DEGREES, 137 * DEGREES)
+        self.play(
+            ReplacementTransform(state["phi_vector"], new_state["phi_vector"]),
+            ReplacementTransform(state["rho_vector"], new_state["rho_vector"]),
+            ReplacementTransform(state["theta_arc"], new_state["theta_arc"]),
+            ReplacementTransform(state["theta_label"], new_state["theta_label"]),
+        )
+
+        state = new_state
+        new_state = compute(55 * DEGREES, 120 * DEGREES)
+        self.play(
+            ReplacementTransform(state["phi_vector"], new_state["phi_vector"]),
+            ReplacementTransform(state["rho_vector"], new_state["rho_vector"]),
+            ReplacementTransform(state["theta_arc"], new_state["theta_arc"]),
+            ReplacementTransform(state["theta_label"], new_state["theta_label"]),
+        )
+
+        self.wait(1)
+        state = new_state
+        new_state = compute(15 * DEGREES, 137 * DEGREES)
+        self.play(
+            ReplacementTransform(state["phi_vector"], new_state["phi_vector"]),
+            ReplacementTransform(state["rho_vector"], new_state["rho_vector"]),
+            ReplacementTransform(state["theta_arc"], new_state["theta_arc"]),
+            ReplacementTransform(state["theta_label"], new_state["theta_label"]),
+        )
 
 class LawOfCosines(Scene):
     def construct(self):
