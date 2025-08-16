@@ -236,26 +236,31 @@ class WhatIsLink(Scene):
                 "theta_arc": theta_arc, "theta_label": theta_label
             }
 
+        self.wait(2)
+
         state = compute(15 * DEGREES, 137 * DEGREES)
         self.play(
             GrowArrow(state["phi_vector"]),
             GrowArrow(state["rho_vector"]),
         )
-        self.play(Create(state["theta_arc"]), Write(state["theta_label"]))
-        self.wait()
+
+        self.play(Create(state["theta_arc"]))
+        self.play(Write(state["theta_label"]))
+
+        self.wait(2)
+        cosine = MathTex("\cos \\theta = \ ?").to_corner(UR)
+        self.play(Write(cosine))
 
         light_vector_parts = MathTex("l", "=", "[l_x, l_y, l_z]", color=YELLOW).to_corner(UL)
         normal_vector_parts = MathTex("n", "=", "[n_x, n_y, n_z]", color=BLUE)
         normal_vector_parts.next_to(light_vector_parts, DOWN)
         shift = light_vector_parts[1].get_center()[0] - normal_vector_parts[1].get_center()[0]
         normal_vector_parts.shift(np.array([shift, 0, 0]))
-
-        self.play(Write(light_vector_parts), Write(normal_vector_parts))
-
-        cosine = MathTex("\cos \\theta = \ ?").to_corner(UR)
-        self.play(Write(cosine))
+        self.wait(2)
+        self.play(Write(light_vector_parts), Write(normal_vector_parts), run_time=2)
 
         new_state = compute(55 * DEGREES, 137 * DEGREES)
+        self.wait(6)
         self.play(
             ReplacementTransform(state["phi_vector"], new_state["phi_vector"]),
             ReplacementTransform(state["rho_vector"], new_state["rho_vector"]),
@@ -265,6 +270,7 @@ class WhatIsLink(Scene):
 
         state = new_state
         new_state = compute(55 * DEGREES, 120 * DEGREES)
+        self.wait(8)
         self.play(
             ReplacementTransform(state["phi_vector"], new_state["phi_vector"]),
             ReplacementTransform(state["rho_vector"], new_state["rho_vector"]),
@@ -272,7 +278,7 @@ class WhatIsLink(Scene):
             ReplacementTransform(state["theta_label"], new_state["theta_label"]),
         )
 
-        self.wait(1)
+        self.wait(6)
         state = new_state
         new_state = compute(15 * DEGREES, 137 * DEGREES)
         self.play(
@@ -281,6 +287,19 @@ class WhatIsLink(Scene):
             ReplacementTransform(state["theta_arc"], new_state["theta_arc"]),
             ReplacementTransform(state["theta_label"], new_state["theta_label"]),
         )
+
+        self.wait(7)
+        v0 = new_state["v0"]
+        v1 = new_state["v1"]
+        v2 = new_state["v2"]
+        n_leg = Line(v0, v1, color=BLUE)
+        l_leg = Line(v0, v2, color=YELLOW)
+        delta_leg = Line(v1, v2, color=GREEN)
+        self.play(
+            ReplacementTransform(new_state["phi_vector"], n_leg),
+            ReplacementTransform(new_state["rho_vector"], l_leg),
+        )
+        self.play(Create(delta_leg))
 
 class LawOfCosines(Scene):
     def construct(self):
