@@ -305,6 +305,7 @@ class LawOfCosines(Scene):
     def construct(self):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/law-of-cosines-1.m4a")
+            self.add_sound(f"{config.AUDIO_ASSETS}/law-of-cosines-2.m4a", time_offset=27)
 
         phi = 15 * DEGREES
         rho = 137 * DEGREES
@@ -343,37 +344,13 @@ class LawOfCosines(Scene):
         normal_line = Line(v0, v2, color=BLUE)
         delta_line = Line(v2, v1, color=GREEN)
 
-        self.play(
-            ReplacementTransform(orig_light_line, light_line),
-            ReplacementTransform(orig_normal_line, normal_line),
-            ReplacementTransform(orig_delta_line, delta_line),
-        )
-
-        a_label = MathTex("a", color=YELLOW).next_to(light_line.get_center(), DL)
-        b_label = MathTex("b", color=BLUE).next_to(normal_line.get_center(), DOWN)
-        c_label = MathTex("c", color=GREEN).next_to(delta_line.get_center(), UP)
-        C_label = MathTex("C").next_to(theta_arc, UP, buff=0.25)
-
-        self.play(
-            Write(a_label),
-            Write(b_label),
-            Write(c_label),
-            ReplacementTransform(arc_label, C_label)
-        )
-
-        group = VGroup(
-            light_line, normal_line, delta_line,
-            theta_arc, C_label,
-            a_label, b_label, c_label
-        )
-        self.play(group.animate.shift(4 * LEFT))
-
         steps = [
-            ("{c}^2 = {a}^2 + {b}^2 - 2 * {a} * {b} * \cos C", 0.3),
-            ("| {l} - {n} |^2 = |{l}|^2 + |{n}|^2 - 2 * |{l}| * |{n}| * \cos \\theta", 0.3),
-            ("|{l} - {n}|^2 = 1^2 + 1^2 - 2 * \cos \\theta", 0.3),
-            ("- 2 + |{l} - {n}|^2 = - 2 * \cos \\theta", 0.3),
-            (r"1 - \frac{1}{2} * | {l} - {n} | ^2 = \cos \theta", 0.3),
+            ("{c}^2 = {a}^2 + {b}^2 - 2 * {a} * {b} * \cos C", 3),
+            ("| {l} - {n} |^2 = |{l}|^2 + |{n}|^2 - 2 * |{l}| * |{n}| * \cos \\theta", 21),
+            ("|{l} - {n}|^2 = 1^2 + 1^2 - 2 * \cos \\theta", 1),
+            ("- 2 + |{l} - {n}|^2 = - 2 * \cos \\theta", 0.5),
+            ("1 - \\frac{1}{2} * | {l} - {n} | ^2 = \cos \\theta", 7),
+            ("{l} \cdot {n} = \cos \\theta", 4),
         ]
         color_map = {
             "{l}": YELLOW,
@@ -389,11 +366,8 @@ class LawOfCosines(Scene):
         steps_list = VGroup(*steps_text).arrange(DOWN, aligned_edge=ORIGIN, buff=0.4)
         steps_list.to_corner(UR).shift(DOWN + 0.5 * LEFT)
 
-        # Header
         header = Text("Law of Cosines", font_size=30)
         header.next_to(steps_list, UP, buff=0.5)
-        
-        # Underline (line spans width of the technique list)
         underline = Line(
             start=steps_list.get_left() + 0.5 * LEFT,
             end=steps_list.get_right() + 0.5 * RIGHT,
@@ -401,11 +375,36 @@ class LawOfCosines(Scene):
         )
         underline.next_to(header, DOWN, buff=0.2)
 
-        self.play(Write(header), Create(underline))
-        self.wait(0.3)
+        self.play(
+            Write(header), Create(underline),
+            ReplacementTransform(orig_light_line, light_line),
+            ReplacementTransform(orig_normal_line, normal_line),
+            ReplacementTransform(orig_delta_line, delta_line),
+        )
 
+        group = VGroup(
+            light_line, normal_line, delta_line,
+            theta_arc, arc_label
+        )
+        self.play(group.animate.shift(4 * LEFT))
+
+        a_label = MathTex("a", color=YELLOW).next_to(light_line.get_center(), DL)
+        b_label = MathTex("b", color=BLUE).next_to(normal_line.get_center(), DOWN)
+        c_label = MathTex("c", color=GREEN).next_to(delta_line.get_center(), UP)
+        C_label = MathTex("C").next_to(theta_arc, UP, buff=0.25)
+
+        self.wait(1.5)
+        self.play(
+            Write(a_label),
+            Write(b_label),
+            Write(c_label),
+            ReplacementTransform(arc_label, C_label)
+        )
+
+        self.wait(2)
         self.play(Write(steps_text[0]))
         self.wait(steps[0][1])
+
         for i in range(1, len(steps_text)):
             prev_text = steps_text[i-1]
             this_text = steps_text[i]
@@ -413,7 +412,4 @@ class LawOfCosines(Scene):
             self.play(TransformFromCopy(prev_text, this_text))
             self.wait(wait)
 
-class DotProduct(Scene):
-    def construct(self):
-        if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/law-of-cosines-2.m4a")
+        self.play(FadeOut(steps_text[-1]))
