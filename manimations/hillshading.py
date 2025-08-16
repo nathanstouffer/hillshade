@@ -216,7 +216,7 @@ class WhatIsLink(Scene):
         light_angle_rad = light_angle_deg * DEGREES
 
         # Define two vectors
-        origin = np.array([0, -1.5, 0])
+        origin = np.array([0, -1.75, 0])
         normal_dir = np.array([np.cos(normal_angle_rad), np.sin(normal_angle_rad), 0])
         light_dir = np.array([np.cos(light_angle_rad), np.sin(light_angle_rad), 0])
 
@@ -256,6 +256,9 @@ class WhatIsLink(Scene):
         normal_vector_parts.shift(np.array([shift, 0, 0]))
 
         self.play(Write(light_vector_parts), Write(normal_vector_parts))
+
+        cosine = MathTex("\cos \\theta = \ ?").to_corner(UR)
+        self.play(Write(cosine))
 
 class LawOfCosines(Scene):
     def construct(self):
