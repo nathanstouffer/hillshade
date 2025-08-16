@@ -202,3 +202,67 @@ class TransformCosine(Scene):
             ReplacementTransform(shifted_label, transformed_label)
         )
         self.wait(1)
+
+class WhatIsLink(Scene):
+    def construct(self):
+        if config.INCLUDE_AUDIO:
+            self.add_sound(f"{config.AUDIO_ASSETS}/law-of-cosines-0.m4a")
+
+        # Angle between vectors (in degrees for easier tweaking)
+        normal_angle_deg = 15
+        light_angle_deg = 137
+
+        normal_angle_rad = normal_angle_deg * DEGREES
+        light_angle_rad = light_angle_deg * DEGREES
+
+        # Define two vectors
+        origin = np.array([0, -1.5, 0])
+        normal_dir = np.array([np.cos(normal_angle_rad), np.sin(normal_angle_rad), 0])
+        light_dir = np.array([np.cos(light_angle_rad), np.sin(light_angle_rad), 0])
+
+        v0 = origin
+        v1 = origin + 4 * normal_dir
+        v2 = origin + 4 * light_dir
+
+        normal_vector = Arrow(start=v0, end=v1, buff=0, color=BLUE)
+        light_vector = Arrow(start=v0, end=v2, buff=0, color=YELLOW)
+
+        # Create an arc to show the angle
+        angle_arc = Arc(
+            radius=0.5,
+            start_angle=normal_angle_rad,
+            angle=light_angle_rad - normal_angle_rad,
+            color=WHITE,
+            arc_center=v0
+        )
+
+        theta_label = MathTex("\\theta").next_to(angle_arc, UP, buff=0.25)
+        light_label = MathTex("l", color=YELLOW).next_to(light_vector.get_center(), DL, buff=0.2)
+        normal_label = MathTex("n", color=BLUE).next_to(normal_vector.get_center(), DOWN, buff=0.2*np.sqrt(2))
+
+        self.play(
+            GrowArrow(light_vector),
+            GrowArrow(normal_vector),
+            Write(light_label),
+            Write(normal_label)
+        )
+        self.play(Create(angle_arc), Write(theta_label))
+        self.wait()
+
+        light_vector_parts = MathTex("l", "=", "[l_x, l_y, l_z]", color=YELLOW).to_corner(UL)
+        normal_vector_parts = MathTex("n", "=", "[n_x, n_y, n_z]", color=BLUE)
+        normal_vector_parts.next_to(light_vector_parts, DOWN)
+        shift = light_vector_parts[1].get_center()[0] - normal_vector_parts[1].get_center()[0]
+        normal_vector_parts.shift(np.array([shift, 0, 0]))
+
+        self.play(Write(light_vector_parts), Write(normal_vector_parts))
+
+class LawOfCosines(Scene):
+    def construct(self):
+        if config.INCLUDE_AUDIO:
+            self.add_sound(f"{config.AUDIO_ASSETS}/law-of-cosines-1.m4a")
+
+class DotProduct(Scene):
+    def construct(self):
+        if config.INCLUDE_AUDIO:
+            self.add_sound(f"{config.AUDIO_ASSETS}/law-of-cosines-2.m4a")
