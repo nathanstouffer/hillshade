@@ -88,9 +88,9 @@ namespace hillshader
         Diligent::RENDER_DEVICE_TYPE                              m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
-        Diligent::Uint32 m_width = 1280;
-        Diligent::Uint32 m_height = 1024;
-        Diligent::Uint8 m_msaa_sample_count = 8;
+        Diligent::Uint32 m_width = 1920;
+        Diligent::Uint32 m_height = 1080;
+        Diligent::Uint8 m_msaa_sample_count = 2;
 
         bool m_render_ui = true;
 
