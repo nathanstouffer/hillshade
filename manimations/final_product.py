@@ -14,34 +14,30 @@ class FinalProductSection(Scene):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/final-product-0.m4a")
 
-        formulas = [
-            "S = \\frac{1}{2} \left( 1 + \cos \\theta \\right)",
-            "\cos \\theta = 1 - \\frac{1}{2} * | {l} - {n} | ^2",
-        ]
+        strength = "S = \\frac{1}{2} \left( 1 + \cos \\theta \\right)"
+        cosine = "\\text{ where } \cos \\theta = 1 - \\frac{1}{2} * | {l} - {n} | ^2"
         color_map = {
             "{l}": YELLOW,
             "{n}": BLUE,
         }
-        formulas_text = [
-            MathTex(formula, tex_to_color_map=color_map, font_size=40)
-            for formula in formulas
-        ]
+        formula = MathTex(strength, cosine, tex_to_color_map=color_map, font_size=40)
+        formula.move_to([0, 3, 0])
+        self.wait(4)
+        self.play(Write(formula[0]))
 
-        shift = 3.5
+        self.wait(2)
+        self.play(Write(formula[1:]))
 
-        formulas_text[0].move_to([-shift, 3, 0])
-        formulas_text[1].move_to([shift, 3, 0])
-
-        self.play(Write(formulas_text[0]))
-        self.play(Write(formulas_text[1]))
-
+        shift = 3.25
         gnp = ImageMobject("assets/gnp.png")
         gnp.scale_to_fit_height(5).shift(0.5 * DOWN + shift * LEFT)
 
         san_juans = ImageMobject("assets/san-juans.png")
         san_juans.scale_to_fit_height(5).shift(0.5 * DOWN + shift * RIGHT)
 
+        self.wait(5)
         self.play(FadeIn(gnp), FadeIn(san_juans))
+        self.wait(1)
 
 class Endnotes(Scene):
     def construct(self):
