@@ -90,7 +90,7 @@ namespace hillshader
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
         Diligent::Uint32 m_width = 1280;
         Diligent::Uint32 m_height = 1024;
-        Diligent::Uint32 m_msaa_sample_count = 8;
+        Diligent::Uint8 m_msaa_sample_count = 8;
 
         bool m_render_ui = true;
 
