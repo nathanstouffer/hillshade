@@ -239,7 +239,7 @@ namespace hillshader
 
             consts->albedo = m_albedo.as_vec();
 
-            float azimuth = m_azimuth + stf::math::to_degrees(m_camera.theta - stff::constants::half_pi);
+            float azimuth = m_azimuth - stf::math::to_degrees(m_camera.theta - stff::constants::half_pi);
             consts->light_dir = light_direction(azimuth, m_altitude);
             consts->ambient_intensity = m_ambient_intensity;
 
