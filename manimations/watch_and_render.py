@@ -5,8 +5,8 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 # TODO (stouff) make the file and scene configurable via command line
-FILE_TO_WATCH = "hillshading.py"  # your manim file
-RENDER_CMD = ["manim", FILE_TO_WATCH, "LawOfCosines", "-ql", "--write_to_movie"]  # change class name and flags
+FILE_TO_WATCH = "final_product.py"  # your manim file
+RENDER_CMD = ["manim", FILE_TO_WATCH, "FinalProductSection", "-ql", "--write_to_movie"]  # change class name and flags
 
 class ReloadHandler(FileSystemEventHandler):
     def on_modified(self, event):
