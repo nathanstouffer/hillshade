@@ -24,7 +24,7 @@
 When you look at the map shown below, I bet much of the terrain's shape is evident to you.
 I'd guess that know this spot to be pretty flat and this other area to be relatively steep.
 Possibly you can pick out a gully right here and a ridgeline over there.
-Or maybe you've noticed that this face is pretty rugged while this slope is smooth.
+Or maybe you've noticed that this face is pretty rugged while this slope is relatively smooth.
 
 Regardless of what individual features you've noticed, I'm certain you have some notion of what this terrain looks like even though all you can see is a greyscale image.
 
@@ -48,7 +48,7 @@ We're going to see why it's an effective method of illumination and walk through
 The particular topic we'll be discussing is hillshade, but it's worth mentioning that hillshade is a very specific example of something called a directional light.
 Directional lights are used all over computer graphics and are themselves just one option for how you might want to light a scene.
 What I find so intriguing about directional lights is that they give you a lot of bang for your buck.
-You get a lot of realism for the amount of effort that you need to expend.
+You get pretty realistic lighting for the expended level of effort.
 
 \animation{Fade in a graph similar to the below image.}
 
@@ -57,26 +57,27 @@ You get a lot of realism for the amount of effort that you need to expend.
 \end{center}
 
 If you were to represent different lighting techniques as points in the plane where the y-axis represents some notion of realism (how realistic a scene looks) and the x-axis represents some notion of cost (maybe in terms of complexity/memory/computation time).
-Then on that plane, directional lights would exist at a sweet spot where they are unreasonably effective -- they don't cost that much but they provide a healthy amount of realism.
+Then on that plane, directional lights would exist at an extremely effective sweet spot -- they don't cost that much but they provide a healthy amount of realism.
 
 \subsection{Assumptions}
 
 Let's get into the details of what a directional light is.
 A directional light is a pseudo-realistic model of how light behaves.
-In the interest of simplicity, directional lights take a few shortcuts:
+If we have a light source, an object, and an obstruction, then real light behaves something like this.
+Directional lights make a few simplifying assumptions:
 
 \begin{enumerate}
 
-\item First, they ignore obstructions.
-What this means is that we won't compute true shadows -- just whether or not an object is looking at the light source.
-This is the piece of directional lights that I find to be the most interesting: even when ignoring obstructions, directional lights give enough hints of realism to trick your brain into thinking objects are 3D.
+\item First, they ignore obstructions -- meaning we won't compute true shadows.
+This is the piece of directional lights that I find to be the most interesting: even when ignoring obstructions, directional lights give enough hints of realism to trick your brain into thinking objects are 3-dimensional.
 
 \animation{Demonstrate a simple example of shadows in 2D}.
 	
 \item Second, directional lights assume the light source to be extremely far away.
-This assumption means that every point in the scene has light coming from the same direction $l$ -- giving the technique its name.
+This means that every point in the scene has light coming from the same direction $l$.
+It's also why the technique is called directional lighting.
 
-To make the math a little simpler, I am actually going to use the negative of the light direction.
+To make the math a little cleaner, we're actually going to reverse that direction.
 This makes $l$ the vector that points directly \textit{towards} the light source.
 
 \end{enumerate}
