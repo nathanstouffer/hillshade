@@ -50,7 +50,7 @@ class Endnotes(ThreeDScene):
         # Create Text objects for the list
         numberings = [ "#1:", "#2:", "#3:" ]
         endnotes = [
-            "Modifications",
+            "Variations",
             "Pseudoscopic illusion",
             "Simplicity",
         ]
@@ -80,10 +80,11 @@ class Endnotes(ThreeDScene):
         underline.next_to(header, DOWN, buff=0.2)
 
         endnotes_group = VGroup(header, underline, endnotes_list)
-        endnotes_group.move_to(ORIGIN + 3.5 * LEFT)
+        endnotes_group.move_to(ORIGIN + 3.25 * LEFT)
         endnotes_box = SurroundingRectangle(endnotes_group, color=WHITE, buff=0.4)
 
         # Show header, underline, and list one by one
+        self.wait(1)
         self.play(Write(header), Create(underline), Create(endnotes_box))
 
         for numbering in numberings_texts:
@@ -94,14 +95,19 @@ class Endnotes(ThreeDScene):
         shift = 3.5 * RIGHT
         bench_lakes = ImageMobject("assets/bench-lakes.png")
         bench_lakes.scale_to_fit_height(5).shift(shift)
-        self.play(Write(endnotes_text[0]), FadeIn(bench_lakes))
+        self.play(FadeIn(bench_lakes))
+
+        self.wait(4)
+        self.play(Write(endnotes_text[0]))
 
         pseudoscopic_bridgers = ImageMobject("assets/pseudoscopic-bridgers.png")
         pseudoscopic_bridgers.scale_to_fit_height(5).shift(shift)
+
+        self.wait(11)
         self.play(
-            Write(endnotes_text[1]),
             FadeOut(bench_lakes),
             FadeIn(pseudoscopic_bridgers),
+            run_time=2
         )
 
         def add_ellipse_label(pos, dim, rotation, text, label_pos, arc):
@@ -153,41 +159,42 @@ class Endnotes(ThreeDScene):
             self.wait(1)
             self.play(FadeOut(ellipse), FadeOut(label), FadeOut(arrow))
 
+        self.wait(1)
+        fake_src = np.array([0, 3.5, 0])
+        fake_arrow = Arrow(fake_src, fake_src + np.array([1, -1, 0]), color=YELLOW)
+        self.play(GrowArrow(fake_arrow))
+        self.wait(2)
+        self.play(FadeOut(fake_arrow))
+
         src = np.array([7, -3.5, 0])
         arrow = Arrow(src, src + np.array([-1, 1, 0]), color=YELLOW)
-        light_label = Text("(Lit from bottom left)", font_size=24)
+        light_label = Text("(Actually lit from bottom right)", font_size=24)
         light_label.next_to(arrow, 0.01 * LEFT + 0.125 * DOWN)
+        self.wait(6)
         self.play(GrowArrow(arrow), FadeIn(light_label))
+
+        self.wait(7)
         add_ellipse_label([3.25, 0, 0], [1, 4], -PI / 18, "This is a ridgeline", [0, 3, 0], -PI / 8)
-        self.play(FadeOut(arrow), FadeOut(light_label))
-        self.wait(0.5)
+
+        self.play(FadeOut(arrow), FadeOut(light_label), Write(endnotes_text[1]))
+        self.wait(1)
 
         gnp = ImageMobject("assets/gnp.png")
         gnp.scale_to_fit_height(5).shift(shift)
         self.play(
-            Write(endnotes_text[2]),
             FadeOut(pseudoscopic_bridgers),
             FadeIn(gnp),
+            run_time=2
         )
+        self.play(Write(endnotes_text[2]))
+        self.wait(1)
 
         self.play(FadeOut(endnotes_group), FadeOut(endnotes_box))
+        self.play(gnp.animate.scale_to_fit_height(6).move_to(ORIGIN))
+        self.wait(1)
 
-class ThanksForWatching(ThreeDScene):
+class ThanksForWatching(Scene):
     def construct(self):
-        gnp = ImageMobject("assets/gnp.png")
-        gnp.shift(3.5 * RIGHT)
-
-        self.add(gnp)
-
-        self.play(gnp.animate.move_to(ORIGIN))
-
-        square = Square(fill_color=GREEN, fill_opacity=1)
-        self.play(Create(square))
-
-        self.move_camera(phi=65*DEGREES)
-        self.begin_ambient_camera_rotation(rate=0.1)
-        self.wait(15)
-
         thanks = Text("Thanks for watching!", font_size=36).to_edge(UP)
-        self.add_fixed_in_frame_mobjects(thanks)
-        self.play(Write(thanks))
+        self.play(Write(thanks), run_time=2)
+        self.wait(1)
