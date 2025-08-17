@@ -171,10 +171,23 @@ class Endnotes(ThreeDScene):
         )
 
         self.play(FadeOut(endnotes_group), FadeOut(endnotes_box))
-        self.play(gnp.animate.move_to(ORIGIN).scale_to_fit_height(6))
 
-        self.begin_ambient_camera_rotation(rate=0.2, about="phi")
-        self.wait(2)
-        self.stop_ambient_camera_rotation()
+class ThanksForWatching(ThreeDScene):
+    def construct(self):
+        gnp = ImageMobject("assets/gnp.png")
+        gnp.shift(3.5 * RIGHT)
+
+        self.add(gnp)
+
+        self.play(gnp.animate.move_to(ORIGIN))
+
+        square = Square(fill_color=GREEN, fill_opacity=1)
+        self.play(Create(square))
+
+        self.move_camera(phi=65*DEGREES)
         self.begin_ambient_camera_rotation(rate=0.1)
-        self.wait(5)
+        self.wait(15)
+
+        thanks = Text("Thanks for watching!", font_size=36).to_edge(UP)
+        self.add_fixed_in_frame_mobjects(thanks)
+        self.play(Write(thanks))
