@@ -9,7 +9,7 @@ class HillshadingSection(Scene):
         self.wait(1)
         self.play(FadeOut(final_product_section))
 
-class FinalProductSection(Scene):
+class FinalProduct(Scene):
     def construct(self):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/final-product-0.m4a")
