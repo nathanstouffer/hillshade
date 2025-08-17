@@ -221,13 +221,9 @@ namespace hillshader
 
         // set render targets before issuing any draw command.
         // note that present() unbinds the back buffer if it is set as render target.
-        auto* rtv = m_swap_chain->GetCurrentBackBufferRTV();
-        auto* dsv = m_swap_chain->GetDepthBufferDSV();
-        m_immediate_context->SetRenderTargets(1, &rtv, dsv, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-        // clear back buffer
-        m_immediate_context->ClearRenderTarget(rtv, reinterpret_cast<float*>(&m_clear_color), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-        m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->SetRenderTargets(1, &m_msaa_color_rtv, m_msaa_depth_dsv, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->ClearRenderTarget(m_msaa_color_rtv, reinterpret_cast<float*>(&m_clear_color), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->ClearDepthStencil(m_msaa_depth_dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         if (m_terrain)
         {
@@ -269,6 +265,19 @@ namespace hillshader
             m_immediate_context->DrawIndexed(draw_attrs);
         }
 
+        // resolve MSAA buffer
+        {
+            auto* backbuffer_rtv = m_swap_chain->GetCurrentBackBufferRTV();
+
+            Diligent::ResolveTextureSubresourceAttribs resolve_attribs;
+            resolve_attribs.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            resolve_attribs.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            m_immediate_context->ResolveTextureSubresource(m_msaa_color_rtv->GetTexture(), backbuffer_rtv->GetTexture(), resolve_attribs);
+
+            // Now bind the backbuffer for UI pass (DSV optional for ImGui)
+            m_immediate_context->SetRenderTargets(1, &backbuffer_rtv, nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        }
+
         if (m_render_ui) { render_ui(); }
 
         m_imgui_impl->Render(m_immediate_context);
@@ -286,6 +295,7 @@ namespace hillshader
         if (m_swap_chain)
         {
             m_swap_chain->Resize(width, height);
+            create_msaa_resources();
         }
     }
 
@@ -344,6 +354,8 @@ namespace hillshader
 
     void application::create_resources()
     {
+        create_msaa_resources();
+
         Diligent::GraphicsPipelineStateCreateInfo pso_info;
 
         pso_info.PSODesc.Name = "Simple quad PSO";
@@ -355,6 +367,7 @@ namespace hillshader
         pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
         pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
         pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
+        pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
 
         // create dynamic uniform buffer that will store shader constants
         Diligent::CreateUniformBuffer(m_device, sizeof(constants), "Global shader constants CB", &m_shader_constants);
@@ -433,6 +446,55 @@ namespace hillshader
 
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
+
+    void application::create_msaa_resources()
+    {
+        release_msaa_resources();
+
+        Diligent::SwapChainDesc const swapchain_desc = m_swap_chain->GetDesc();
+
+        // Multisampled color
+        {
+            Diligent::TextureDesc desc;
+            desc.Name = "MSAA Color";
+            desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+            desc.Width = swapchain_desc.Width;
+            desc.Height = swapchain_desc.Height;
+            desc.MipLevels = 1;
+            desc.Format = swapchain_desc.ColorBufferFormat;
+            desc.SampleCount = m_msaa_sample_count;
+            desc.BindFlags = Diligent::BIND_RENDER_TARGET;
+
+            m_device->CreateTexture(desc, nullptr, &m_msaa_color);
+            m_msaa_color_rtv = m_msaa_color->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
+        }
+
+        // Multisampled depth
+        {
+            Diligent::TextureDesc desc;
+            desc.Name = "MSAA Depth";
+            desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+            desc.Width = swapchain_desc.Width;
+            desc.Height = swapchain_desc.Height;
+            desc.MipLevels = 1;
+            desc.Format = swapchain_desc.DepthBufferFormat; // uses swap chain DSV format
+            desc.SampleCount = m_msaa_sample_count;
+            desc.BindFlags = Diligent::BIND_DEPTH_STENCIL;
+
+            m_device->CreateTexture(desc, nullptr, &m_msaa_depth);
+            m_msaa_depth_dsv = m_msaa_depth->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
+        }
+    }
+
+    void application::release_msaa_resources()
+    {
+        if (m_msaa_color_rtv) m_msaa_color_rtv.Release();
+        if (m_msaa_color)     m_msaa_color.Release();
+
+        if (m_msaa_depth_dsv) m_msaa_depth_dsv.Release();
+        if (m_msaa_depth)     m_msaa_depth.Release();
+    }
+
 
     std::optional<stff::vec3> application::world_pos(stff::vec2 const& uv) const
     {

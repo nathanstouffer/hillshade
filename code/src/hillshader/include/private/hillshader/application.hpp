@@ -76,6 +76,10 @@ namespace hillshader
         Diligent::RefCntAutoPtr<Diligent::IRenderDevice>          m_device;
         Diligent::RefCntAutoPtr<Diligent::IDeviceContext>         m_immediate_context;
         Diligent::RefCntAutoPtr<Diligent::ISwapChain>             m_swap_chain;
+        Diligent::RefCntAutoPtr<Diligent::ITexture>               m_msaa_color;
+        Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_msaa_color_rtv;
+        Diligent::RefCntAutoPtr<Diligent::ITexture>               m_msaa_depth;
+        Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_msaa_depth_dsv;
         Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_pso;
         Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_srb;
         Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_shader_constants;
@@ -86,6 +90,7 @@ namespace hillshader
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
         Diligent::Uint32 m_width = 1280;
         Diligent::Uint32 m_height = 1024;
+        Diligent::Uint32 m_msaa_sample_count = 8;
 
         bool m_render_ui = true;
 
@@ -118,6 +123,10 @@ namespace hillshader
         void store_start_up_state();
 
         void create_resources();
+
+        void create_msaa_resources();
+
+        void release_msaa_resources();
 
         void render_ui();
 

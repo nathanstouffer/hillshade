@@ -53,7 +53,7 @@ You get a lot of realism for the amount of effort that you need to expend.
 \end{center}
 
 If you were to represent different lighting techniques as points in the plane where the y-axis represents some notion of realism (how realistic a scene looks) and the x-axis represents some notion of cost (maybe in terms of complexity/memory/computation time).
-Then on that graph, directional lights would exist at a sweet spot where they are unreasonably effective -- they don't cost that much but they provide a healthy amount of realism.
+Then on that plane, directional lights would exist at a sweet spot where they are unreasonably effective -- they don't cost that much but they provide a healthy amount of realism.
 
 Let's get into the details of what a directional light is.
 A directional light is a pseudo-realistic model of how light behaves.
@@ -95,7 +95,7 @@ What are the nuts and bolts that turn this loose discussion into a sequence of m
 
 We can start by being more precise about describing how the light strength should vary.
 Let's represent a small area of the terrain as a rotated square.
-When $n$ and $l$ point in the exact same direction, we want to light at full strength.
+We've established that when $n$ and $l$ point in the exact same direction, we want to light at full strength.
 And we know we want to decrease the strength of the light as the angle between $n$ and $l$ increases.
 To root some of our model in reality, we will vary the intensity of the shading based on how much light is blocked by the rotated square - ie the area of its shadow.
 
@@ -105,9 +105,9 @@ If an un-rotated square gets the full light strength of $1$, then this fact impl
 You might notice that $\cos \theta$ can be negative.
 What are we to do with a negative light strength?
 Well, it depends on the application.
-Some directional light models ignore negative light strengths.
+Some directional light models ignore negative light strengths by clamping to 0.
 With hillshade, our goal is to effectively illuminate a map so that the reader can see terrain features.
-When we ignore negative light strength, we effectively remove shading on all terrain that faces away from the light source.
+When we ignore negative light strength, we remove shading on all terrain that faces away from the light source.
 Instead, it is more effective to remap the range of cosine to the interval $[0, 1]$.
 This can be done by first adding 1 and then dividing by 2.
  
@@ -167,7 +167,7 @@ It never ceases to amaze me how such simple a computation can produce stunning a
 
 I'd like to close the video by making a few comments.
 
-\subsection{Modifications (about 25s)}
+\subsection{Variations (about 25s)}
 
 First, hillshade isn't just one thing.
 It's actually a term for a family of effects that can be applied to a map.
