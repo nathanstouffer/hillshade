@@ -300,6 +300,7 @@ class WhatIsLink(Scene):
             ReplacementTransform(new_state["rho_vector"], l_leg),
         )
         self.play(Create(delta_leg))
+        self.wait(1)
 
 class LawOfCosines(Scene):
     def construct(self):

@@ -19,7 +19,7 @@
 
 \section{Intro}
 
-\subsection{Motivation (about 50s)}
+\subsection{Motivation}
 
 When you look at the map shown below, I bet much of the terrain's shape is evident to you.
 I'd guess that know this spot to be pretty flat and this other area to be relatively steep.
@@ -41,7 +41,7 @@ We're going to see why it's an effective method of illumination and walk through
 	\includegraphics[width=0.5\textwidth,frame]{assets/hillshade-example.png}
 \end{center}
 
-\section{Directional Lighting (about 2m 20s)}
+\section{DirectionalLighting}
 
 \subsection{EffectGraph}
 
@@ -96,7 +96,7 @@ And if the terrain generally faces away from the light direction, we want the te
 
 \section{Derivation}
 
-\subsection{Cosine (about 1m 50s)}
+\subsection{ShadowArea}
 
 At this point, we've covered what the effect should do, but how can we accomplish it?
 What are the nuts and bolts that turn this loose discussion into a sequence of mathematical operations?
@@ -109,6 +109,8 @@ To root some of our model in reality, we will vary the intensity of the shading 
 
 I won't prove this for you, but it so happens that (with a directional light) the signed area of a rotated square's shadow is $A * \cos \theta$ where $A$ is the area of the square, $\theta$ is the angle between $l$ and $n$, and the sign encodes whether or not the square faces the light source (positive means facing the light source and negative means facing away).
 If an un-rotated square gets the full light strength of $1$, then this fact implies that a rotated square gets strength $S = 1 * \cos \theta = \cos \theta$.
+
+\subsection{TransformCosine}
 
 You might notice that $\cos \theta$ can be negative.
 What are we to do with a negative light strength?
@@ -125,7 +127,7 @@ This can be done by first adding 1 and then dividing by 2.
 	\includegraphics[width=0.75\textwidth,frame]{assets/cosine.jpg}
 \end{center}
 
-\subsection{Law of Cosines (about 2m)}
+\subsection{WhatIsLink}
 
 We now know that we want to vary the strength of our lighting according to $\cos \theta$.
 But that doesn't really help us much because we don't know what $\theta$ is -- all we know are the vectors $l$ and $n$.
@@ -146,6 +148,8 @@ In this case, we are going to draw the third leg of our triangle here and use th
 	\includegraphics[width=0.2735\textwidth,frame]{assets/lnw.jpg}
 \end{center}
 
+\subsection{LawOfCosines}
+
 The full Law of Cosines says that for any triangle with sides/angle labeled like so, we have the following equality: $c^2 = a^2 + b^2 - 2ab \cos C$.
 In our case, $a = |l|$, $b = |n|$, and the capital $C = \theta$.
 The third side of our triangle is the difference between $l$ and $n$ so its length is magnitude of that difference.
@@ -163,6 +167,8 @@ If you are familiar with the dot product, you know that this can be further simp
 But in the interest of accessibility, I'm going to leave it here because we have what we need.
 
 \section{Hillshading}
+
+\subsection{FinalProduct}
 
 And that pretty much wraps it up.
 From our shadow area discussion, we know the strength of our light is $\dfrac{1}{2}(1 + \cos \theta)$ and we just figured out how to compute $\cos \theta$ in terms of the two things we know: the vectors $l$ and $n$.

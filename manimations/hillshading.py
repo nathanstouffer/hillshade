@@ -1,10 +1,10 @@
 from manim import *
 import config
 
-class FinalProductTitle(Scene):
+class HillshadingSection(Scene):
     def construct(self):
         self.wait(1)
-        final_product_section = Text("III. Final Product", font_size=32, color=WHITE)
+        final_product_section = Text("III. Hillshading", font_size=32, color=WHITE)
         self.play(Write(final_product_section))
         self.wait(1)
         self.play(FadeOut(final_product_section))
