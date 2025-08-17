@@ -61,6 +61,8 @@ namespace hillshader
         void orbit(float const delta_theta, float const delta_phi, focus f);
 
         void orbit_to(float const theta, float const phi, focus f);
+        
+        void orbit_attract(float const target_phi, float const rad_per_ms, focus const f);
 
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 

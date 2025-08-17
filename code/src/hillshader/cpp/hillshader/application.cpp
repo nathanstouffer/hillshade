@@ -19,6 +19,7 @@
 #include "hillshader/timer.hpp"
 #include "hillshader/camera/config.hpp"
 #include "hillshader/camera/controllers/animators/orbit.hpp"
+#include "hillshader/camera/controllers/animators/orbit_attract.hpp"
 #include "hillshader/camera/controllers/animators/zoom.hpp"
 #include "hillshader/camera/controllers/identity.hpp"
 #include "hillshader/camera/controllers/input.hpp"
@@ -242,7 +243,8 @@ namespace hillshader
 
             consts->albedo = m_albedo.as_vec();
 
-            consts->light_dir = light_direction(m_azimuth, m_altitude);
+            float azimuth = m_azimuth + stf::math::to_degrees(m_camera.theta - stff::constants::half_pi);
+            consts->light_dir = light_direction(azimuth, m_altitude);
             consts->ambient_intensity = m_ambient_intensity;
 
             consts->eye = m_camera.eye;
@@ -329,6 +331,15 @@ namespace hillshader
         float delta_theta = theta - m_camera.theta;
         float delta_phi = phi - m_camera.phi;
         orbit(delta_theta, delta_phi, f);
+    }
+
+    void application::orbit_attract(float const target_phi, float const rad_per_ms, focus const f)
+    {
+        std::optional<stff::vec3> opt = compute_focus(f);
+        if (opt.has_value())
+        {
+            m_controller = std::make_unique<camera::controllers::animators::orbit_attract>(m_camera, opt.value(), target_phi, rad_per_ms);
+        }
     }
 
     void application::create_resources()

@@ -113,6 +113,8 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 if (w_param == L'd') { s_app->orbit(hillshader::camera::config::c_delta_theta, 0.f,  hillshader::focus::center); }
                 // north up
                 if (w_param == L'n') { s_app->orbit_to(stff::constants::pi_halves, stff::constants::pi, hillshader::focus::center); }
+                // orbit attract
+                if (w_param == L'o') { s_app->orbit_attract(3.f * stff::constants::pi / 4.f, -stff::constants::two_pi / 30'000.0f, hillshader::focus::center); }
                 // reset camera
                 if (w_param == L'r') { s_app->reset_camera(); }
             }

@@ -190,7 +190,7 @@ class Endnotes(ThreeDScene):
         self.wait(1)
 
         self.play(FadeOut(endnotes_group), FadeOut(endnotes_box))
-        self.play(gnp.animate.scale_to_fit_height(6).move_to(ORIGIN))
+        self.play(gnp.animate.scale_to_fit_height(6.825).move_to(ORIGIN))
         self.wait(1)
 
 class ThanksForWatching(Scene):
