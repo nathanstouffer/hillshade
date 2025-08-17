@@ -1,19 +1,19 @@
 from manim import *
 import config
 
+class DirectionalLightSection(Scene):
+    def construct(self):
+        self.wait(1)
+        directional_lighting_section = Text("I. Directional Lighting", font_size=32, color=WHITE)
+        self.play(Write(directional_lighting_section))
+        self.wait(1)
+
 class EffectGraph(Scene):
 
     def construct(self):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-0.m4a")
             self.wait(6)
-
-        self.wait(1)
-        directional_lighting_section = Text("I. Directional Lighting", font_size=32, color=WHITE)
-        self.play(Write(directional_lighting_section))
-        self.wait(1)
-
-        self.play(directional_lighting_section.animate.move_to([0, 3, 0]))
 
         self.wait(2)
 

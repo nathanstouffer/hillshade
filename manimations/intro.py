@@ -89,3 +89,4 @@ class Topic(Scene):
         underline = Underline(text)
         self.play(Write(text))
         self.play(Write(underline))
+        self.wait(1)

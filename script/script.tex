@@ -32,6 +32,8 @@ This map is intentionally set up so that your brain can intuit the shape of the 
 Computers do much of this work today, but cartographers have been using this technique for hundreds of years.
 And many other applications use similar strategies to help convey geometric information.
 
+\subsection{Topic}
+
 The topic I'd like to discuss today is a lighting technique called hillshade.
 We're going to see why it's an effective method of illumination and walk through the math that powers it.
 
@@ -39,7 +41,9 @@ We're going to see why it's an effective method of illumination and walk through
 	\includegraphics[width=0.5\textwidth,frame]{assets/hillshade-example.png}
 \end{center}
 
-\subsection{Directional Lighting (about 2m 20s)}
+\section{Directional Lighting (about 2m 20s)}
+
+\subsection{EffectGraph}
 
 The particular topic we'll be discussing is hillshade, but it's worth mentioning that hillshade is a very specific example of something called a directional light.
 Directional lights are used all over computer graphics and are themselves just one option for how you might want to light a scene.
@@ -54,6 +58,8 @@ You get a lot of realism for the amount of effort that you need to expend.
 
 If you were to represent different lighting techniques as points in the plane where the y-axis represents some notion of realism (how realistic a scene looks) and the x-axis represents some notion of cost (maybe in terms of complexity/memory/computation time).
 Then on that plane, directional lights would exist at a sweet spot where they are unreasonably effective -- they don't cost that much but they provide a healthy amount of realism.
+
+\subsection{Assumptions}
 
 Let's get into the details of what a directional light is.
 A directional light is a pseudo-realistic model of how light behaves.
@@ -75,6 +81,8 @@ This makes $l$ the vector that points directly \textit{towards} the light source
 
 \end{enumerate}
 
+\subsection{DesiredBehavior}
+
 The direction that the terrain faces is encoded in something called a surface normal.
 If we zoom in on a very small portion of the terrain, then it can be reasonably approximated as a small plane.
 The outward pointing vector that is orthogonal to the approximating plane is called a surface normal.
@@ -86,12 +94,12 @@ If the terrain generally points in the same direction as the light, we want the 
 If the light direction kind of glances off the terrain, we want the terrain to be a tone of grey.
 And if the terrain generally faces away from the light direction, we want the terrain to be dark.
 
-\section{Hillshading}
+\section{Derivation}
+
+\subsection{Cosine (about 1m 50s)}
 
 At this point, we've covered what the effect should do, but how can we accomplish it?
 What are the nuts and bolts that turn this loose discussion into a sequence of mathematical operations?
-
-\subsection{Cosine (about 1m 50s)}
 
 We can start by being more precise about describing how the light strength should vary.
 Let's represent a small area of the terrain as a rotated square.
@@ -154,7 +162,7 @@ If we use that fact and then simplify, we can compute $\cos \theta$ from values 
 If you are familiar with the dot product, you know that this can be further simplified into some really compact notation.
 But in the interest of accessibility, I'm going to leave it here because we have what we need.
 
-\section{Final product (about 30s)}
+\section{Hillshading}
 
 And that pretty much wraps it up.
 From our shadow area discussion, we know the strength of our light is $\dfrac{1}{2}(1 + \cos \theta)$ and we just figured out how to compute $\cos \theta$ in terms of the two things we know: the vectors $l$ and $n$.
@@ -163,11 +171,11 @@ It never ceases to amaze me how such simple a computation can produce stunning a
 
 \animation{Show a few examples.}
 
-\section{Endnotes}
+\subsection{Endnotes}
+
+\subsubsection{Variations (about 25s)}
 
 I'd like to close the video by making a few comments.
-
-\subsection{Variations (about 25s)}
 
 First, hillshade isn't just one thing.
 It's actually a term for a family of effects that can be applied to a map.
@@ -177,7 +185,7 @@ You now have the mathematical framework that sits behind all of them.
 
 \todo{Possibly mention Eduard Imhof.}
 
-\subsection{Pseudoscopic Illusion (about 30s)}
+\subsubsection{Pseudoscopic Illusion (about 30s)}
 
 Second, Most people have an easier time recognize terrain features when the light is placed in the top left of an image.
 Because many maps are oriented so that north points towards the top of the screen, hillshade is typically lit from the northwest.
@@ -188,16 +196,16 @@ This is called a pseudoscopic illusion.
 
 \animation{Show a south-up map light from the northwest and then fade in the same map (still south up) with a southeast (top left) light}.
 
-\subsection{Simplicity (about 30s)}
+\subsubsection{Simplicity (about 30s)}
 
 For my final comment, I'd like revisit the simplicity of this effect -- I just can't get over it!
 As we've discussed, the math is pretty simple yet the results are unreasonably effective.
-But what's even crazier is the fact that all the maps you've seen in this video are 2-dimensional -- and I don't just mean that the screen you're viewing is 2-dimensional.
-I mean that the actual model that I am rendering is 2D.
+But what's even crazier is the fact that all the maps you've seen in this video are 2-dimensional -- and I don't just mean that the screen you're viewing is 2D.
+I mean that the actual model that I am rendering is a square in the plane.
 
 \animation{Pitch the camera}
 
-Despite that, at least to me, hillshade vividly evokes the 3D nature of terrain.
+Despite that, hillshade vividly evokes the 3-dimensional nature of terrain.
 
 \animation{3D flythrough?}
 
