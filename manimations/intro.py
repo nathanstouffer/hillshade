@@ -92,7 +92,60 @@ class Topic(Scene):
         text = Text("Topic: Hillshade", font_size=32, color=WHITE).move_to([0, 3.125, 0])
         underline = Underline(text)
         self.play(Write(text))
-        self.play(Write(underline))
+        self.play(Write(underline), FadeOut(hillshade))
+
+        width = 3.25
+
+        directional_light_thumbnail = ImageMobject("assets/directional-light-thumbnail.png")
+        directional_light_thumbnail.scale_to_fit_width(width).shift([-4.5, 1, 0])
+        directional_light_rectangle = SurroundingRectangle(directional_light_thumbnail, color=WHITE)
+        directional_light_label = Text("I. Directional Lighting", font_size=20).next_to(directional_light_rectangle, UP)
+
+        directional_light_group = Group(
+            directional_light_thumbnail,
+            directional_light_rectangle,
+            directional_light_label,
+        )
+
+        derivation_thumbnail = ImageMobject("assets/derivation-thumbnail.png")
+        derivation_thumbnail.scale_to_fit_width(width).shift([0, -2, 0])
+        derivation_rectangle = SurroundingRectangle(derivation_thumbnail, color=WHITE)
+        derivation_label = Text("II. Derivation", font_size=20).next_to(derivation_rectangle, UP)
+
+        derivation_group = Group(
+            derivation_thumbnail,
+            derivation_rectangle,
+            derivation_label,
+        )
+
+        hillshading_thumbnail = ImageMobject("assets/hillshading-thumbnail.png")
+        hillshading_thumbnail.scale_to_fit_width(width).shift([4.5, 1, 0])
+        hillshading_rectangle = SurroundingRectangle(hillshading_thumbnail, color=WHITE)
+        hillshading_label = Text("III. Hillshading", font_size=20).next_to(hillshading_rectangle, UP)
+
+        hillshading_group = Group(
+            hillshading_thumbnail,
+            hillshading_rectangle,
+            hillshading_label,
+        )
+
+        directional_light_to_derivation = CurvedArrow(
+            start_point=directional_light_thumbnail.get_bottom() + 0.5 * DOWN,
+            end_point=derivation_rectangle.get_left() + 0.5 * LEFT,
+            angle=PI / 3
+        )
+
+        derivation_to_hillshading = CurvedArrow(
+            start_point=derivation_rectangle.get_right() + 0.5 * RIGHT,
+            end_point=hillshading_thumbnail.get_bottom() + 0.5 * DOWN,
+            angle=PI / 3
+        )
+
+        self.play(FadeIn(directional_light_group))
+        self.play(Create(directional_light_to_derivation))
+        self.play(FadeIn(derivation_group))
+        self.play(Create(derivation_to_hillshading))
+        self.play(FadeIn(hillshading_group))
         self.wait(1)
 
 class TopicTester(Scene):
