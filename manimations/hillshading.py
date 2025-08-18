@@ -12,7 +12,7 @@ class HillshadingSection(Scene):
 class FinalProduct(Scene):
     def construct(self):
         if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/final-product-0.m4a")
+            self.add_sound(f"{config.AUDIO_ASSETS}/FinalProduct.m4a")
 
         strength = "S = \\frac{1}{2} \left( 1 + \cos \\theta \\right)"
         cosine = "\\text{ where } \cos \\theta = 1 - \\frac{1}{2} * | {l} - {n} | ^2"
@@ -22,7 +22,7 @@ class FinalProduct(Scene):
         }
         formula = MathTex(strength, cosine, tex_to_color_map=color_map, font_size=40)
         formula.move_to([0, 3, 0])
-        self.wait(4)
+        self.wait(3.5)
         self.play(Write(formula[0]))
 
         self.wait(2)
@@ -42,10 +42,7 @@ class FinalProduct(Scene):
 class Endnotes(ThreeDScene):
     def construct(self):
         if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/endnotes-0.m4a")
-            self.add_sound(f"{config.AUDIO_ASSETS}/modifications-0.m4a", time_offset=4)
-            self.add_sound(f"{config.AUDIO_ASSETS}/pseudoscopic-illusion-0.m4a", time_offset=4 + 17)
-            self.add_sound(f"{config.AUDIO_ASSETS}/simplicity-0.m4a", time_offset=4 + 17 + 27)
+            self.add_sound(f"{config.AUDIO_ASSETS}/Endnotes.m4a")
 
         # Create Text objects for the list
         numberings = [ "#1:", "#2:", "#3:" ]
@@ -103,7 +100,7 @@ class Endnotes(ThreeDScene):
         pseudoscopic_bridgers = ImageMobject("assets/pseudoscopic-bridgers.png")
         pseudoscopic_bridgers.scale_to_fit_height(5).shift(shift)
 
-        self.wait(11)
+        self.wait(10)
         self.play(
             FadeOut(bench_lakes),
             FadeIn(pseudoscopic_bridgers),
@@ -159,7 +156,7 @@ class Endnotes(ThreeDScene):
             self.wait(1)
             self.play(FadeOut(ellipse), FadeOut(label), FadeOut(arrow))
 
-        self.wait(1)
+        self.wait(3)
         fake_src = np.array([0, 3.5, 0])
         fake_arrow = Arrow(fake_src, fake_src + np.array([1, -1, 0]), color=YELLOW)
         self.play(GrowArrow(fake_arrow))
@@ -173,9 +170,10 @@ class Endnotes(ThreeDScene):
         self.wait(6)
         self.play(GrowArrow(arrow), FadeIn(light_label))
 
-        self.wait(7)
-        add_ellipse_label([3.25, 0, 0], [1, 4], -PI / 18, "This is a ridgeline", [0, 3, 0], -PI / 8)
+        self.wait(5)
+        add_ellipse_label([4.7, 1.85, 0], [2, 0.75], PI / 12, "This is a ridgeline", [4, 3, 0], PI / 8)
 
+        self.wait(3)
         self.play(FadeOut(arrow), FadeOut(light_label), Write(endnotes_text[1]))
         self.wait(1)
 
@@ -187,7 +185,7 @@ class Endnotes(ThreeDScene):
             run_time=2
         )
         self.play(Write(endnotes_text[2]))
-        self.wait(1)
+        self.wait(3)
 
         self.play(FadeOut(endnotes_group), FadeOut(endnotes_box))
         self.play(gnp.animate.scale_to_fit_height(6.6675).move_to(ORIGIN))
