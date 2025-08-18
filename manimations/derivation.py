@@ -338,7 +338,7 @@ class LawOfCosines(Scene):
 
         steps = [
             ("{c}^2 = {a}^2 + {b}^2 - 2 * {a} * {b} * \cos C", 3),
-            ("| {l} - {n} |^2 = |{l}|^2 + |{n}|^2 - 2 * |{l}| * |{n}| * \cos \\theta", 22),
+            ("| {l} - {n} |^2 = |{l}|^2 + |{n}|^2 - 2 * |{l}| * |{n}| * \cos \\theta", 9),
             ("|{l} - {n}|^2 = 1^2 + 1^2 - 2 * \cos \\theta", 1),
             ("- 2 + |{l} - {n}|^2 = - 2 * \cos \\theta", 0.5),
             ("1 - \\frac{1}{2} * | {l} - {n} | ^2 = \cos \\theta", 7),
@@ -402,6 +402,35 @@ class LawOfCosines(Scene):
             this_text = steps_text[i]
             wait = steps[i][1]
             self.play(TransformFromCopy(prev_text, this_text))
+            if i == 1:
+                law_of_cos_dummy =  MathTex("c", "^2= ", "a", "^2 + ", "b", "^2 - 2 * ", "a", " * ", "b", " * \cos ", "C", font_size=40).move_to(steps_text[0])
+                substituted_dummy = MathTex("| {l} - {n} |", "^2= ", "|{l}|", "^2 + ", "|{n}|", "^2 - 2 * ", "|{l}|", " * ", "|{n}|", " * \cos ", "\\theta", font_size=40).move_to(steps_text[1])
+
+                a_squared = Underline(law_of_cos_dummy[2], stroke_opacity=0.75)
+                a = Underline(law_of_cos_dummy[6], stroke_opacity=0.75)
+                l_squared = Underline(substituted_dummy[2], stroke_opacity=0.75)
+                l = Underline(substituted_dummy[6], stroke_opacity=0.75)
+                self.play(Create(a_squared), Create(a), Create(l_squared), Create(l))
+                self.play(FadeOut(a_squared), FadeOut(a), FadeOut(l_squared), FadeOut(l))
+
+                b_squared = Underline(law_of_cos_dummy[4], stroke_opacity=0.75)
+                b = Underline(law_of_cos_dummy[8], stroke_opacity=0.75)
+                n_squared = Underline(substituted_dummy[4], stroke_opacity=0.75)
+                n = Underline(substituted_dummy[8], stroke_opacity=0.75)
+                self.play(Create(b_squared), Create(b), Create(n_squared), Create(n))
+                self.play(FadeOut(b_squared), FadeOut(b), FadeOut(n_squared), FadeOut(n))
+
+                angle_c = Underline(law_of_cos_dummy[-1], stroke_opacity=0.75)
+                theta = Underline(substituted_dummy[-1], stroke_opacity=0.75)
+                self.play(Create(angle_c), Create(theta))
+                self.play(FadeOut(angle_c), FadeOut(theta))
+
+                c = Underline(law_of_cos_dummy[0], stroke_opacity=0.75)
+                diff = Underline(substituted_dummy[0], stroke_opacity=0.75)
+                self.wait(5)
+                self.play(Create(c), Create(diff))
+                self.play(FadeOut(c), FadeOut(diff))
+
             self.wait(wait)
 
         self.play(FadeOut(steps_text[-1]))
