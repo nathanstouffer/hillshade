@@ -30,7 +30,7 @@ Regardless of what individual features you've noticed, I'm certain you have some
 
 This map is intentionally set up so that your brain can intuit the shape of the terrain.
 Computers do much of this work today, but cartographers have been using this technique for hundreds of years.
-And many other applications use similar strategies to help convey geometric information.
+And many other applications utilize similar strategies to convey geometric information.
 
 \subsection{Topic}
 
@@ -56,7 +56,7 @@ You get pretty realistic lighting for the expended level of effort.
 	\includegraphics[width=0.65\textwidth,frame]{assets/realism.jpg}
 \end{center}
 
-If you were to represent different lighting techniques as points in the plane where the y-axis represents some notion of realism (how realistic a scene looks) and the x-axis represents some notion of cost (maybe in terms of complexity/memory/computation time).
+If you were to represent different lighting techniques as points in the plane where the y-axis represents some notion of how realistic a scene looks and the x-axis represents some notion of cost (maybe in terms of complexity/memory/computation time).
 Then on that plane, directional lights would exist at an extremely effective sweet spot -- they don't cost that much but they provide a healthy amount of realism.
 
 \subsection{Assumptions}
@@ -69,13 +69,13 @@ Directional lights make a few simplifying assumptions:
 \begin{enumerate}
 
 \item First, they ignore obstructions -- meaning we won't compute true shadows.
-This is the piece of directional lights that I find to be the most interesting: even when ignoring obstructions, directional lights give enough hints of realism to trick your brain into thinking objects are 3-dimensional.
+This is the piece of directional lights that I find to be the most interesting: even with this simplification, directional lights give enough hints of realism to trick your brain into thinking objects are 3-dimensional.
 
 \animation{Demonstrate a simple example of shadows in 2D}.
 	
 \item Second, directional lights assume the light source to be extremely far away.
 This means that every point in the scene has light coming from the same direction $l$.
-It's also why the technique is called directional lighting.
+It's also the reason for the ``direction" in the term directional lighting.
 
 To make the math a little cleaner, we're actually going to reverse that direction.
 This makes $l$ the vector that points directly \textit{towards} the light source.
@@ -85,15 +85,15 @@ This makes $l$ the vector that points directly \textit{towards} the light source
 \subsection{DesiredBehavior}
 
 The direction that the terrain faces is encoded in something called a surface normal.
-If we zoom in on a very small portion of the terrain, then it can be reasonably approximated as a small plane.
-The outward pointing vector that is orthogonal to that plane is called a normal vector.
+If we zoom in very close to the terrain, then it can be reasonably approximated as a small plane.
+The outward pointing vector that is orthogonal to that plane is called the surface normal.
 
 \animation{Show a rotating plane with a surface normal that is lit according to hillshade.}
 
 The effect we are looking for should behave like this:
-If the terrain generally points in the same direction as the light, we want the terrain to be pretty bright.
-If the light direction kind of glances off the terrain, we want the terrain to be a tone of grey.
-And if the terrain generally faces away from the light direction, we want the terrain to be dark.
+If the terrain generally points in the same direction as the light, we want to use a pretty bright shade.
+If the light direction kind of glances off the terrain, we want to shade with a tone of grey.
+And if the terrain generally faces away from the light direction, we want to use a dark shade.
 
 \section{Derivation}
 
@@ -157,7 +157,7 @@ The third side of our triangle is the difference between $l$ and $n$ so its leng
 1 - \dfrac{1}{2}|l-n|^2 = \cos \theta & \quad \text{simplifying}
 \end{align*}
 
-I didn't mention this earlier, but by convention, $l$ and $n$ are unit vectors -- meaning their magnitude is 1.
+I didn't mention this earlier, but by convention, $l$ and $n$ are chosen to be unit vectors -- meaning their magnitude is 1.
 If we use that fact and then simplify, we can compute $\cos \theta$ from values that we already know: the vectors $l$ and $n$.
 
 If you are familiar with the dot product, you know that this can be further simplified into some really compact notation.
@@ -189,10 +189,10 @@ You now have the mathematical framework that sits behind all of them.
 
 \subsubsection{Pseudoscopic Illusion (about 30s)}
 
-Second, most people have an easier time recognize terrain features when the light is placed in the top left of an image.
-Because many maps are oriented with north at the top edge of the screen, hillshade is typically lit from the northwest.
+Second, most people have an easier time recognizing terrain features when the light is placed in the top left of an image.
+Because many maps place north at the top edge of the screen, hillshade is typically lit from the northwest.
 
-However, this can sometimes backfire when a map with static hillshade is oriented with \textit{south} at the top edge of the screen.
+However, this can sometimes backfire when that same map is oriented with \textit{south} at the top edge of the screen.
 When that occurs, your brain \textit{might} interpret everything backwards (ie valleys as ridges and ridges as valleys).
 This is called a pseudoscopic illusion.
 
@@ -201,9 +201,9 @@ This is called a pseudoscopic illusion.
 \subsubsection{Simplicity (about 30s)}
 
 For my final comment, I'd like revisit the simplicity of this effect -- I just can't get over it!
-As we've discussed, the math is pretty simple and yet the results are unreasonably effective.
+The math works out to be pretty simple and yet the results are unreasonably effective.
 But what's even crazier is the fact that all the maps you've seen in this video are 2-dimensional -- and I don't just mean that the screen you're viewing is 2D.
-I mean that the actual model I am rendering is a square in the plane.
+The actual model I am rendering is a square in the plane.
 
 \animation{Pitch the camera}
 

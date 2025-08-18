@@ -12,7 +12,7 @@ class EffectGraph(Scene):
 
     def construct(self):
         if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-0.m4a")
+            self.add_sound(f"{config.AUDIO_ASSETS}/EffectGraph.m4a")
             self.wait(6)
 
         self.wait(2)
@@ -53,7 +53,7 @@ class EffectGraph(Scene):
             self.play(Write(text))
             self.wait(0.3)
 
-        self.wait(6)
+        self.wait(10)
 
         # Construct axes behind the list
         axes = Axes(
@@ -76,7 +76,7 @@ class EffectGraph(Scene):
         self.wait(2)
         self.play(Write(realism_label))
 
-        self.wait(1)
+        self.wait(3)
         self.play(Write(cost_label))
 
         self.wait(1.5)
@@ -108,7 +108,7 @@ class Assumptions(Scene):
 
     def construct(self):
         if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-1.m4a")
+            self.add_sound(f"{config.AUDIO_ASSETS}/Assumptions.m4a")
 
         self.wait(3)
         goal = Text("Goal: Pseudo-realistic lighting", font_size=32).move_to([0, 3, 0])
@@ -136,10 +136,9 @@ class Assumptions(Scene):
         wall_label = Text("Object", font_size=28).next_to(wall, UP, buff=0.2)
         obstruction_label = Text("Obstruction", font_size=28).next_to(obstruction, RIGHT, buff=0.2)
 
+        self.wait(3.0)
         self.play(FadeIn(point_light), Write(point_light_label))
-
         self.play(FadeIn(wall), Write(wall_label))
-
         self.play(FadeIn(obstruction), Write(obstruction_label))
 
         # === STATE 1: Rays stop at the obstruction ===
@@ -167,6 +166,7 @@ class Assumptions(Scene):
             ray = Arrow(start=src, end=dst, color=ray_color, buff=0.05, stroke_width=2, tip_length=0.1)
             rays1.add(ray)
 
+        self.wait(1.5)
         self.play(LaggedStart(*[GrowArrow(ray) for ray in rays1], lag_ratio=0.075))
 
         # Create Text objects for the list
@@ -205,13 +205,14 @@ class Assumptions(Scene):
         assumptions_group = VGroup(header, underline, assumption_list)
         assumptions_box = SurroundingRectangle(assumptions_group, color=WHITE, buff=0.4)
 
+        self.wait(1)
         # Show header, underline, and list one by one
         self.play(Write(header), Create(underline)) #, Create(assumptions_box))
 
         for numbering in numberings_texts:
             self.play(Write(numbering), run_time=0.5)
 
-        self.wait(1)
+        self.wait(0.5)
 
         # === STATE 2: Rays pass through the obstruction and reach the wall ===
         rays2 = VGroup()
@@ -229,14 +230,12 @@ class Assumptions(Scene):
             rays2.add(ray)
 
         self.play(Write(assumptions_text[0]))
-        self.wait(2)
-
         self.play(
             ReplacementTransform(rays1, rays2),
             FadeOut(obstruction_label),
             run_time=2.5
         )
-        self.wait(14.5)
+        self.wait(12.5)
 
         # === STATE 3: Light moves far left → nearly parallel rays ===
         # recompute angles for new position
@@ -259,7 +258,6 @@ class Assumptions(Scene):
             rays3.add(ray)
 
         self.play(Write(assumptions_text[1]))
-        self.wait(0.5)
 
         self.play(
             point_light.animate.move_to(far_light_pos),
@@ -273,19 +271,20 @@ class Assumptions(Scene):
 
         self.play(GrowArrow(light_direction_arrow))
         self.play(Write(light_direction_label))
-        self.wait(5)
+        self.wait(8.5)
 
         reversed_light_direction_arrow = Arrow(start=[4, 1, 0], end=[1, 1, 0], color=YELLOW)
         self.play(
             ReplacementTransform(light_direction_arrow, reversed_light_direction_arrow),
             light_direction_label.animate.next_to(reversed_light_direction_arrow, direction=UP + LEFT, buff=0.1)
         )
+        self.wait(1)
 
 class DesiredBehavior(ThreeDScene):
 
     def construct(self):
         if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/directional-lighting-2.m4a")
+            self.add_sound(f"{config.AUDIO_ASSETS}/DesiredBehavior.m4a")
 
         self.camera.background_color = DARK_GRAY
         self.set_camera_orientation(phi=60 * DEGREES, theta = 0)
@@ -322,13 +321,13 @@ class DesiredBehavior(ThreeDScene):
                              color=normal_color, buff=0)
 
         # Add objects
-        self.play(FadeIn(square), run_time=2)
-        self.wait(5)
-        self.play(GrowArrow(normal_arrow), run_time=3)
+        self.wait(1)
+        self.play(FadeIn(square, stroke_opacity=1), run_time=2)
         self.wait(7)
+        self.play(GrowArrow(normal_arrow), run_time=3)
+        self.wait(3)
 
         self.play(GrowArrow(light_arrow), run_time=3)
-        self.wait(1)
 
         # similar vectors
         new_normal = normalize(np.array([-0.9, -0.7, 1]))
@@ -340,7 +339,7 @@ class DesiredBehavior(ThreeDScene):
         )
         normal_dir = new_normal
 
-        self.wait(2)
+        self.wait(1)
 
         # glancing vectors
         new_normal = normalize(np.array([-0.9, 0.9, 1]))
@@ -364,4 +363,4 @@ class DesiredBehavior(ThreeDScene):
         )
         normal_dir = new_normal
 
-        self.wait(2)
+        self.wait(1)

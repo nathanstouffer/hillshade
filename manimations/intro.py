@@ -4,7 +4,7 @@ import config
 class Motivation(Scene):
     def construct(self):
         if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/motivation-0.m4a")
+            self.add_sound(f"{config.AUDIO_ASSETS}/Motivation.m4a")
  
         # Load and scale image
         hillshade = ImageMobject("assets/bench-lakes.png")
@@ -64,7 +64,7 @@ class Motivation(Scene):
         self.wait(0.5)
         add_ellipse_label([-1.75, -2.1, 0], [1.75, 1], -PI / 6, "Steep", [-4.5, -2.5, 0], PI / 4)
 
-        self.wait(2.5)
+        self.wait(2)
         add_ellipse_label([0.675, 0, 0], [1, 0.5], PI / 6, "Gully", [4.5, 2.5, 0], PI / 4)
         self.wait(0.5)
         add_ellipse_label([-1.8, 1.9, 0], [2, 0.75], -PI / 96, "Ridgeline", [-5, 3, 0], -PI / 6)
@@ -79,10 +79,14 @@ class Motivation(Scene):
 
 class Topic(Scene):
     def construct(self): 
+        if config.INCLUDE_AUDIO:
+            self.add_sound(f"{config.AUDIO_ASSETS}/Topic.m4a")
+
         hillshade = ImageMobject("assets/bench-lakes.png")
         hillshade.scale_to_fit_height(6)
         self.add(hillshade)
 
+        self.wait(1)
         self.play(hillshade.animate.move_to([0, -0.5, 0]))
 
         text = Text("Topic: Hillshade", font_size=32, color=WHITE).move_to([0, 3.125, 0])

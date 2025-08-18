@@ -11,7 +11,7 @@ class ShadowArea(ThreeDScene):
 
     def construct(self):
         if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/cosine-0.m4a")
+            self.add_sound(f"{config.AUDIO_ASSETS}/ShadowArea.m4a")
 
         self.set_camera_orientation(phi=72.5 * DEGREES, theta=60 * DEGREES)
 
@@ -38,10 +38,10 @@ class ShadowArea(ThreeDScene):
             }
         )
 
-        self.wait(2)
+        self.wait(9)
         self.play(FadeIn(base_rect), run_time=2)
         self.play(Create(grid), run_time=2)
-        self.wait(1)
+        self.wait(3)
 
         def compute_adjustment(old, new):
             theta = angle_between_vectors(old, new)
@@ -59,7 +59,27 @@ class ShadowArea(ThreeDScene):
 
         self.wait(2)
         self.begin_ambient_camera_rotation(rate=0.1)
-        self.wait(18)
+
+        self.wait(2)
+        new_normal = normalize(np.array([0, 0, 1]))
+        angle, axis = compute_adjustment(normal_dir, new_normal)
+        self.play(
+            square.animate.rotate(angle, axis),
+            run_time=3
+        )
+        normal_dir = new_normal
+        self.wait(6)
+        self.play(square.animate.set_opacity(1))
+
+        self.wait(3)
+        new_normal = normalize(np.array([-1, 0, 1]))
+        angle, axis = compute_adjustment(normal_dir, new_normal)
+        self.play(
+            square.animate.rotate(angle, axis).set_opacity(0.7),
+            run_time=3
+        )
+        normal_dir = new_normal
+        self.wait(9)
 
         # Draw polygon of projected points in XY plane
         vertices = square.get_vertices()
@@ -78,17 +98,7 @@ class ShadowArea(ThreeDScene):
             for line, corner in zip(lines, vertices):
                 line.put_start_and_end_on(corner, np.array([corner[0], corner[1], 0]))
 
-        new_normal = normalize(np.array([0, 1, 1]))
-        angle, axis = compute_adjustment(normal_dir, new_normal)
-        self.play(
-            square.animate.rotate(angle, axis),
-            UpdateFromFunc(shadow, update_shadow_and_lines),
-            *[UpdateFromFunc(line, update_shadow_and_lines) for line in lines],
-            run_time=3
-        )
-        normal_dir = new_normal
-
-        new_normal = normalize(np.array([-0.9, -0.5, 1]))
+        new_normal = normalize(np.array([0, -1, 1]))
         angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
             square.animate.rotate(angle, axis),
@@ -104,9 +114,19 @@ class ShadowArea(ThreeDScene):
         self.add_fixed_in_frame_mobjects(area_label)
         self.play(Write(area_label))
 
+        new_normal = normalize(np.array([0.9, -0.5, 1]))
+        angle, axis = compute_adjustment(normal_dir, new_normal)
+        self.play(
+            square.animate.rotate(angle, axis),
+            UpdateFromFunc(shadow, update_shadow_and_lines),
+            *[UpdateFromFunc(line, update_shadow_and_lines) for line in lines],
+            run_time=3
+        )
+        normal_dir = new_normal
+
         self.wait(4)
 
-        new_normal = normalize(np.array([0, -1, 0.25]))
+        new_normal = normalize(np.array([0, 1, 0.25]))
         angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
             square.animate.rotate(angle, axis),
@@ -144,9 +164,9 @@ class ShadowArea(ThreeDScene):
 class TransformCosine(Scene):
     def construct(self):
         if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/cosine-1.m4a")
+            self.add_sound(f"{config.AUDIO_ASSETS}/TransformCosine.m4a")
 
-        self.wait(1)
+        self.wait(0.5)
 
         # Create axes
         axes = Axes(
@@ -176,7 +196,7 @@ class TransformCosine(Scene):
         clamped_graph = axes.plot(lambda x: max(0, np.cos(x)), color=YELLOW, x_range=[0, 2*PI, 0.01])
         self.play(ReplacementTransform(cosine_graph, clamped_graph))
 
-        self.wait(14)
+        self.wait(13)
 
         cosine_graph = axes.plot(lambda x: np.cos(x), color=YELLOW)
         self.play(ReplacementTransform(clamped_graph, cosine_graph))
@@ -206,7 +226,7 @@ class TransformCosine(Scene):
 class WhatIsLink(Scene):
     def construct(self):
         if config.INCLUDE_AUDIO:
-            self.add_sound(f"{config.AUDIO_ASSETS}/law-of-cosines-0.m4a")
+            self.add_sound(f"{config.AUDIO_ASSETS}/WhatIsLink.m4a")
 
         def compute(phi, rho):
             origin = np.array([0, -1.75, 0])

@@ -1,2 +1,2 @@
-INCLUDE_AUDIO = False
-AUDIO_ASSETS = 'assets/audio/recordings/v1'
+INCLUDE_AUDIO = True
+AUDIO_ASSETS = 'assets/audio/recordings/v2'
