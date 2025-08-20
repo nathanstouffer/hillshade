@@ -85,10 +85,10 @@ This makes $l$ the vector that points directly \textit{towards} the light source
 \subsection{DesiredBehavior}
 
 The direction that the terrain faces is encoded in something called a surface normal.
-If we zoom in very close to the terrain, then it can be reasonably approximated as a small plane.
-The outward pointing vector that is orthogonal to that plane is called the surface normal.
+If we zoom in very close to the terrain, then it can be reasonably approximated as a small square.
+The outward pointing vector that is orthogonal to that square is called the surface normal.
 
-\animation{Show a rotating plane with a surface normal that is lit according to hillshade.}
+\animation{Show a rotating square with a surface normal that is lit according to hillshade.}
 
 The effect we are looking for should behave like this:
 If the terrain generally points in the same direction as the light, we want to use a pretty bright shade.
@@ -207,7 +207,7 @@ The actual model I am rendering is a square in the plane.
 
 \animation{Pitch the camera}
 
-Despite that, hillshade vividly evokes the 3-dimensional nature of terrain.
+Despite that, hillshade is able to vividly evoke the 3-dimensional nature of terrain.
 
 \animation{3D flythrough?}
 

@@ -92,7 +92,8 @@ class Topic(Scene):
         text = Text("Topic: Hillshade", font_size=32, color=WHITE).move_to([0, 3.125, 0])
         underline = Underline(text)
         self.play(Write(text))
-        self.play(Write(underline), FadeOut(hillshade))
+        self.wait(0.1)
+        self.play(Write(underline), FadeOut(hillshade), run_time=1.5)
 
         width = 3.25
 
@@ -141,11 +142,11 @@ class Topic(Scene):
             angle=PI / 3
         )
 
-        self.play(FadeIn(directional_light_group))
-        self.play(Create(directional_light_to_derivation))
-        self.play(FadeIn(derivation_group))
-        self.play(Create(derivation_to_hillshading))
-        self.play(FadeIn(hillshading_group))
+        self.play(FadeIn(directional_light_group), run_time=1)
+        self.play(Create(directional_light_to_derivation), run_time=1.25)
+        self.play(FadeIn(derivation_group), run_time=1)
+        self.play(Create(derivation_to_hillshading), run_time=1.25)
+        self.play(FadeIn(hillshading_group), run_time=1)
         self.wait(1)
 
 class TopicTester(Scene):

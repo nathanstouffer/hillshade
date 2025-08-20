@@ -110,10 +110,6 @@ class ShadowArea(ThreeDScene):
 
         self.wait(3)
 
-        area_label = MathTex("A_s = A * \cos \\theta", font_size=36).to_corner(UR)
-        self.add_fixed_in_frame_mobjects(area_label)
-        self.play(Write(area_label))
-
         new_normal = normalize(np.array([0.9, -0.5, 1]))
         angle, axis = compute_adjustment(normal_dir, new_normal)
         self.play(
@@ -123,6 +119,10 @@ class ShadowArea(ThreeDScene):
             run_time=3
         )
         normal_dir = new_normal
+
+        area_label = MathTex("A_s = A * \cos \\theta", font_size=36).to_corner(UR)
+        self.add_fixed_in_frame_mobjects(area_label)
+        self.play(Write(area_label))
 
         self.wait(4)
 

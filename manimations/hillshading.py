@@ -188,7 +188,7 @@ class Endnotes(ThreeDScene):
         self.wait(3)
 
         self.play(FadeOut(endnotes_group), FadeOut(endnotes_box))
-        self.play(gnp.animate.scale_to_fit_height(6.6675).move_to(ORIGIN))
+        self.play(gnp.animate.scale_to_fit_height(6.4).move_to(ORIGIN))
         self.wait(1)
 
 class ThanksForWatching(Scene):
@@ -200,6 +200,6 @@ class ThanksForWatching(Scene):
 class Tmp(Scene):
     def construct(self):
         gnp = ImageMobject("assets/gnp.png")
-        gnp.scale_to_fit_height(6.6675)
+        gnp.scale_to_fit_height(6.4)
         self.add(gnp)
-        self.wait(1)
+        # self.wait(1)

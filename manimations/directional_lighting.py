@@ -13,9 +13,8 @@ class EffectGraph(Scene):
     def construct(self):
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/EffectGraph.m4a")
-            self.wait(6)
 
-        self.wait(2)
+        self.wait(8)
 
         # Technique labels and their graph positions
         techniques = [
