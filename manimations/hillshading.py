@@ -163,17 +163,32 @@ class Endnotes(ThreeDScene):
         self.wait(2)
         self.play(FadeOut(fake_arrow))
 
+        accent_line = Line(
+            start=pseudoscopic_bridgers.get_left(),
+            end=pseudoscopic_bridgers.get_right(),
+            stroke_width=2
+        )
+        accent_line.next_to(pseudoscopic_bridgers, UP, buff=0.1).shift([-0.007, 0, 0])
+        self.play(Create(accent_line))
+        self.wait(1)
+        self.play(FadeOut(accent_line))
+
+        accent_label = Text("South", font_size=24).next_to(accent_line, UP)
+        self.wait(5)
+        self.play(Create(accent_line), Write(accent_label))
+        self.wait(2)
+
         src = np.array([7, -3.5, 0])
         arrow = Arrow(src, src + np.array([-1, 1, 0]), color=YELLOW)
         light_label = Text("(Actually lit from bottom right)", font_size=24)
         light_label.next_to(arrow, 0.01 * LEFT + 0.125 * DOWN)
-        self.wait(6)
         self.play(GrowArrow(arrow), FadeIn(light_label))
 
-        self.wait(5)
+        self.wait(1)
+        self.play(FadeOut(accent_line), FadeOut(accent_label))
+        self.wait(1)
         add_ellipse_label([4.7, -1.45, 0], [2.5, 1.25], PI / 24, "This is a valley", [4, 3, 0], -PI / 16)
 
-        self.wait(3)
         self.play(FadeOut(arrow), FadeOut(light_label), Write(endnotes_text[1]))
         self.wait(1)
 
