@@ -155,8 +155,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     LONG window_width = 1920;
     LONG window_height = 1080;
     RECT rct = { 0, 0, window_width, window_height };
-    AdjustWindowRect(&rct, WS_OVERLAPPEDWINDOW, FALSE);
-    HWND wnd = CreateWindow("Hillshade", "Hillshader", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rct.right - rct.left, rct.bottom - rct.top, NULL, NULL, hInstance, NULL);
+    AdjustWindowRect(&rct, WS_POPUP, FALSE);    // WS_OVERLAPPEDWINDOW
+    HWND wnd = CreateWindow("Hillshade", "Hillshader", WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, rct.right - rct.left, rct.bottom - rct.top, NULL, NULL, hInstance, NULL);
     if (!wnd)
     {
         MessageBox(NULL, "Cannot create window", "Error", MB_OK | MB_ICONERROR);
