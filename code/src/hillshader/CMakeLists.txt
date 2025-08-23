@@ -41,6 +41,8 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/" FILES ${HILLSHADER_FILES})
 file(CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/shaders" "${CMAKE_CURRENT_BINARY_DIR}/shaders" SYMBOLIC)
 file(CREATE_LINK "${CMAKE_SOURCE_DIR}/terrarium" "${CMAKE_CURRENT_BINARY_DIR}/terrarium" SYMBOLIC)
 
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/frames")
+
 # TODO eventually we should split this out by platform
 target_compile_definitions(hillshader
     PRIVATE

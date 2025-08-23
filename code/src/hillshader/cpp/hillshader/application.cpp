@@ -19,13 +19,13 @@
 #include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
 
-#include "hillshader/timer.hpp"
 #include "hillshader/camera/config.hpp"
 #include "hillshader/camera/controllers/animators/orbit.hpp"
 #include "hillshader/camera/controllers/animators/orbit_attract.hpp"
 #include "hillshader/camera/controllers/animators/zoom.hpp"
 #include "hillshader/camera/controllers/identity.hpp"
 #include "hillshader/camera/controllers/input.hpp"
+#include "hillshader/timer.hpp"
 
 namespace
 {
@@ -46,6 +46,7 @@ namespace hillshader
     static constexpr char const* c_start_up_file = "startup.json";
     static constexpr char const* c_shader_dir = "shaders";
     static constexpr char const* c_terrarium_dir = "terrarium";
+    static constexpr char const* c_frames_dir = "frames";
 
     static constexpr float c_min_meters_per_quad = 5.0;
 
@@ -119,6 +120,22 @@ namespace hillshader
     void application::update()
     {
         time_t time_ms = timer::now_ms();
+
+        if (m_recording)
+        {
+            double seconds_per_frame = 1.0 / static_cast<double>(m_recording_fps);
+            double elapsed_ms = 1000.0 * seconds_per_frame * static_cast<double>(m_recording_frame);
+            if (elapsed_ms > m_recording_duration_ms)  // if the recording is complete, end it
+            {
+                m_recording = false;
+            }
+            else
+            {
+                time_ms = m_recording_start_time_ms + elapsed_ms;
+                ++m_recording_frame;
+            }
+        }
+
         ImGuiIO const& io = this->io();
         if (!io.WantCaptureMouse)
         {
@@ -278,41 +295,23 @@ namespace hillshader
 
         if (m_frame_count == m_capture_frame)   // if we should capture this frame, copy to staging buffer
         {
-            Diligent::CopyTextureAttribs attribs;
-            attribs.pSrcTexture = m_resolved_color;
-            attribs.pDstTexture = m_staging_color;
-            attribs.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
-            attribs.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
-            m_immediate_context->CopyTexture(attribs);
+            copy_to_staging();
         }
         else if (m_frame_count == m_capture_frame + 1)  // if we captured the last frame, write the buffer to a file
         {
-            Diligent::MappedTextureSubresource data;
-            m_immediate_context->MapTextureSubresource(m_staging_color, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT, nullptr, data);
+            write_to_disk("frame.png");
+        }
 
-            int components = 4;
-            size_t bytes = m_width * m_height * components;
-            std::vector<uint8_t> pixels; pixels.resize(bytes);
-            std::memcpy(pixels.data(), data.pData, bytes);
-
-            m_immediate_context->UnmapTextureSubresource(m_staging_color, 0, 0);
-
-            // flip vertically
+        if (m_recording)
+        {
+            copy_to_staging();
+            if (m_recording_frame > 0)
             {
-                uint32_t* ptr = reinterpret_cast<uint32_t*>(pixels.data());
-                for (size_t y = 0; y < m_height / 2; ++y)
-                {
-                    size_t y_bar = m_height - 1 - y;
-                    for (size_t x = 0; x < m_width; ++x)
-                    {
-                        size_t i = y * m_width + x;
-                        size_t j = y_bar * m_width + x;
-                        std::swap(ptr[i], ptr[j]);
-                    }
-                }
+                size_t frame = m_recording_frame - 1;
+                char name[64];
+                sprintf(name, "frame_%05d.png", frame);
+                write_to_disk(name);
             }
-
-            stbi_write_png("frame.png", m_width, m_height, components, pixels.data(), m_width * components);
         }
 
         // resolve MSAA buffer to backbuffer
@@ -401,6 +400,22 @@ namespace hillshader
         if (opt.has_value())
         {
             m_controller = std::make_unique<camera::controllers::animators::orbit_attract>(m_camera, opt.value(), target_phi, rad_per_ms);
+        }
+    }
+
+    void application::record_orbit_attract(float const target_phi, float const rad_per_ms, focus const f)
+    {
+        std::optional<stff::vec3> opt = compute_focus(f);
+        if (opt.has_value())
+        {
+            auto controller = std::make_unique<camera::controllers::animators::orbit_attract>(m_camera, opt.value(), target_phi, rad_per_ms);
+
+            m_recording = true;
+            m_recording_start_time_ms = timer::now_ms();
+            m_recording_duration_ms = controller->duration_ms();
+            m_recording_frame = 0;
+
+            m_controller = std::move(controller);
         }
     }
 
@@ -626,6 +641,47 @@ namespace hillshader
         case focus::cursor: return cursor_world_pos(); break;
         }
         return {};
+    }
+
+    void application::copy_to_staging()
+    {
+        Diligent::CopyTextureAttribs attribs;
+        attribs.pSrcTexture = m_resolved_color;
+        attribs.pDstTexture = m_staging_color;
+        attribs.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+        attribs.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+        m_immediate_context->CopyTexture(attribs);
+    }
+
+    void application::write_to_disk(std::string const& path)
+    {
+        Diligent::MappedTextureSubresource data;
+        m_immediate_context->MapTextureSubresource(m_staging_color, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT, nullptr, data);
+
+        int components = 4;
+        size_t bytes = m_width * m_height * components;
+        std::vector<uint8_t> pixels; pixels.resize(bytes);
+        std::memcpy(pixels.data(), data.pData, bytes);
+
+        m_immediate_context->UnmapTextureSubresource(m_staging_color, 0, 0);
+
+        // flip vertically
+        {
+            uint32_t* ptr = reinterpret_cast<uint32_t*>(pixels.data());
+            for (size_t y = 0; y < m_height / 2; ++y)
+            {
+                size_t y_bar = m_height - 1 - y;
+                for (size_t x = 0; x < m_width; ++x)
+                {
+                    size_t i = y * m_width + x;
+                    size_t j = y_bar * m_width + x;
+                    std::swap(ptr[i], ptr[j]);
+                }
+            }
+        }
+
+        std::string full_path = c_frames_dir + std::string("/") + path;
+        stbi_write_png(full_path.c_str(), m_width, m_height, components, pixels.data(), m_width * components);
     }
 
     void application::load_dem(std::string const& path)

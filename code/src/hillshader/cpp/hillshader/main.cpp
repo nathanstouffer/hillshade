@@ -119,6 +119,8 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 if (w_param == L'r') { s_app->reset_camera(); }
                 // capture frame
                 if (w_param == L'c') { s_app->capture(); }
+                // record orbit
+                if (w_param == L'R') { s_app->record_orbit_attract(3.f * stff::constants::pi / 4.f, -stff::constants::two_pi / 30'000.0f, hillshader::focus::center); }
             }
             else
             {
