@@ -7,6 +7,68 @@ class DerivationSection(Scene):
         self.play(Write(hillshading_section))
         self.wait(1)
 
+class DerivationGoal(Scene):
+    def construct(self):
+        width = 3.25
+        y = 0
+        size = 28
+        direction = DOWN
+
+        strong_thumbnail = ImageMobject("assets/strong-thumbnail.png")
+        strong_thumbnail.scale_to_fit_width(width)
+        strong_rectangle = SurroundingRectangle(strong_thumbnail, color=WHITE, buff=0)
+        strong_label = Text("Aligned", font_size=size).next_to(strong_rectangle, direction)
+
+        strong_group = Group(
+            strong_thumbnail,
+            strong_rectangle,
+            strong_label,
+        )
+        strong_group.shift([-4.5, y, 0])
+
+        medium_thumbnail = ImageMobject("assets/medium-thumbnail.png")
+        medium_thumbnail.scale_to_fit_width(width)
+        medium_rectangle = SurroundingRectangle(medium_thumbnail, color=WHITE, buff=0)
+        medium_label = Text("Glancing", font_size=size).next_to(medium_rectangle, direction)
+
+        medium_group = Group(
+            medium_thumbnail,
+            medium_rectangle,
+            medium_label,
+        )
+        medium_group.shift([0, y, 0])
+
+        weak_thumbnail = ImageMobject("assets/weak-thumbnail.png")
+        weak_thumbnail.scale_to_fit_width(width)
+        weak_rectangle = SurroundingRectangle(weak_thumbnail, color=WHITE, buff=0)
+        weak_label = Text("Opposed", font_size=size).next_to(weak_rectangle, direction)
+
+        weak_group = Group(
+            weak_thumbnail,
+            weak_rectangle,
+            weak_label
+        )
+        weak_group.shift([4.5, y, 0])
+
+        # directional_light_to_derivation = CurvedArrow(
+        #     start_point=directional_light_thumbnail.get_bottom() + 0.5 * DOWN,
+        #     end_point=derivation_rectangle.get_left() + 0.5 * LEFT,
+        #     angle=PI / 3
+        # )
+
+        # derivation_to_hillshading = CurvedArrow(
+        #     start_point=derivation_rectangle.get_right() + 0.5 * RIGHT,
+        #     end_point=hillshading_thumbnail.get_bottom() + 0.5 * DOWN,
+        #     angle=PI / 3
+        # )
+
+        self.play(FadeIn(strong_thumbnail), FadeIn(strong_rectangle), Write(strong_label))
+        self.wait(0.5)
+        self.play(FadeIn(medium_thumbnail), FadeIn(medium_rectangle),  Write(medium_label))
+        self.wait(0.5)
+        self.play(FadeIn(weak_thumbnail), FadeIn(weak_rectangle),  Write(weak_label))
+        self.wait(1)
+
 class ShadowArea(ThreeDScene):
 
     def construct(self):

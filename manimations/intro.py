@@ -99,7 +99,7 @@ class Topic(Scene):
 
         directional_light_thumbnail = ImageMobject("assets/directional-light-thumbnail.png")
         directional_light_thumbnail.scale_to_fit_width(width).shift([-4.5, 1, 0])
-        directional_light_rectangle = SurroundingRectangle(directional_light_thumbnail, color=WHITE)
+        directional_light_rectangle = SurroundingRectangle(directional_light_thumbnail, color=WHITE, buff=0)
         directional_light_label = Text("I. Directional Lighting", font_size=20).next_to(directional_light_rectangle, UP)
 
         directional_light_group = Group(
@@ -110,7 +110,7 @@ class Topic(Scene):
 
         derivation_thumbnail = ImageMobject("assets/derivation-thumbnail.png")
         derivation_thumbnail.scale_to_fit_width(width).shift([0, -2, 0])
-        derivation_rectangle = SurroundingRectangle(derivation_thumbnail, color=WHITE)
+        derivation_rectangle = SurroundingRectangle(derivation_thumbnail, color=WHITE, buff=0)
         derivation_label = Text("II. Derivation", font_size=20).next_to(derivation_rectangle, UP)
 
         derivation_group = Group(
@@ -121,7 +121,7 @@ class Topic(Scene):
 
         hillshading_thumbnail = ImageMobject("assets/hillshading-thumbnail.png")
         hillshading_thumbnail.scale_to_fit_width(width).shift([4.5, 1, 0])
-        hillshading_rectangle = SurroundingRectangle(hillshading_thumbnail, color=WHITE)
+        hillshading_rectangle = SurroundingRectangle(hillshading_thumbnail, color=WHITE, buff=0)
         hillshading_label = Text("III. Hillshading", font_size=20).next_to(hillshading_rectangle, UP)
 
         hillshading_group = Group(
