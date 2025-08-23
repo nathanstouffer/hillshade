@@ -61,8 +61,10 @@ namespace hillshader
         void orbit(float const delta_theta, float const delta_phi, focus f);
 
         void orbit_to(float const theta, float const phi, focus f);
-        
+
         void orbit_attract(float const target_phi, float const rad_per_ms, focus const f);
+
+        void capture() { m_capture_frame = m_frame_count; }
 
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 
@@ -80,6 +82,10 @@ namespace hillshader
         Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_msaa_color_rtv;
         Diligent::RefCntAutoPtr<Diligent::ITexture>               m_msaa_depth;
         Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_msaa_depth_dsv;
+        Diligent::RefCntAutoPtr<Diligent::ITexture>               m_resolved_color;
+        Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_resolved_color_rtv;
+        Diligent::RefCntAutoPtr<Diligent::ITexture>               m_staging_color;
+        Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_staging_color_rtv;
         Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_pso;
         Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_srb;
         Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_shader_constants;
@@ -91,6 +97,9 @@ namespace hillshader
         Diligent::Uint32 m_width = 1920;
         Diligent::Uint32 m_height = 1080;
         Diligent::Uint8 m_msaa_sample_count = 2;
+
+        size_t m_frame_count = 0;
+        size_t m_capture_frame = std::numeric_limits<size_t>::max();
 
         bool m_render_ui = true;
 

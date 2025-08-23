@@ -6,6 +6,9 @@
 
 #include <nlohmann/json.hpp>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 #include <stf/alg/intersect.hpp>
 
 #include <Common/interface/DataBlobImpl.hpp>
@@ -265,7 +268,54 @@ namespace hillshader
             m_immediate_context->DrawIndexed(draw_attrs);
         }
 
-        // resolve MSAA buffer
+        // resolve MSAA to GPU color buffer
+        {
+            Diligent::ResolveTextureSubresourceAttribs resolve_attribs;
+            resolve_attribs.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            resolve_attribs.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            m_immediate_context->ResolveTextureSubresource(m_msaa_color_rtv->GetTexture(), m_resolved_color_rtv->GetTexture(), resolve_attribs);
+        }
+
+        if (m_frame_count == m_capture_frame)   // if we should capture this frame, copy to staging buffer
+        {
+            Diligent::CopyTextureAttribs attribs;
+            attribs.pSrcTexture = m_resolved_color;
+            attribs.pDstTexture = m_staging_color;
+            attribs.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            attribs.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            m_immediate_context->CopyTexture(attribs);
+        }
+        else if (m_frame_count == m_capture_frame + 1)  // if we captured the last frame, write the buffer to a file
+        {
+            Diligent::MappedTextureSubresource data;
+            m_immediate_context->MapTextureSubresource(m_staging_color, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT, nullptr, data);
+
+            int components = 4;
+            size_t bytes = m_width * m_height * components;
+            std::vector<uint8_t> pixels; pixels.resize(bytes);
+            std::memcpy(pixels.data(), data.pData, bytes);
+
+            m_immediate_context->UnmapTextureSubresource(m_staging_color, 0, 0);
+
+            // flip vertically
+            {
+                uint32_t* ptr = reinterpret_cast<uint32_t*>(pixels.data());
+                for (size_t y = 0; y < m_height / 2; ++y)
+                {
+                    size_t y_bar = m_height - 1 - y;
+                    for (size_t x = 0; x < m_width; ++x)
+                    {
+                        size_t i = y * m_width + x;
+                        size_t j = y_bar * m_width + x;
+                        std::swap(ptr[i], ptr[j]);
+                    }
+                }
+            }
+
+            stbi_write_png("frame.png", m_width, m_height, components, pixels.data(), m_width * components);
+        }
+
+        // resolve MSAA buffer to backbuffer
         {
             auto* backbuffer_rtv = m_swap_chain->GetCurrentBackBufferRTV();
 
@@ -281,6 +331,8 @@ namespace hillshader
         if (m_render_ui) { render_ui(); }
 
         m_imgui_impl->Render(m_immediate_context);
+
+        ++m_frame_count;
     }
 
     void application::present()
@@ -453,7 +505,7 @@ namespace hillshader
 
         Diligent::SwapChainDesc const swapchain_desc = m_swap_chain->GetDesc();
 
-        // Multisampled color
+        // multisampled color
         {
             Diligent::TextureDesc desc;
             desc.Name = "MSAA Color";
@@ -469,7 +521,7 @@ namespace hillshader
             m_msaa_color_rtv = m_msaa_color->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
         }
 
-        // Multisampled depth
+        // multisampled depth
         {
             Diligent::TextureDesc desc;
             desc.Name = "MSAA Depth";
@@ -484,6 +536,40 @@ namespace hillshader
             m_device->CreateTexture(desc, nullptr, &m_msaa_depth);
             m_msaa_depth_dsv = m_msaa_depth->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
         }
+
+        // resolved color
+        {
+            Diligent::TextureDesc desc;
+            desc.Name = "Resolved Color";
+            desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+            desc.Width = swapchain_desc.Width;
+            desc.Height = swapchain_desc.Height;
+            desc.MipLevels = 1;
+            desc.Format = swapchain_desc.ColorBufferFormat;
+            desc.SampleCount = 1;
+            desc.BindFlags = Diligent::BIND_RENDER_TARGET;
+
+            m_device->CreateTexture(desc, nullptr, &m_resolved_color);
+            m_resolved_color_rtv = m_resolved_color->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
+        }
+
+        // staging color
+        {
+            Diligent::TextureDesc desc;
+            desc.Name = "Staging Color";
+            desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+            desc.Width = swapchain_desc.Width;
+            desc.Height = swapchain_desc.Height;
+            desc.MipLevels = 1;
+            desc.Format = swapchain_desc.ColorBufferFormat;
+            desc.SampleCount = 1;
+            desc.Usage = Diligent::USAGE_STAGING;
+            desc.BindFlags = Diligent::BIND_NONE;
+            desc.CPUAccessFlags = Diligent::CPU_ACCESS_READ;
+
+            m_device->CreateTexture(desc, nullptr, &m_staging_color);
+            m_staging_color_rtv = m_staging_color->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
+        }
     }
 
     void application::release_msaa_resources()
@@ -493,6 +579,12 @@ namespace hillshader
 
         if (m_msaa_depth_dsv) m_msaa_depth_dsv.Release();
         if (m_msaa_depth)     m_msaa_depth.Release();
+
+        if (m_resolved_color_rtv) m_resolved_color_rtv.Release();
+        if (m_resolved_color)     m_resolved_color.Release();
+        
+        if (m_staging_color_rtv) m_staging_color_rtv.Release();
+        if (m_staging_color)     m_staging_color.Release();
     }
 
 
