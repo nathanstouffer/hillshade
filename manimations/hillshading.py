@@ -171,7 +171,7 @@ class Endnotes(ThreeDScene):
         self.play(GrowArrow(arrow), FadeIn(light_label))
 
         self.wait(5)
-        add_ellipse_label([4.7, 1.85, 0], [2, 0.75], PI / 12, "This is a ridgeline", [4, 3, 0], PI / 8)
+        add_ellipse_label([4.7, -1.45, 0], [2.5, 1.25], PI / 24, "This is a valley", [4, 3, 0], -PI / 16)
 
         self.wait(3)
         self.play(FadeOut(arrow), FadeOut(light_label), Write(endnotes_text[1]))
@@ -189,7 +189,6 @@ class Endnotes(ThreeDScene):
 
         self.play(FadeOut(endnotes_group), FadeOut(endnotes_box))
         self.play(gnp.animate.scale_to_fit_height(6.8).move_to(ORIGIN))
-        self.wait(1)
 
 class ThanksForWatching(Scene):
     def construct(self):
