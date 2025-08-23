@@ -279,6 +279,26 @@ class Assumptions(Scene):
         )
         self.wait(1)
 
+class ZoomIn(Scene):
+    def construct(self):
+        if config.INCLUDE_AUDIO:
+            self.add_sound(f"{config.AUDIO_ASSETS}/DesiredBehavior.m4a")
+
+        pos = np.array([-0.15, 0.25, 0])
+        initial_scale = 6 # the actual screen height
+        scalar = 5
+
+        hillshade = ImageMobject("assets/bench-lakes.png")
+        hillshade.scale_to_fit_height(initial_scale)
+
+        self.play(FadeIn(hillshade))
+        self.wait(4)
+
+        self.play(
+            hillshade.animate.scale_to_fit_height(initial_scale * scalar).shift(-scalar * pos)
+        )
+        self.wait(1)
+
 class DesiredBehavior(ThreeDScene):
 
     def construct(self):
