@@ -77,12 +77,18 @@ class Motivation(Scene):
         self.wait(6.5)
         self.play(*[FadeOut(mob) for mob in self.mobjects if mob != hillshade], run_time=2)
 
+class Standalone(Scene):
+    def construct(self):
+        hillshade = ImageMobject("assets/san-juans.png")
+        hillshade.scale_to_fit_height(6)
+        self.add(hillshade)
+
 class Topic(Scene):
     def construct(self): 
         if config.INCLUDE_AUDIO:
             self.add_sound(f"{config.AUDIO_ASSETS}/Topic.m4a")
 
-        hillshade = ImageMobject("assets/bench-lakes.png")
+        hillshade = ImageMobject("assets/bridgers.png")
         hillshade.scale_to_fit_height(6)
         self.add(hillshade)
 

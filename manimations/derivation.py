@@ -256,12 +256,22 @@ class TransformCosine(Scene):
         self.wait(5)
 
         clamped_graph = axes.plot(lambda x: max(0, np.cos(x)), color=YELLOW, x_range=[0, 2*PI, 0.01])
-        self.play(ReplacementTransform(cosine_graph, clamped_graph))
+        clamped_label = MathTex("f(x) = \max ( \cos \\theta, 0 )", color=WHITE, font_size=36)
+        clamped_label.move_to([0, 3, 0])
+        self.play(
+            ReplacementTransform(cosine_graph, clamped_graph),
+            ReplacementTransform(cosine_label, clamped_label),
+        )
 
         self.wait(13)
 
         cosine_graph = axes.plot(lambda x: np.cos(x), color=YELLOW)
-        self.play(ReplacementTransform(clamped_graph, cosine_graph))
+        back_to_cosine_label = MathTex("f(x) = \cos \\theta", color=WHITE, font_size=36)
+        back_to_cosine_label.move_to([0, 3, 0])
+        self.play(
+            ReplacementTransform(clamped_graph, cosine_graph),
+            ReplacementTransform(clamped_label, back_to_cosine_label),
+        )
 
         self.wait(6)
 
@@ -271,7 +281,7 @@ class TransformCosine(Scene):
 
         self.play(
             ReplacementTransform(cosine_graph, shifted_graph),
-            ReplacementTransform(cosine_label, shifted_label)
+            ReplacementTransform(back_to_cosine_label, shifted_label)
         )
         self.wait(0.25)
 
