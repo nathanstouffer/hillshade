@@ -3,7 +3,7 @@ import config
 
 class Axiomatic(Scene):
     def construct(self):
-        text = Text("Axiomatic", font_size=32, color=WHITE).move_to([1, 0, 0])
+        text = Text("axiomatic", font_size=32, color=WHITE).move_to([1, 0, 0])
         self.play(Write(text), run_time=2)
 
 class Motivation(Scene):

@@ -131,7 +131,7 @@ namespace hillshader
             }
             else
             {
-                time_ms = m_recording_start_time_ms + elapsed_ms;
+                time_ms = m_recording_start_time_ms + static_cast<time_t>(elapsed_ms);
                 ++m_recording_frame;
             }
         }
