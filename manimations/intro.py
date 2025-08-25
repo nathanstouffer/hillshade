@@ -1,6 +1,22 @@
 from manim import *
 import config
 
+class Thumbnail(Scene):
+    def construct(self):
+        text = Text("Why do these maps look 3-dimensional?", font_size=32, color=WHITE)
+        text.move_to([0, 2.9, 0])
+        underline = Underline(text)
+        self.add(text)
+
+        shift = 3.25
+        gnp = ImageMobject("assets/gnp.png")
+        gnp.scale_to_fit_height(5).shift(0.5 * DOWN + shift * LEFT)
+
+        bridgers = ImageMobject("assets/bridgers.png")
+        bridgers.scale_to_fit_height(5).shift(0.5 * DOWN + shift * RIGHT)
+
+        self.add(gnp, bridgers)
+
 class Axiomatic(Scene):
     def construct(self):
         text = Text("axiomatic", font_size=32, color=WHITE).move_to([1, 0, 0])
