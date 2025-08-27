@@ -309,7 +309,7 @@ namespace hillshader
             {
                 size_t frame = m_recording_frame - 1;
                 char name[64];
-                sprintf(name, "frame_%05d.png", frame);
+                sprintf_s(name, "frame_%05d.png", static_cast<int>(frame));
                 write_to_disk(name);
             }
         }
