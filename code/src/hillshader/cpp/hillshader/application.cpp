@@ -6,6 +6,9 @@
 
 #include <nlohmann/json.hpp>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 #include <stf/alg/intersect.hpp>
 
 #include <Common/interface/DataBlobImpl.hpp>
@@ -16,12 +19,13 @@
 #include <TextureLoader/interface/TextureUtilities.h>
 #include <imgui.h>
 
-#include "hillshader/timer.hpp"
 #include "hillshader/camera/config.hpp"
 #include "hillshader/camera/controllers/animators/orbit.hpp"
+#include "hillshader/camera/controllers/animators/orbit_attract.hpp"
 #include "hillshader/camera/controllers/animators/zoom.hpp"
 #include "hillshader/camera/controllers/identity.hpp"
 #include "hillshader/camera/controllers/input.hpp"
+#include "hillshader/timer.hpp"
 
 namespace
 {
@@ -42,6 +46,7 @@ namespace hillshader
     static constexpr char const* c_start_up_file = "startup.json";
     static constexpr char const* c_shader_dir = "shaders";
     static constexpr char const* c_terrarium_dir = "terrarium";
+    static constexpr char const* c_frames_dir = "frames";
 
     static constexpr float c_min_meters_per_quad = 5.0;
 
@@ -115,6 +120,22 @@ namespace hillshader
     void application::update()
     {
         time_t time_ms = timer::now_ms();
+
+        if (m_recording)
+        {
+            double seconds_per_frame = 1.0 / static_cast<double>(m_recording_fps);
+            double elapsed_ms = 1000.0 * seconds_per_frame * static_cast<double>(m_recording_frame);
+            if (elapsed_ms > m_recording_duration_ms)  // if the recording is complete, end it
+            {
+                m_recording = false;
+            }
+            else
+            {
+                time_ms = m_recording_start_time_ms + static_cast<time_t>(elapsed_ms);
+                ++m_recording_frame;
+            }
+        }
+
         ImGuiIO const& io = this->io();
         if (!io.WantCaptureMouse)
         {
@@ -220,13 +241,9 @@ namespace hillshader
 
         // set render targets before issuing any draw command.
         // note that present() unbinds the back buffer if it is set as render target.
-        auto* rtv = m_swap_chain->GetCurrentBackBufferRTV();
-        auto* dsv = m_swap_chain->GetDepthBufferDSV();
-        m_immediate_context->SetRenderTargets(1, &rtv, dsv, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-        // clear back buffer
-        m_immediate_context->ClearRenderTarget(rtv, reinterpret_cast<float*>(&m_clear_color), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-        m_immediate_context->ClearDepthStencil(dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->SetRenderTargets(1, &m_msaa_color_rtv, m_msaa_depth_dsv, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->ClearRenderTarget(m_msaa_color_rtv, reinterpret_cast<float*>(&m_clear_color), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        m_immediate_context->ClearDepthStencil(m_msaa_depth_dsv, Diligent::CLEAR_DEPTH_FLAG, 1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
         if (m_terrain)
         {
@@ -242,7 +259,8 @@ namespace hillshader
 
             consts->albedo = m_albedo.as_vec();
 
-            consts->light_dir = light_direction(m_azimuth, m_altitude);
+            float azimuth = m_azimuth - stf::math::to_degrees(m_camera.theta - stff::constants::half_pi);
+            consts->light_dir = light_direction(azimuth, m_altitude);
             consts->ambient_intensity = m_ambient_intensity;
 
             consts->eye = m_camera.eye;
@@ -267,9 +285,53 @@ namespace hillshader
             m_immediate_context->DrawIndexed(draw_attrs);
         }
 
+        // resolve MSAA to GPU color buffer
+        {
+            Diligent::ResolveTextureSubresourceAttribs resolve_attribs;
+            resolve_attribs.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            resolve_attribs.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            m_immediate_context->ResolveTextureSubresource(m_msaa_color_rtv->GetTexture(), m_resolved_color_rtv->GetTexture(), resolve_attribs);
+        }
+
+        if (m_frame_count == m_capture_frame)   // if we should capture this frame, copy to staging buffer
+        {
+            copy_to_staging();
+        }
+        else if (m_frame_count == m_capture_frame + 1)  // if we captured the last frame, write the buffer to a file
+        {
+            write_to_disk("frame.png");
+        }
+
+        if (m_recording)
+        {
+            copy_to_staging();
+            if (m_recording_frame > 0)
+            {
+                size_t frame = m_recording_frame - 1;
+                char name[64];
+                sprintf_s(name, "frame_%05d.png", static_cast<int>(frame));
+                write_to_disk(name);
+            }
+        }
+
+        // resolve MSAA buffer to backbuffer
+        {
+            auto* backbuffer_rtv = m_swap_chain->GetCurrentBackBufferRTV();
+
+            Diligent::ResolveTextureSubresourceAttribs resolve_attribs;
+            resolve_attribs.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            resolve_attribs.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+            m_immediate_context->ResolveTextureSubresource(m_msaa_color_rtv->GetTexture(), backbuffer_rtv->GetTexture(), resolve_attribs);
+
+            // Now bind the backbuffer for UI pass (DSV optional for ImGui)
+            m_immediate_context->SetRenderTargets(1, &backbuffer_rtv, nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        }
+
         if (m_render_ui) { render_ui(); }
 
         m_imgui_impl->Render(m_immediate_context);
+
+        ++m_frame_count;
     }
 
     void application::present()
@@ -284,6 +346,7 @@ namespace hillshader
         if (m_swap_chain)
         {
             m_swap_chain->Resize(width, height);
+            create_msaa_resources();
         }
     }
 
@@ -331,8 +394,35 @@ namespace hillshader
         orbit(delta_theta, delta_phi, f);
     }
 
+    void application::orbit_attract(float const target_phi, float const rad_per_ms, focus const f)
+    {
+        std::optional<stff::vec3> opt = compute_focus(f);
+        if (opt.has_value())
+        {
+            m_controller = std::make_unique<camera::controllers::animators::orbit_attract>(m_camera, opt.value(), target_phi, rad_per_ms);
+        }
+    }
+
+    void application::record_orbit_attract(float const target_phi, float const rad_per_ms, focus const f)
+    {
+        std::optional<stff::vec3> opt = compute_focus(f);
+        if (opt.has_value())
+        {
+            auto controller = std::make_unique<camera::controllers::animators::orbit_attract>(m_camera, opt.value(), target_phi, rad_per_ms);
+
+            m_recording = true;
+            m_recording_start_time_ms = timer::now_ms();
+            m_recording_duration_ms = controller->duration_ms();
+            m_recording_frame = 0;
+
+            m_controller = std::move(controller);
+        }
+    }
+
     void application::create_resources()
     {
+        create_msaa_resources();
+
         Diligent::GraphicsPipelineStateCreateInfo pso_info;
 
         pso_info.PSODesc.Name = "Simple quad PSO";
@@ -344,6 +434,7 @@ namespace hillshader
         pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
         pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
         pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
+        pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
 
         // create dynamic uniform buffer that will store shader constants
         Diligent::CreateUniformBuffer(m_device, sizeof(constants), "Global shader constants CB", &m_shader_constants);
@@ -423,6 +514,95 @@ namespace hillshader
         m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
 
+    void application::create_msaa_resources()
+    {
+        release_msaa_resources();
+
+        Diligent::SwapChainDesc const swapchain_desc = m_swap_chain->GetDesc();
+
+        // multisampled color
+        {
+            Diligent::TextureDesc desc;
+            desc.Name = "MSAA Color";
+            desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+            desc.Width = swapchain_desc.Width;
+            desc.Height = swapchain_desc.Height;
+            desc.MipLevels = 1;
+            desc.Format = swapchain_desc.ColorBufferFormat;
+            desc.SampleCount = m_msaa_sample_count;
+            desc.BindFlags = Diligent::BIND_RENDER_TARGET;
+
+            m_device->CreateTexture(desc, nullptr, &m_msaa_color);
+            m_msaa_color_rtv = m_msaa_color->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
+        }
+
+        // multisampled depth
+        {
+            Diligent::TextureDesc desc;
+            desc.Name = "MSAA Depth";
+            desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+            desc.Width = swapchain_desc.Width;
+            desc.Height = swapchain_desc.Height;
+            desc.MipLevels = 1;
+            desc.Format = swapchain_desc.DepthBufferFormat; // uses swap chain DSV format
+            desc.SampleCount = m_msaa_sample_count;
+            desc.BindFlags = Diligent::BIND_DEPTH_STENCIL;
+
+            m_device->CreateTexture(desc, nullptr, &m_msaa_depth);
+            m_msaa_depth_dsv = m_msaa_depth->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
+        }
+
+        // resolved color
+        {
+            Diligent::TextureDesc desc;
+            desc.Name = "Resolved Color";
+            desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+            desc.Width = swapchain_desc.Width;
+            desc.Height = swapchain_desc.Height;
+            desc.MipLevels = 1;
+            desc.Format = swapchain_desc.ColorBufferFormat;
+            desc.SampleCount = 1;
+            desc.BindFlags = Diligent::BIND_RENDER_TARGET;
+
+            m_device->CreateTexture(desc, nullptr, &m_resolved_color);
+            m_resolved_color_rtv = m_resolved_color->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
+        }
+
+        // staging color
+        {
+            Diligent::TextureDesc desc;
+            desc.Name = "Staging Color";
+            desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+            desc.Width = swapchain_desc.Width;
+            desc.Height = swapchain_desc.Height;
+            desc.MipLevels = 1;
+            desc.Format = swapchain_desc.ColorBufferFormat;
+            desc.SampleCount = 1;
+            desc.Usage = Diligent::USAGE_STAGING;
+            desc.BindFlags = Diligent::BIND_NONE;
+            desc.CPUAccessFlags = Diligent::CPU_ACCESS_READ;
+
+            m_device->CreateTexture(desc, nullptr, &m_staging_color);
+            m_staging_color_rtv = m_staging_color->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
+        }
+    }
+
+    void application::release_msaa_resources()
+    {
+        if (m_msaa_color_rtv) m_msaa_color_rtv.Release();
+        if (m_msaa_color)     m_msaa_color.Release();
+
+        if (m_msaa_depth_dsv) m_msaa_depth_dsv.Release();
+        if (m_msaa_depth)     m_msaa_depth.Release();
+
+        if (m_resolved_color_rtv) m_resolved_color_rtv.Release();
+        if (m_resolved_color)     m_resolved_color.Release();
+        
+        if (m_staging_color_rtv) m_staging_color_rtv.Release();
+        if (m_staging_color)     m_staging_color.Release();
+    }
+
+
     std::optional<stff::vec3> application::world_pos(stff::vec2 const& uv) const
     {
         stff::ray3 ray = m_camera.ray(uv);
@@ -461,6 +641,47 @@ namespace hillshader
         case focus::cursor: return cursor_world_pos(); break;
         }
         return {};
+    }
+
+    void application::copy_to_staging()
+    {
+        Diligent::CopyTextureAttribs attribs;
+        attribs.pSrcTexture = m_resolved_color;
+        attribs.pDstTexture = m_staging_color;
+        attribs.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+        attribs.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+        m_immediate_context->CopyTexture(attribs);
+    }
+
+    void application::write_to_disk(std::string const& path)
+    {
+        Diligent::MappedTextureSubresource data;
+        m_immediate_context->MapTextureSubresource(m_staging_color, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT, nullptr, data);
+
+        int components = 4;
+        size_t bytes = m_width * m_height * components;
+        std::vector<uint8_t> pixels; pixels.resize(bytes);
+        std::memcpy(pixels.data(), data.pData, bytes);
+
+        m_immediate_context->UnmapTextureSubresource(m_staging_color, 0, 0);
+
+        // flip vertically
+        {
+            uint32_t* ptr = reinterpret_cast<uint32_t*>(pixels.data());
+            for (size_t y = 0; y < m_height / 2; ++y)
+            {
+                size_t y_bar = m_height - 1 - y;
+                for (size_t x = 0; x < m_width; ++x)
+                {
+                    size_t i = y * m_width + x;
+                    size_t j = y_bar * m_width + x;
+                    std::swap(ptr[i], ptr[j]);
+                }
+            }
+        }
+
+        std::string full_path = c_frames_dir + std::string("/") + path;
+        stbi_write_png(full_path.c_str(), m_width, m_height, components, pixels.data(), m_width * components);
     }
 
     void application::load_dem(std::string const& path)

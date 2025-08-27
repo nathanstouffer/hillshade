@@ -113,8 +113,14 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 if (w_param == L'd') { s_app->orbit(hillshader::camera::config::c_delta_theta, 0.f,  hillshader::focus::center); }
                 // north up
                 if (w_param == L'n') { s_app->orbit_to(stff::constants::pi_halves, stff::constants::pi, hillshader::focus::center); }
+                // orbit attract
+                if (w_param == L'o') { s_app->orbit_attract(3.f * stff::constants::pi / 4.f, -stff::constants::two_pi / 30'000.0f, hillshader::focus::center); }
                 // reset camera
                 if (w_param == L'r') { s_app->reset_camera(); }
+                // capture frame
+                if (w_param == L'c') { s_app->capture(); }
+                // record orbit
+                if (w_param == L'R') { s_app->record_orbit_attract(3.f * stff::constants::pi / 4.f, -stff::constants::two_pi / 30'000.0f, hillshader::focus::center); }
             }
             else
             {
@@ -150,11 +156,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     RegisterClassEx(&wcex);
 
     // create a window
-    LONG window_width = 1280;
-    LONG window_height = 720;
+    LONG window_width = 1920;
+    LONG window_height = 1080;
     RECT rct = { 0, 0, window_width, window_height };
-    AdjustWindowRect(&rct, WS_OVERLAPPEDWINDOW, FALSE);
-    HWND wnd = CreateWindow("Hillshade", "Hillshader", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rct.right - rct.left, rct.bottom - rct.top, NULL, NULL, hInstance, NULL);
+    AdjustWindowRect(&rct, WS_POPUP, FALSE);    // WS_OVERLAPPEDWINDOW
+    HWND wnd = CreateWindow("Hillshade", "Hillshader", WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, rct.right - rct.left, rct.bottom - rct.top, NULL, NULL, hInstance, NULL);
     if (!wnd)
     {
         MessageBox(NULL, "Cannot create window", "Error", MB_OK | MB_ICONERROR);
