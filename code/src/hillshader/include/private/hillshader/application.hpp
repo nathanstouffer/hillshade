@@ -23,6 +23,7 @@
 #include "hillshader/camera/controllers/controller.hpp"
 #include "hillshader/mesh.hpp"
 #include "hillshader/terrain.hpp"
+#include "hillshader/timer.hpp"
 
 namespace hillshader
 {
@@ -62,6 +63,12 @@ namespace hillshader
 
         void orbit_to(float const theta, float const phi, focus f);
 
+        void orbit_attract(float const target_phi, float const rad_per_ms, focus const f);
+
+        void capture() { m_capture_frame = m_frame_count; }
+
+        void record_orbit_attract(float const target_phi, float const rad_per_ms, focus const f);
+
         inline float aspect_ratio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
 
         ImGuiIO& io() { return ImGui::GetIO(); }
@@ -73,6 +80,14 @@ namespace hillshader
         Diligent::RefCntAutoPtr<Diligent::IRenderDevice>          m_device;
         Diligent::RefCntAutoPtr<Diligent::IDeviceContext>         m_immediate_context;
         Diligent::RefCntAutoPtr<Diligent::ISwapChain>             m_swap_chain;
+        Diligent::RefCntAutoPtr<Diligent::ITexture>               m_msaa_color;
+        Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_msaa_color_rtv;
+        Diligent::RefCntAutoPtr<Diligent::ITexture>               m_msaa_depth;
+        Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_msaa_depth_dsv;
+        Diligent::RefCntAutoPtr<Diligent::ITexture>               m_resolved_color;
+        Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_resolved_color_rtv;
+        Diligent::RefCntAutoPtr<Diligent::ITexture>               m_staging_color;
+        Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_staging_color_rtv;
         Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_pso;
         Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_srb;
         Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_shader_constants;
@@ -81,8 +96,18 @@ namespace hillshader
         Diligent::RENDER_DEVICE_TYPE                              m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
-        Diligent::Uint32 m_width = 1280;
-        Diligent::Uint32 m_height = 1024;
+        Diligent::Uint32 m_width = 1920;
+        Diligent::Uint32 m_height = 1080;
+        Diligent::Uint8 m_msaa_sample_count = 8;
+
+        size_t m_frame_count = 0;
+        size_t m_capture_frame = std::numeric_limits<size_t>::max();
+
+        bool m_recording = false;
+        time_t m_recording_start_time_ms = 0;
+        time_t m_recording_duration_ms = 0;
+        size_t m_recording_frame = 0;
+        size_t m_recording_fps = 60;
 
         bool m_render_ui = true;
 
@@ -115,6 +140,10 @@ namespace hillshader
 
         void create_resources();
 
+        void create_msaa_resources();
+
+        void release_msaa_resources();
+
         void render_ui();
 
         std::optional<stff::vec3> world_pos(stff::vec2 const& uv) const;
@@ -124,6 +153,10 @@ namespace hillshader
         std::optional<stff::vec3> cursor_world_pos() const;
 
         std::optional<stff::vec3> compute_focus(focus f) const;
+
+        void copy_to_staging();
+
+        void write_to_disk(std::string const& path);
 
         void load_dem(std::string const& path);
 
