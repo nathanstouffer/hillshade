@@ -55,17 +55,13 @@ namespace hillshader::camera::controllers::animators
 
     stff::scamera path::derivative(std::vector<anchor>::const_iterator it) const
     {
-        if (it == m_anchors.cbegin())
+        if (it == m_anchors.cbegin() || it + 1 == m_anchors.end())
         {
-            anchor const& curr = *it;
-            anchor const& next = *(it + 1);
-            return finite_difference(curr, next);
-        }
-        else if (it + 1 == m_anchors.cend())
-        {
-            anchor const& prev = *(it - 1);
-            anchor const& curr = *it;
-            return finite_difference(prev, curr);
+            stff::scamera camera = stff::scamera();
+            camera.eye = stff::vec3();
+            camera.theta = 0.f;
+            camera.phi = 0.f;
+            return camera;
         }
         else
         {
