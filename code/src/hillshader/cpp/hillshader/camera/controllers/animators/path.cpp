@@ -72,10 +72,7 @@ namespace hillshader::camera::controllers::animators
             stff::scamera left_deriv = finite_difference(prev, curr);
             stff::scamera right_deriv = finite_difference(curr, next);
 
-            // TODO (stouff) I don't love this method of balancing the finite difference. I think there is a much more elegant method out there. 
-            // I would like to explore balancing in time. I would also like to explore balancing per-component
-            float d = (next.camera.eye - curr.camera.eye).length() - (curr.camera.eye - prev.camera.eye).length();
-            float t = stf::math::sigmoid(d);
+            float t = (curr.timestamp_ms - prev.timestamp_ms) / (next.timestamp_ms - prev.timestamp_ms);
 
             stff::scamera camera = stff::scamera();
             camera.eye = stf::math::lerp(left_deriv.eye, right_deriv.eye, t);
