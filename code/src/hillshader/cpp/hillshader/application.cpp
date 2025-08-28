@@ -155,7 +155,6 @@ namespace hillshader
             }
         }
 
-        time_t time_ms = timer::now_ms();
         m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
     }
 
