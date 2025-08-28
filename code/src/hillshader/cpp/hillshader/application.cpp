@@ -189,6 +189,12 @@ namespace hillshader
 
             if (ImGui::BeginMenu("Paths"))
             {
+                std::vector<camera::controllers::animators::path::anchor> all_anchors;
+                all_anchors.push_back({ stff::scamera(stff::vec3(-248, -82, 4067), stff::constants::pi_halves, stff::constants::pi), 0 });
+                all_anchors.push_back({ stff::scamera(stff::vec3(-274, -149, 3145), stff::constants::zero, 3.f * stff::constants::pi_fourths), 5000 });
+                all_anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 3000), -stff::constants::pi_halves, stff::constants::pi), 10000 });
+                all_anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 2500), -stff::constants::pi_halves, stff::constants::pi), 15000 });
+                all_anchors.push_back({ stff::scamera(stff::vec3(-250, -100, 3500), stff::constants::pi_halves, stff::constants::pi), 20000 });
                 if (ImGui::MenuItem("Empty"))
                 {
                     std::vector<camera::controllers::animators::path::anchor> anchors;
@@ -196,42 +202,27 @@ namespace hillshader
                 }
                 if (ImGui::MenuItem("One Anchor"))
                 {
-                    std::vector<camera::controllers::animators::path::anchor> anchors;
-                    anchors.push_back({ stff::scamera(stff::vec3(-248, -82, 4067), stff::constants::pi_halves, stff::constants::pi), 0 });
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 1);
                     m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
                 }
                 if (ImGui::MenuItem("Two Anchors"))
                 {
-                    std::vector<camera::controllers::animators::path::anchor> anchors;
-                    anchors.push_back({ stff::scamera(stff::vec3(-248, -82, 4067), stff::constants::pi_halves, stff::constants::pi), 0 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-274, -149, 3145), stff::constants::zero, 3.f * stff::constants::pi_fourths), 5000 });
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 2);
                     m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
                 }
                 if (ImGui::MenuItem("Three Anchors"))
                 {
-                    std::vector<camera::controllers::animators::path::anchor> anchors;
-                    anchors.push_back({ stff::scamera(stff::vec3(-248, -82, 4067), stff::constants::pi_halves, stff::constants::pi), 0 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-274, -149, 3145), stff::constants::zero, 3.f * stff::constants::pi_fourths), 5000 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 3000), -stff::constants::pi_halves, stff::constants::pi), 10000 });
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 3);
                     m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
                 }
                 if (ImGui::MenuItem("Four Anchors"))
                 {
-                    std::vector<camera::controllers::animators::path::anchor> anchors;
-                    anchors.push_back({ stff::scamera(stff::vec3(-248, -82, 4067), stff::constants::pi_halves, stff::constants::pi), 0 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-274, -149, 3145), stff::constants::zero, 3.f * stff::constants::pi_fourths), 5000 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 3000), -stff::constants::pi_halves, stff::constants::pi), 10000 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 2500), -stff::constants::pi_halves, stff::constants::pi), 15000 });
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 4);
                     m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
                 }
                 if (ImGui::MenuItem("Five Anchors"))
                 {
-                    std::vector<camera::controllers::animators::path::anchor> anchors;
-                    anchors.push_back({ stff::scamera(stff::vec3(-248, -82, 4067), stff::constants::pi_halves, stff::constants::pi), 0 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-274, -149, 3145), stff::constants::zero, 3.f * stff::constants::pi_fourths), 5000 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 3000), -stff::constants::pi_halves, stff::constants::pi), 10000 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 2500), -stff::constants::pi_halves, stff::constants::pi), 15000 });
-                    anchors.push_back({ stff::scamera(stff::vec3(-250, -100, 3500), stff::constants::pi_halves, stff::constants::pi), 20000 });
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 5);
                     m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
                 }
                 ImGui::EndMenu();
