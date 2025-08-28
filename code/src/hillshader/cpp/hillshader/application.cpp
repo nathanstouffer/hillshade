@@ -22,6 +22,7 @@
 #include "hillshader/camera/config.hpp"
 #include "hillshader/camera/controllers/animators/orbit.hpp"
 #include "hillshader/camera/controllers/animators/orbit_attract.hpp"
+#include "hillshader/camera/controllers/animators/path.hpp"
 #include "hillshader/camera/controllers/animators/zoom.hpp"
 #include "hillshader/camera/controllers/identity.hpp"
 #include "hillshader/camera/controllers/input.hpp"
@@ -139,11 +140,10 @@ namespace hillshader
         ImGuiIO const& io = this->io();
         if (!io.WantCaptureMouse)
         {
-            if (m_update_focus)
+            if (camera::controllers::input::detect_begin(io))
             {
                 std::optional<stff::vec3> opt = cursor_world_pos();
                 m_focus = (opt) ? *opt : stff::vec3();
-                m_update_focus = false;
                 if (io.MouseDoubleClicked[0])
                 {
                     zoom(2.f, focus::cursor);
@@ -153,9 +153,9 @@ namespace hillshader
                     m_controller = std::make_unique<camera::controllers::input>(m_focus);
                 }
             }
-
-            m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
         }
+
+        m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
     }
 
     void application::store_start_up_state()
@@ -183,6 +183,47 @@ namespace hillshader
                             load_dem(path);
                         }
                     }
+                }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Paths"))
+            {
+                std::vector<camera::controllers::animators::path::anchor> all_anchors;
+                all_anchors.push_back({ stff::scamera(stff::vec3(-248, -82, 4067), stff::constants::pi_halves, stff::constants::pi), 0 });
+                all_anchors.push_back({ stff::scamera(stff::vec3(-274, -149, 3145), stff::constants::zero, 3.f * stff::constants::pi_fourths), 5000 });
+                all_anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 3000), -stff::constants::pi_halves, stff::constants::pi), 10000 });
+                all_anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 2500), -stff::constants::pi_halves, stff::constants::pi), 15000 });
+                all_anchors.push_back({ stff::scamera(stff::vec3(-250, -100, 3500), stff::constants::pi_halves, stff::constants::pi), 20000 });
+                if (ImGui::MenuItem("Empty"))
+                {
+                    std::vector<camera::controllers::animators::path::anchor> anchors;
+                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
+                }
+                if (ImGui::MenuItem("One Anchor"))
+                {
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 1);
+                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
+                }
+                if (ImGui::MenuItem("Two Anchors"))
+                {
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 2);
+                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
+                }
+                if (ImGui::MenuItem("Three Anchors"))
+                {
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 3);
+                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
+                }
+                if (ImGui::MenuItem("Four Anchors"))
+                {
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 4);
+                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
+                }
+                if (ImGui::MenuItem("Five Anchors"))
+                {
+                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 5);
+                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
                 }
                 ImGui::EndMenu();
             }
@@ -637,8 +678,8 @@ namespace hillshader
     {
         switch (f)
         {
-        case focus::center: return center_world_pos(); break;
-        case focus::cursor: return cursor_world_pos(); break;
+            case focus::center: return center_world_pos(); break;
+            case focus::cursor: return cursor_world_pos(); break;
         }
         return {};
     }

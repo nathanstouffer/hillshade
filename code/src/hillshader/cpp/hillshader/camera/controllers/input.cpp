@@ -30,8 +30,16 @@ namespace hillshader::camera::controllers
         {
             ImVec2 delta = opts.io.MouseDelta;
             float scalar = c_pan_scalar * stf::math::dist(camera.eye, m_focus);
-            camera.eye -= scalar * delta.x * camera.right();
-            camera.eye += scalar * delta.y * stf::math::cross(stff::vec3(0, 0, 1), camera.right());
+            stff::vec3 right = camera.right();
+            stff::vec3 forward = stf::math::cross(stff::vec3(0, 0, 1), right);
+            float anchor_adjustment = 1.1f;
+            if (camera.eye.z < anchor_adjustment * m_focus.z)
+            {
+                stff::vec3 anchor(m_focus.xy, anchor_adjustment * m_focus.z);
+                forward = stf::math::cross(stf::math::cross(right, (anchor - camera.eye).normalized()), right);
+            }
+            camera.eye -= scalar * delta.x * right;
+            camera.eye += scalar * delta.y * forward;
             if (!m_physics_handler)
             {
                 m_physics_handler = std::make_unique<physics::free_body>();
@@ -52,7 +60,7 @@ namespace hillshader::camera::controllers
             }
         }
 
-        if (opts.io.MouseWheel == stff::constants::zero && !opts.io.MouseDown[0] && !opts.io.MouseDown[1])
+        if (!detect_active(opts.io))
         {
             if (m_physics_handler)
             {
@@ -66,6 +74,16 @@ namespace hillshader::camera::controllers
         }
 
         return camera;
+    }
+
+    bool input::detect_begin(ImGuiIO const& io)
+    {
+        return io.MouseWheel != stff::constants::zero || io.MouseClicked[0] || io.MouseClicked[1];
+    }
+
+    bool input::detect_active(ImGuiIO const& io)
+    {
+        return io.MouseWheel != stff::constants::zero || io.MouseDown[0] || io.MouseDown[1];
     }
 
 }

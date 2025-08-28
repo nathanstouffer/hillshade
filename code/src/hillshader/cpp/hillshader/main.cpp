@@ -28,7 +28,6 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case WM_LBUTTONDOWN:
             SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(0, true);
-            s_app->force_focus_update();
             return 0;
 
         case WM_LBUTTONUP:
@@ -39,7 +38,6 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case WM_RBUTTONDOWN:
             SetCapture(wnd);
             s_app->io().AddMouseButtonEvent(1, true);
-            s_app->force_focus_update();
             return 0;
 
         case WM_RBUTTONUP:
@@ -50,7 +48,6 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
         case 0x020A:    // TODO figure out why we need this (it seems to be an older event code for WM_MOUSEWHEEL)
         case WM_MOUSEHWHEEL:
             s_app->io().AddMouseWheelEvent(0.f, GET_WHEEL_DELTA_WPARAM(w_param));
-            s_app->force_focus_update();
             return 0;
 
         case WM_SIZE: // window size has been changed
@@ -156,11 +153,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     RegisterClassEx(&wcex);
 
     // create a window
-    LONG window_width = 1920;
-    LONG window_height = 1080;
+    LONG window_width = 1280;
+    LONG window_height = 720;
     RECT rct = { 0, 0, window_width, window_height };
-    AdjustWindowRect(&rct, WS_POPUP, FALSE);    // WS_OVERLAPPEDWINDOW
-    HWND wnd = CreateWindow("Hillshade", "Hillshader", WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, rct.right - rct.left, rct.bottom - rct.top, NULL, NULL, hInstance, NULL);
+    AdjustWindowRect(&rct, WS_OVERLAPPEDWINDOW, FALSE);
+    //AdjustWindowRect(&rct, WS_POPUP, FALSE);  // use to remove top bar
+    HWND wnd = CreateWindow("Hillshade", "Hillshader", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rct.right - rct.left, rct.bottom - rct.top, NULL, NULL, hInstance, NULL);
     if (!wnd)
     {
         MessageBox(NULL, "Cannot create window", "Error", MB_OK | MB_ICONERROR);
