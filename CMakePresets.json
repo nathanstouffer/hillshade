@@ -40,33 +40,39 @@
       }
     },
     {
+      "name": "targ-win-gha",
+      "hidden": true,
+      "inherits": "env-win-msvc-ninja",
+      "binaryDir": "build"
+    },
+    {
       "name": "targ-win",
       "inherits": "env-win-msvc-vs"
     },
     {
         "name": "targ-win-gha-Debug",
-        "inherits": "env-win-msvc-ninja",
+        "inherits": "targ-win-gha",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "Debug"
         }
     },
     {
         "name": "targ-win-gha-RelWithDebInfo",
-        "inherits": "env-win-msvc-ninja",
+        "inherits": "targ-win-gha",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo"
         }
     },
     {
         "name": "targ-win-gha-Release",
-        "inherits": "env-win-msvc-ninja",
+        "inherits": "targ-win-gha",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "Release"
         }
     },
     {
         "name": "targ-win-gha-MinSizeRel",
-        "inherits": "env-win-msvc-ninja",
+        "inherits": "targ-win-gha",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "MinSizeRel"
         }
