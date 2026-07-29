@@ -4,7 +4,7 @@
     {
       "name": "base",
       "hidden": true,
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "binaryDir": "${sourceDir}/.build/${presetName}",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true
       }
@@ -40,39 +40,39 @@
       }
     },
     {
-      "name": "targ-win-gha",
+      "name": "dest-win-gha",
       "hidden": true,
       "inherits": "env-win-msvc-ninja",
       "binaryDir": "build"
     },
     {
-      "name": "targ-win",
+      "name": "dest-win",
       "inherits": "env-win-msvc-vs"
     },
     {
-        "name": "targ-win-gha-Debug",
-        "inherits": "targ-win-gha",
+        "name": "dest-win-gha-Debug",
+        "inherits": "dest-win-gha",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "Debug"
         }
     },
     {
-        "name": "targ-win-gha-RelWithDebInfo",
-        "inherits": "targ-win-gha",
+        "name": "dest-win-gha-RelWithDebInfo",
+        "inherits": "dest-win-gha",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo"
         }
     },
     {
-        "name": "targ-win-gha-Release",
-        "inherits": "targ-win-gha",
+        "name": "dest-win-gha-Release",
+        "inherits": "dest-win-gha",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "Release"
         }
     },
     {
-        "name": "targ-win-gha-MinSizeRel",
-        "inherits": "targ-win-gha",
+        "name": "dest-win-gha-MinSizeRel",
+        "inherits": "dest-win-gha",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "MinSizeRel"
         }
@@ -80,40 +80,40 @@
   ],
   "buildPresets": [
     {
-      "name": "targ-win-Debug",
-      "configurePreset": "targ-win",
+      "name": "dest-win-Debug",
+      "configurePreset": "dest-win",
       "configuration": "Debug"
     },
     {
-      "name": "targ-win-RelWithDebInfo",
-      "configurePreset": "targ-win",
+      "name": "dest-win-RelWithDebInfo",
+      "configurePreset": "dest-win",
       "configuration": "RelWithDebInfo"
     },
     {
-      "name": "targ-win-Release",
-      "configurePreset": "targ-win",
+      "name": "dest-win-Release",
+      "configurePreset": "dest-win",
       "configuration": "Release"
     },
     {
-      "name": "targ-win-MinSizeRel",
-      "configurePreset": "targ-win",
+      "name": "dest-win-MinSizeRel",
+      "configurePreset": "dest-win",
       "configuration": "MinSizeRel"
     },
     {
-      "name": "targ-win-gha-Debug",
-      "configurePreset": "targ-win-gha-Debug"
+      "name": "dest-win-gha-Debug",
+      "configurePreset": "dest-win-gha-Debug"
     },
     {
-      "name": "targ-win-gha-RelWithDebInfo",
-      "configurePreset": "targ-win-gha-RelWithDebInfo"
+      "name": "dest-win-gha-RelWithDebInfo",
+      "configurePreset": "dest-win-gha-RelWithDebInfo"
     },
     {
-      "name": "targ-win-gha-Release",
-      "configurePreset": "targ-win-gha-Release"
+      "name": "dest-win-gha-Release",
+      "configurePreset": "dest-win-gha-Release"
     },
     {
-      "name": "targ-win-gha-MinSizeRel",
-      "configurePreset": "targ-win-gha-MinSizeRel"
+      "name": "dest-win-gha-MinSizeRel",
+      "configurePreset": "dest-win-gha-MinSizeRel"
     }
   ]
 }

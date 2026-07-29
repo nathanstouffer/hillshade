@@ -20,7 +20,7 @@ jobs:
         # image states
         # windows-2022: https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
         host:
-          - { image: windows-2022, preset_prefix: targ-win-gha }
+          - { image: windows-2022, preset_prefix: dest-win-gha }
 
     env:
       VCPKG_BINARY_CACHE: ${{ github.workspace }}/.vcpkg_binary_cache
