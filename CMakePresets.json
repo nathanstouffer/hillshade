@@ -42,7 +42,8 @@
     {
       "name": "dest-win-gha",
       "hidden": true,
-      "inherits": "env-win-msvc-vs"
+      "inherits": "env-win-msvc-vs",
+      "binaryDir": "${sourceDir}/.build/gha-build"
     },
     {
       "name": "dest-win",
