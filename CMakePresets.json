@@ -1,0 +1,119 @@
+{
+  "version": 8,
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/.build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true
+      }
+    },
+    {
+      "name": "deps",
+      "hidden": true,
+      "inherits": "base",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      }
+    },
+    {
+      "name": "env-win-msvc-vs",
+      "hidden": true,
+      "inherits": "deps",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl"
+      }
+    },
+    {
+      "name": "env-win-msvc-ninja",
+      "hidden": true,
+      "inherits": "deps",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl"
+      }
+    },
+    {
+      "name": "dest-win-gha",
+      "hidden": true,
+      "inherits": "env-win-msvc-vs",
+      "binaryDir": "${sourceDir}/.build/gha-build"
+    },
+    {
+      "name": "dest-win",
+      "inherits": "env-win-msvc-vs"
+    },
+    {
+      "name": "dest-win-gha-Debug",
+      "inherits": "dest-win-gha",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "dest-win-gha-RelWithDebInfo",
+      "inherits": "dest-win-gha",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "dest-win-gha-Release",
+      "inherits": "dest-win-gha",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "dest-win-gha-MinSizeRel",
+      "inherits": "dest-win-gha",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "dest-win-Debug",
+      "configurePreset": "dest-win",
+      "configuration": "Debug"
+    },
+    {
+      "name": "dest-win-RelWithDebInfo",
+      "configurePreset": "dest-win",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "dest-win-Release",
+      "configurePreset": "dest-win",
+      "configuration": "Release"
+    },
+    {
+      "name": "dest-win-MinSizeRel",
+      "configurePreset": "dest-win",
+      "configuration": "MinSizeRel"
+    },
+    {
+      "name": "dest-win-gha-Debug",
+      "configurePreset": "dest-win-gha-Debug"
+    },
+    {
+      "name": "dest-win-gha-RelWithDebInfo",
+      "configurePreset": "dest-win-gha-RelWithDebInfo"
+    },
+    {
+      "name": "dest-win-gha-Release",
+      "configurePreset": "dest-win-gha-Release"
+    },
+    {
+      "name": "dest-win-gha-MinSizeRel",
+      "configurePreset": "dest-win-gha-MinSizeRel"
+    }
+  ]
+}
