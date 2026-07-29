@@ -59,14 +59,6 @@ jobs:
             vcpkgbin-${{ matrix.host.image }}-${{ matrix.build_type }}-${{ matrix.host.preset_prefix }}
             -manifest:${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
 
-      - name: sccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        if: runner.os == 'Windows'
-        with:
-          variant: sccache
-          key: ccache-${{ matrix.host.image }}-${{ matrix.build_type }}-${{ matrix.host.preset_prefix }}
-          max-size: 500M
-
       - name: Setup MSVC dev environment
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1

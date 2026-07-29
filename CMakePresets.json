@@ -42,8 +42,7 @@
     {
       "name": "dest-win-gha",
       "hidden": true,
-      "inherits": "env-win-msvc-ninja",
-      "binaryDir": "build"
+      "inherits": "env-win-msvc-vs"
     },
     {
       "name": "dest-win",
