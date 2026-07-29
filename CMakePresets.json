@@ -50,32 +50,32 @@
       "inherits": "env-win-msvc-vs"
     },
     {
-        "name": "dest-win-gha-Debug",
-        "inherits": "dest-win-gha",
-        "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug"
-        }
+      "name": "dest-win-gha-Debug",
+      "inherits": "dest-win-gha",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
     },
     {
-        "name": "dest-win-gha-RelWithDebInfo",
-        "inherits": "dest-win-gha",
-        "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-        }
+      "name": "dest-win-gha-RelWithDebInfo",
+      "inherits": "dest-win-gha",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
     },
     {
-        "name": "dest-win-gha-Release",
-        "inherits": "dest-win-gha",
-        "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Release"
-        }
+      "name": "dest-win-gha-Release",
+      "inherits": "dest-win-gha",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     },
     {
-        "name": "dest-win-gha-MinSizeRel",
-        "inherits": "dest-win-gha",
-        "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "MinSizeRel"
-        }
+      "name": "dest-win-gha-MinSizeRel",
+      "inherits": "dest-win-gha",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      }
     }
   ],
   "buildPresets": [
