@@ -60,8 +60,12 @@ jobs:
             -manifest:${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
 
       - name: Setup MSVC dev environment
-        if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Enable Windows Long Paths in Registry
+        run: >
+          New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"
+          -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
 
       - name: Configure CMake
         run: cmake --preset ${{ steps.strings.outputs.configure-preset }}
