@@ -64,10 +64,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Configure CMake
-        run: >
-          cmake --preset ${{ steps.strings.outputs.configure-preset }}
-          -DCMAKE_C_COMPILER_LAUNCHER=sccache
-          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+        run: cmake --preset ${{ steps.strings.outputs.configure-preset }}
 
       - name: Build
         run: cmake --build --preset ${{ steps.strings.outputs.build-preset }}
