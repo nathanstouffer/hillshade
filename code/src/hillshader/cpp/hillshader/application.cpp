@@ -786,7 +786,10 @@ namespace hillshader
 
     void application::load_flyover(std::string const& path)
     {
-
+        // TODO (stouff) 
+        // 1. load flyover off disk
+        // 2. load_dem specified by flyover
+        // 3. assign controller
     }
 
     void application::release_dem_resources()
