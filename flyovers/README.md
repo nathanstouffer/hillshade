@@ -12,11 +12,13 @@ A `flyover` is a JSON object with three root level properties: `dem`, `initial`,
 
 ### Camera
 
-A JSON object with three keys:
+A JSON object with the following keys:
 
-1. `position` - A vector of length 3 defining the position
-2. `heading` - Heading angle (in degrees)
-3. `pitch` - Pitch angle (in degrees)
+1. `x` - X position of the camera
+1. `y` - Y position of the camera
+1. `z` - Z position of the camera
+4. `heading` - Heading angle (in degrees)
+5. `pitch` - Pitch angle (in degrees)
 
 ### Anchor
 

@@ -1,0 +1,32 @@
+{
+  "dem": "example",
+  "initial": {
+    "x": 0,
+    "y": 0,
+    "z": 5740,
+    "heading": 90,
+    "pitch": 180
+  },
+  "anchors": [
+    {
+      "delta": 2000,
+      "camera": {
+        "x": 0,
+        "y": 0,
+        "z": 3200,
+        "heading": 90,
+        "pitch": 180
+      }
+    },
+    {
+      "delta": 3000,
+      "camera": {
+        "x": -10,
+        "y": -200,
+        "z": 2800,
+        "heading": 45,
+        "pitch": 115
+      }
+    }
+  ]
+}
