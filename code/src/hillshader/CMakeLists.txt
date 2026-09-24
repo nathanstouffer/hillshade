@@ -10,11 +10,13 @@ set(HILLSHADER_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/physics/free_body.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/physics/handler.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/physics/orbit.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/flyovers/flyover.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/flyovers/parse.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/application.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/mesh.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/terrain.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/timer.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/mesh.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/config.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/animators/animator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/animators/orbit.hpp"
@@ -29,10 +31,12 @@ set(HILLSHADER_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/physics/free_body.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/physics/handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/physics/orbit.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/flyovers/flyover.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/flyovers/parse.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/application.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/mesh.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/terrain.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/timer.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/mesh.hpp"
 )
 
 add_executable(hillshader WIN32 ${HILLSHADER_FILES})
