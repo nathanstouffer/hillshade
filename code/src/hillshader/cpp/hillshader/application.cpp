@@ -26,6 +26,7 @@
 #include "hillshader/camera/controllers/animators/zoom.hpp"
 #include "hillshader/camera/controllers/identity.hpp"
 #include "hillshader/camera/controllers/input.hpp"
+#include "hillshader/flyovers/flyover.hpp"
 #include "hillshader/timer.hpp"
 
 namespace
@@ -786,6 +787,8 @@ namespace hillshader
 
     void application::load_flyover(std::string const& path)
     {
+        flyovers::flyover flyover(path);
+        load_dem(flyover.dem());
         // TODO (stouff) 
         // 1. load flyover off disk
         // 2. load_dem specified by flyover

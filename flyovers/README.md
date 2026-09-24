@@ -6,7 +6,7 @@ A `flyover` is an animation of the map defined by a camera path.
 
 A `flyover` is a JSON object with three root level properties: `dem`, `initial`, and `anchors`
 
-1. `dem` - The name of the DEM to use (filename relative to `./terrarium` and excludes the file extension)
+1. `dem` - The name of the DEM to use (filename relative to repo root)
 2. `initial` - A [camera](#camera) object defining the initial position of the animation
 3. `anchors` - An array of [anchor](#anchor) objects
 
