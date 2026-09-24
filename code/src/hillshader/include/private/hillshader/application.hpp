@@ -116,6 +116,8 @@ namespace hillshader
 
         stff::vec3 m_focus;
 
+        std::string m_flyover_path;
+
         std::string m_dem_path;
         std::unique_ptr<terrain const> m_terrain;
         std::vector<mesh::vertex_t> m_vertices;
@@ -159,6 +161,8 @@ namespace hillshader
         void write_to_disk(std::string const& path);
 
         void load_dem(std::string const& path);
+
+        void load_flyover(std::string const& path);
 
         void release_dem_resources();
 

@@ -47,6 +47,7 @@ namespace hillshader
     static constexpr char const* c_start_up_file = "startup.json";
     static constexpr char const* c_shader_dir = "shaders";
     static constexpr char const* c_terrarium_dir = "terrarium";
+    static constexpr char const* c_flyover_dir = "flyovers";
     static constexpr char const* c_frames_dir = "frames";
 
     static constexpr float c_min_meters_per_quad = 5.0;
@@ -187,43 +188,19 @@ namespace hillshader
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Paths"))
+            if (ImGui::BeginMenu("Flyovers"))
             {
-                std::vector<camera::controllers::animators::path::anchor> all_anchors;
-                all_anchors.push_back({ stff::scamera(stff::vec3(-248, -82, 4067), stff::constants::pi_halves, stff::constants::pi), 0 });
-                all_anchors.push_back({ stff::scamera(stff::vec3(-274, -149, 3145), stff::constants::zero, 3.f * stff::constants::pi_fourths), 5000 });
-                all_anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 3000), -stff::constants::pi_halves, stff::constants::pi), 10000 });
-                all_anchors.push_back({ stff::scamera(stff::vec3(-270, -200, 2500), -stff::constants::pi_halves, stff::constants::pi), 15000 });
-                all_anchors.push_back({ stff::scamera(stff::vec3(-250, -100, 3500), stff::constants::pi_halves, stff::constants::pi), 20000 });
-                if (ImGui::MenuItem("Empty"))
+                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_flyover_dir))
                 {
-                    std::vector<camera::controllers::animators::path::anchor> anchors;
-                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
-                }
-                if (ImGui::MenuItem("One Anchor"))
-                {
-                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 1);
-                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
-                }
-                if (ImGui::MenuItem("Two Anchors"))
-                {
-                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 2);
-                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
-                }
-                if (ImGui::MenuItem("Three Anchors"))
-                {
-                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 3);
-                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
-                }
-                if (ImGui::MenuItem("Four Anchors"))
-                {
-                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 4);
-                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
-                }
-                if (ImGui::MenuItem("Five Anchors"))
-                {
-                    std::vector<camera::controllers::animators::path::anchor> anchors(all_anchors.begin(), all_anchors.begin() + 5);
-                    m_controller = std::make_unique<camera::controllers::animators::path>(anchors);
+                    if (file.path().extension() == ".json")
+                    {
+                        std::string path = file.path().string();
+                        bool selected = m_flyover_path == path;
+                        if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
+                        {
+                            load_flyover(path);
+                        }
+                    }
                 }
                 ImGui::EndMenu();
             }
@@ -805,6 +782,11 @@ namespace hillshader
 
         m_start_up_state["dem_path"] = path;
         store_start_up_state();
+    }
+
+    void application::load_flyover(std::string const& path)
+    {
+
     }
 
     void application::release_dem_resources()
