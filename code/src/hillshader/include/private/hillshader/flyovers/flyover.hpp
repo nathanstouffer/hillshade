@@ -3,6 +3,7 @@
 #include <array>
 #include <filesystem>
 #include <optional>
+#include <string>
 
 #include <stf/stf.hpp>
 
@@ -28,9 +29,16 @@ namespace hillshader::flyovers
     class flyover
     {
     public:
-        flyover(std::filesystem::path const &path);
+        flyover(std::filesystem::path const& path);
+
+        std::string const& dem() const { return m_dem; }
 
     private:
+
+        std::string m_dem;
+        stff::scamera m_initial;
+        std::vector<anchor> m_anchors;
+
     };
 
 }
