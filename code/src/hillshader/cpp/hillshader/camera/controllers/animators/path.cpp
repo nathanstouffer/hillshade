@@ -45,9 +45,9 @@ namespace hillshader::camera::controllers::animators
             float delta_t = static_cast<float>(next.timestamp_ms - prev.timestamp_ms);
             float t = static_cast<float>(time_ms - prev.timestamp_ms) / delta_t;
             stff::scamera camera = opts.current;
-            camera.eye   = stf::math::cubic_hermite_spline(prev.camera.eye,   prev.deriv.eye   * delta_t, next.camera.eye,   prev.deriv.eye   * delta_t, t);
-            camera.theta = stf::math::cubic_hermite_spline(prev.camera.theta, prev.deriv.theta * delta_t, next.camera.theta, prev.deriv.theta * delta_t, t);
-            camera.phi   = stf::math::cubic_hermite_spline(prev.camera.phi,   prev.deriv.phi   * delta_t, next.camera.phi,   prev.deriv.phi   * delta_t, t);
+            camera.eye   = stf::math::cubic_hermite_spline(prev.camera.eye,   prev.deriv.eye   * delta_t, next.camera.eye,   next.deriv.eye   * delta_t, t);
+            camera.theta = stf::math::cubic_hermite_spline(prev.camera.theta, prev.deriv.theta * delta_t, next.camera.theta, next.deriv.theta * delta_t, t);
+            camera.phi   = stf::math::cubic_hermite_spline(prev.camera.phi,   prev.deriv.phi   * delta_t, next.camera.phi,   next.deriv.phi   * delta_t, t);
             return camera;
         }
         else
@@ -72,15 +72,15 @@ namespace hillshader::camera::controllers::animators
             input_anchor const& curr = *it;
             input_anchor const& next = *(it + 1);
 
-            stff::scamera left_deriv = finite_difference(prev, curr);
-            stff::scamera right_deriv = finite_difference(curr, next);
+            stff::scamera left_diff = finite_difference(prev, curr);
+            stff::scamera right_diff = finite_difference(curr, next);
 
-            float t = (curr.timestamp_ms - prev.timestamp_ms) / (next.timestamp_ms - prev.timestamp_ms);
+            float t = static_cast<float>(curr.timestamp_ms - prev.timestamp_ms) / static_cast<float>(next.timestamp_ms - prev.timestamp_ms);
 
             stff::scamera camera = stff::scamera();
-            camera.eye = stf::math::lerp(left_deriv.eye, right_deriv.eye, t);
-            camera.theta = stf::math::lerp(left_deriv.theta, right_deriv.theta, t);
-            camera.phi = stf::math::lerp(left_deriv.phi, right_deriv.phi, t);
+            camera.eye = stf::math::lerp(left_diff.eye, right_diff.eye, t);
+            camera.theta = stf::math::lerp(left_diff.theta, right_diff.theta, t);
+            camera.phi = stf::math::lerp(left_diff.phi, right_diff.phi, t);
             return camera;
         }
     }

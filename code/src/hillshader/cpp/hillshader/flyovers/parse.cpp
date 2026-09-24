@@ -10,6 +10,9 @@ namespace hillshader::flyovers
         camera.eye.z = j["z"];
         camera.theta = j["heading"];
         camera.phi = j["pitch"];
+
+        camera.theta = stf::math::to_radians(camera.theta);
+        camera.phi = stf::math::to_radians(camera.phi);
     }
 
     void from_json(nlohmann::json const& j, derivative& deriv)
@@ -19,6 +22,9 @@ namespace hillshader::flyovers
         if (j.contains("z")) deriv.z = j["z"];
         if (j.contains("heading")) deriv.heading = j["heading"];
         if (j.contains("pitch")) deriv.pitch = j["pitch"];
+
+        if (deriv.heading.has_value()) deriv.heading = stf::math::to_radians(*deriv.heading);
+        if (deriv.pitch.has_value()) deriv.pitch = stf::math::to_radians(*deriv.pitch);
     }
 
     void from_json(nlohmann::json const& j, anchor& anchor)

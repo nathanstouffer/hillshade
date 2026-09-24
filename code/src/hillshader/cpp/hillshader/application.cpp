@@ -789,10 +789,7 @@ namespace hillshader
     {
         flyovers::flyover flyover(path);
         load_dem(flyover.dem());
-        // TODO (stouff) 
-        // 1. load flyover off disk
-        // 2. load_dem specified by flyover
-        // 3. assign controller
+        m_controller = flyover.controller();
     }
 
     void application::release_dem_resources()
