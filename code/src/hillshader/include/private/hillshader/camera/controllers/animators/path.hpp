@@ -11,17 +11,27 @@ namespace hillshader::camera::controllers::animators
     {
     public:
 
-        struct anchor
+        struct derivative
         {
-            stff::scamera camera;
+            std::optional<float> x;
+            std::optional<float> y;
+            std::optional<float> z;
+            std::optional<float> heading;
+            std::optional<float> pitch;
+        };
+
+        struct input_anchor
+        {
             time_t timestamp_ms;
-            inline bool operator<(anchor const& rhs) const { return timestamp_ms < rhs.timestamp_ms; }
+            stff::scamera camera;
+            derivative deriv;
+            inline bool operator<(input_anchor const& rhs) const { return timestamp_ms < rhs.timestamp_ms; }
         };
 
     public:
 
         path();
-        path(std::vector<anchor> const& anchors);
+        path(std::vector<input_anchor> anchors);
 
     private:
 
@@ -29,15 +39,24 @@ namespace hillshader::camera::controllers::animators
 
         stff::scamera interpolate(options const& opt) const;
 
-        stff::scamera derivative(std::vector<anchor>::const_iterator it) const;
+    private:
 
-        stff::scamera finite_difference(anchor const& lhs, anchor const& rhs) const;
+        static stff::scamera compute_derivative(std::vector<input_anchor> const& anchors, std::vector<input_anchor>::const_iterator it);
+
+        static time_t compute_duration(std::vector<input_anchor> const& anchors);
+
+        static stff::scamera finite_difference(input_anchor const& lhs, input_anchor const& rhs);
+
+        static stff::scamera overwritten(stff::scamera const& camera, derivative const& deriv);
 
     private:
 
-        static time_t compute_duration(std::vector<anchor> const& anchors);
-
-    private:
+        struct anchor
+        {
+            time_t timestamp_ms;
+            stff::scamera camera;
+            stff::scamera deriv;
+        };
 
         std::vector<anchor> m_anchors;
 

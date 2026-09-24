@@ -2,22 +2,19 @@
 
 #include <array>
 #include <filesystem>
+#include <memory>
 #include <optional>
 #include <string>
 
 #include <stf/stf.hpp>
 
+#include "hillshader/camera/controllers/controller.hpp"
+#include "hillshader/camera/controllers/animators/path.hpp"
+
 namespace hillshader::flyovers
 {
 
-    struct derivative
-    {
-        std::optional<float> x;
-        std::optional<float> y;
-        std::optional<float> z;
-        std::optional<float> heading;
-        std::optional<float> pitch;
-    };
+    using derivative = typename camera::controllers::animators::path::derivative;
 
     struct anchor
     {
@@ -32,6 +29,8 @@ namespace hillshader::flyovers
         flyover(std::filesystem::path const& path);
 
         std::string const& dem() const { return m_dem; }
+
+        std::unique_ptr<camera::controllers::controller> controller() const;
 
     private:
 

@@ -25,7 +25,7 @@ namespace hillshader::flyovers
     {
         anchor.delta = j["delta"];
         from_json(j["camera"], anchor.camera);
-        if (j.contains("deriv")) anchor.deriv = j["deriv"];
+        if (j.contains("deriv")) from_json(j["deriv"], anchor.deriv);
     }
 
 }

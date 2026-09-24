@@ -5,13 +5,19 @@
 namespace hillshader::camera::controllers::animators
 {
 
-    path::path() : path(std::vector<anchor>()) {}
+    path::path() : path(std::vector<input_anchor>()) {}
 
-    path::path(std::vector<anchor> const& anchors) :
+    path::path(std::vector<input_anchor> anchors) :
           animator(compute_duration(anchors))
-        , m_anchors(anchors)
     {
-        std::stable_sort(m_anchors.begin(), m_anchors.end());
+        std::stable_sort(anchors.begin(), anchors.end());
+        m_anchors.reserve(anchors.size());
+        for (auto it = anchors.begin(); it != anchors.end(); ++it)
+        {
+            input_anchor const& input = *it;
+            stff::scamera deriv = path::compute_derivative(anchors, it);
+            m_anchors.push_back({ input.timestamp_ms, input.camera, path::overwritten(deriv, input.deriv) });
+        }
     }
 
     stff::scamera path::animator_update(options const& opts)
@@ -32,19 +38,16 @@ namespace hillshader::camera::controllers::animators
         {
             time_t time_ms = opts.time_ms - begin_ms();
             // TODO (stouff) possibly use upper bound and lower bound?
-            auto next = std::upper_bound(m_anchors.begin(), m_anchors.end(), time_ms, [](time_t lhs, anchor const& rhs) { return lhs < rhs.timestamp_ms; });
-            auto left_iter = next - 1;
-            auto right_iter = next;
+            auto upper = std::upper_bound(m_anchors.begin(), m_anchors.end(), time_ms, [](time_t lhs, anchor const& rhs) { return lhs < rhs.timestamp_ms; });
+            anchor const& prev = *(upper - 1);
+            anchor const& next = *upper;
 
-            stff::scamera left_deriv = derivative(left_iter);
-            stff::scamera right_deriv = derivative(right_iter);
-
-            float delta_t = static_cast<float>(right_iter->timestamp_ms - left_iter->timestamp_ms);
-            float t = static_cast<float>(time_ms - left_iter->timestamp_ms) / delta_t;
+            float delta_t = static_cast<float>(next.timestamp_ms - prev.timestamp_ms);
+            float t = static_cast<float>(time_ms - prev.timestamp_ms) / delta_t;
             stff::scamera camera = opts.current;
-            camera.eye   = stf::math::cubic_hermite_spline(left_iter->camera.eye,   left_deriv.eye   * delta_t, right_iter->camera.eye,   right_deriv.eye   * delta_t, t);
-            camera.theta = stf::math::cubic_hermite_spline(left_iter->camera.theta, left_deriv.theta * delta_t, right_iter->camera.theta, right_deriv.theta * delta_t, t);
-            camera.phi   = stf::math::cubic_hermite_spline(left_iter->camera.phi,   left_deriv.phi   * delta_t, right_iter->camera.phi,   right_deriv.phi   * delta_t, t);
+            camera.eye   = stf::math::cubic_hermite_spline(prev.camera.eye,   prev.deriv.eye   * delta_t, next.camera.eye,   prev.deriv.eye   * delta_t, t);
+            camera.theta = stf::math::cubic_hermite_spline(prev.camera.theta, prev.deriv.theta * delta_t, next.camera.theta, prev.deriv.theta * delta_t, t);
+            camera.phi   = stf::math::cubic_hermite_spline(prev.camera.phi,   prev.deriv.phi   * delta_t, next.camera.phi,   prev.deriv.phi   * delta_t, t);
             return camera;
         }
         else
@@ -53,9 +56,9 @@ namespace hillshader::camera::controllers::animators
         }
     }
 
-    stff::scamera path::derivative(std::vector<anchor>::const_iterator it) const
+    stff::scamera path::compute_derivative(std::vector<input_anchor> const& anchors, std::vector<input_anchor>::const_iterator it)
     {
-        if (it == m_anchors.cbegin() || it + 1 == m_anchors.end())
+        if (it == anchors.cbegin() || it + 1 == anchors.end())
         {
             stff::scamera camera = stff::scamera();
             camera.eye = stff::vec3();
@@ -65,9 +68,9 @@ namespace hillshader::camera::controllers::animators
         }
         else
         {
-            anchor const& prev = *(it - 1);
-            anchor const& curr = *it;
-            anchor const& next = *(it + 1);
+            input_anchor const& prev = *(it - 1);
+            input_anchor const& curr = *it;
+            input_anchor const& next = *(it + 1);
 
             stff::scamera left_deriv = finite_difference(prev, curr);
             stff::scamera right_deriv = finite_difference(curr, next);
@@ -82,7 +85,17 @@ namespace hillshader::camera::controllers::animators
         }
     }
 
-    stff::scamera path::finite_difference(anchor const& lhs, anchor const& rhs) const
+    time_t path::compute_duration(std::vector<input_anchor> const& anchors)
+    {
+        time_t duration_ms = 0;
+        for (input_anchor const& a : anchors)
+        {
+            duration_ms = std::max(duration_ms, a.timestamp_ms);
+        }
+        return duration_ms;
+    }
+
+    stff::scamera path::finite_difference(input_anchor const& lhs, input_anchor const& rhs)
     {
         float delta_t = static_cast<float>(rhs.timestamp_ms - lhs.timestamp_ms);
         stff::scamera derivative = stff::scamera();
@@ -92,14 +105,15 @@ namespace hillshader::camera::controllers::animators
         return derivative;
     }
 
-    time_t path::compute_duration(std::vector<anchor> const& anchors)
+    stff::scamera path::overwritten(stff::scamera const& camera, derivative const& deriv)
     {
-        time_t duration_ms = 0;
-        for (anchor const& a : anchors)
-        {
-            duration_ms = std::max(duration_ms, a.timestamp_ms);
-        }
-        return duration_ms;
+        stff::scamera cam = camera;
+        if (deriv.x.has_value()) cam.eye.x = *deriv.x;
+        if (deriv.y.has_value()) cam.eye.y = *deriv.y;
+        if (deriv.z.has_value()) cam.eye.z = *deriv.z;
+        if (deriv.heading.has_value()) cam.theta = *deriv.heading;
+        if (deriv.pitch.has_value()) cam.phi = *deriv.pitch;
+        return cam;
     }
 
 }
