@@ -7,7 +7,7 @@
     "heading": 90,
     "pitch": 180
   },
-  "delay": 1000,
+  "delay": 500,
   "anchors": [
     {
       "delta": 2000,
