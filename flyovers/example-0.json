@@ -28,6 +28,69 @@
         "heading": 45,
         "pitch": 115
       }
+    },
+    {
+      "delta": 3,
+      "camera": {
+        "x": 130,
+        "y": 625,
+        "z": 2570,
+        "heading": 152,
+        "pitch": 85
+      }
+    },
+    {
+      "delta": 3,
+      "camera": {
+        "x": -480,
+        "y": 590,
+        "z": 3125,
+        "heading": 115,
+        "pitch": 141
+      }
+    },
+    {
+      "delta": 1.5,
+      "camera": {
+        "x": -570,
+        "y": 790,
+        "z": 2715,
+        "heading": 115,
+        "pitch": 130
+      }
+    },
+    {
+      "delta": 1,
+      "camera": {
+        "x": -611,
+        "y": 860,
+        "z": 2628,
+        "heading": 107,
+        "pitch": 130
+      }
+    },
+    {
+      "delta": 1,
+      "camera": {
+        "x": -610,
+        "y": 945,
+        "z": 2574,
+        "heading": 107,
+        "pitch": 130
+      },
+      "deriv": {
+        "x": 0
+      }
+    },
+    {
+      "delta": 4,
+      "camera": {
+        "x": 1819,
+        "y": 125,
+        "z": 4000,
+        "heading": 190,
+        "pitch": 120
+      }
     }
   ]
 }
