@@ -10,11 +10,13 @@ set(HILLSHADER_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/physics/free_body.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/physics/handler.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/camera/physics/orbit.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/flyovers/flyover.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/flyovers/parse.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/application.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/mesh.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/terrain.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/timer.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cpp/hillshader/mesh.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/config.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/animators/animator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/controllers/animators/orbit.hpp"
@@ -29,10 +31,12 @@ set(HILLSHADER_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/physics/free_body.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/physics/handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/camera/physics/orbit.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/flyovers/flyover.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/flyovers/parse.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/application.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/mesh.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/terrain.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/timer.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/private/hillshader/mesh.hpp"
 )
 
 add_executable(hillshader WIN32 ${HILLSHADER_FILES})
@@ -42,6 +46,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/" FILES ${HILLSHADER_FILES})
 
 file(CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/shaders" "${CMAKE_CURRENT_BINARY_DIR}/shaders" SYMBOLIC)
 file(CREATE_LINK "${CMAKE_SOURCE_DIR}/terrarium" "${CMAKE_CURRENT_BINARY_DIR}/terrarium" SYMBOLIC)
+file(CREATE_LINK "${CMAKE_SOURCE_DIR}/flyovers" "${CMAKE_CURRENT_BINARY_DIR}/flyovers" SYMBOLIC)
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/frames")
 
