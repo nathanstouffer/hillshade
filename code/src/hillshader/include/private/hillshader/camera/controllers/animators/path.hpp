@@ -31,7 +31,7 @@ namespace hillshader::camera::controllers::animators
     public:
 
         path();
-        path(std::vector<input_anchor> anchors);
+        path(std::vector<input_anchor> anchors, time_t delay_ms = 0);
 
     private:
 
@@ -43,7 +43,7 @@ namespace hillshader::camera::controllers::animators
 
         static stff::scamera compute_derivative(std::vector<input_anchor> const& anchors, std::vector<input_anchor>::const_iterator it);
 
-        static time_t compute_duration(std::vector<input_anchor> const& anchors);
+        static time_t compute_duration(std::vector<input_anchor> const& anchors, time_t delay_ms);
 
         static stff::scamera finite_difference(input_anchor const& lhs, input_anchor const& rhs);
 
@@ -59,6 +59,7 @@ namespace hillshader::camera::controllers::animators
         };
 
         std::vector<anchor> m_anchors;
+        time_t m_delay_ms;
 
     };
 

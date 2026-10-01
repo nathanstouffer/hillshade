@@ -7,8 +7,9 @@ namespace hillshader::camera::controllers::animators
 
     path::path() : path(std::vector<input_anchor>()) {}
 
-    path::path(std::vector<input_anchor> anchors) :
-          animator(compute_duration(anchors))
+    path::path(std::vector<input_anchor> anchors, time_t delay_ms)
+        : animator(path::compute_duration(anchors, delay_ms))
+        , m_delay_ms(delay_ms)
     {
         std::stable_sort(anchors.begin(), anchors.end());
         m_anchors.reserve(anchors.size());
@@ -34,9 +35,13 @@ namespace hillshader::camera::controllers::animators
     {
         if (m_anchors.empty()) { return opts.current; }
         else if (m_anchors.size() == 1) { return m_anchors.front().camera; }
+        else if (opts.time_ms < begin_ms() + m_delay_ms)
+        {
+            return m_anchors.front().camera;
+        }
         else if (opts.time_ms < end_ms())
         {
-            time_t time_ms = opts.time_ms - begin_ms();
+            time_t time_ms = opts.time_ms - m_delay_ms - begin_ms();
             // TODO (stouff) possibly use upper bound and lower bound?
             auto upper = std::upper_bound(m_anchors.begin(), m_anchors.end(), time_ms, [](time_t lhs, anchor const& rhs) { return lhs < rhs.timestamp_ms; });
             anchor const& prev = *(upper - 1);
@@ -85,7 +90,7 @@ namespace hillshader::camera::controllers::animators
         }
     }
 
-    time_t path::compute_duration(std::vector<input_anchor> const& anchors)
+    time_t path::compute_duration(std::vector<input_anchor> const& anchors, time_t delay_ms)
     {
         time_t duration_ms = 0;
         for (input_anchor const& a : anchors)

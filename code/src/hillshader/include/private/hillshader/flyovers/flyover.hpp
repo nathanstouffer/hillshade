@@ -36,6 +36,7 @@ namespace hillshader::flyovers
 
         std::string m_dem;
         stff::scamera m_initial;
+        time_t m_delay_ms;
         std::vector<anchor> m_anchors;
 
     };

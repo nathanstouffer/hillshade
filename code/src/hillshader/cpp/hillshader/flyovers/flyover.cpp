@@ -15,6 +15,7 @@ namespace hillshader::flyovers
 
         m_dem = json["dem"];
         from_json(json["initial"], m_initial);
+        m_delay_ms = json["delay"];
         from_json(json["anchors"], m_anchors);
     }
 
@@ -31,7 +32,7 @@ namespace hillshader::flyovers
             anchors.push_back({ duration, a.camera, a.deriv });
         }
 
-        return std::make_unique<camera::controllers::animators::path>(anchors);
+        return std::make_unique<camera::controllers::animators::path>(anchors, m_delay_ms);
     }
 
 }
