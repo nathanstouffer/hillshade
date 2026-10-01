@@ -42,17 +42,19 @@ namespace hillshader::camera::controllers::animators
         else if (opts.time_ms < end_ms())
         {
             time_t time_ms = opts.time_ms - m_delay_ms - begin_ms();
-            // TODO (stouff) possibly use upper bound and lower bound?
             auto upper = std::upper_bound(m_anchors.begin(), m_anchors.end(), time_ms, [](time_t lhs, anchor const& rhs) { return lhs < rhs.timestamp_ms; });
             anchor const& prev = *(upper - 1);
             anchor const& next = *upper;
 
+            float next_theta = stf::math::closest_equiv_angle(next.camera.theta, prev.camera.theta);
+            float next_phi = stf::math::closest_equiv_angle(next.camera.phi, prev.camera.phi);
+
             float delta_t = static_cast<float>(next.timestamp_ms - prev.timestamp_ms);
             float t = static_cast<float>(time_ms - prev.timestamp_ms) / delta_t;
             stff::scamera camera = opts.current;
-            camera.eye   = stf::math::cubic_hermite_spline(prev.camera.eye,   prev.deriv.eye   * delta_t, next.camera.eye,   next.deriv.eye   * delta_t, t);
-            camera.theta = stf::math::cubic_hermite_spline(prev.camera.theta, prev.deriv.theta * delta_t, next.camera.theta, next.deriv.theta * delta_t, t);
-            camera.phi   = stf::math::cubic_hermite_spline(prev.camera.phi,   prev.deriv.phi   * delta_t, next.camera.phi,   next.deriv.phi   * delta_t, t);
+            camera.eye   = stf::math::cubic_hermite_spline(prev.camera.eye,   prev.deriv.eye   * delta_t, next.camera.eye, next.deriv.eye   * delta_t, t);
+            camera.theta = stf::math::cubic_hermite_spline(prev.camera.theta, prev.deriv.theta * delta_t, next_theta,      next.deriv.theta * delta_t, t);
+            camera.phi   = stf::math::cubic_hermite_spline(prev.camera.phi,   prev.deriv.phi   * delta_t, next_phi,        next.deriv.phi   * delta_t, t);
             return camera;
         }
         else

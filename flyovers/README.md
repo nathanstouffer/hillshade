@@ -26,7 +26,7 @@ A JSON object with the following keys:
 A JSON object with three keys:
 
 1. `delta` - The positive time since the last anchor (in ms)
-1. `camera` - The camera state to use at this
+1. `camera` - The camera state to use at this anchor
 1. `deriv` - The derivative to use at this anchor. Each property can be specified optionally. If not specified, the value will be computed internally.
 
 ```JSON
