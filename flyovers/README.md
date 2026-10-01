@@ -8,7 +8,7 @@ A `flyover` is a JSON object with the following root level properties:
 
 1. `dem` - The name of the DEM to use (filename relative to repo root)
 1. `initial` - A [camera](#camera) object defining the initial position of the animation
-1. `delay` - A non-negative delay before beginning the path
+1. `delay` - A non-negative delay before beginning the path (in seconds)
 1. `anchors` - An array of [anchor](#anchor) objects
 
 ### Camera
@@ -25,7 +25,7 @@ A JSON object with the following keys:
 
 A JSON object with three keys:
 
-1. `delta` - The positive time since the last anchor (in ms)
+1. `delta` - The positive time since the last anchor (in seconds)
 1. `camera` - The camera state to use at this anchor
 1. `deriv` - The derivative to use at this anchor. Each property can be specified optionally. If not specified, the value will be computed internally.
 

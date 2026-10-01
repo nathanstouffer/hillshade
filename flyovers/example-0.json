@@ -7,10 +7,10 @@
     "heading": 90,
     "pitch": 180
   },
-  "delay": 500,
+  "delay": 0.5,
   "anchors": [
     {
-      "delta": 2000,
+      "delta": 2,
       "camera": {
         "x": 0,
         "y": 0,
@@ -20,7 +20,7 @@
       }
     },
     {
-      "delta": 3000,
+      "delta": 3,
       "camera": {
         "x": -10,
         "y": -200,
