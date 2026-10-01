@@ -92,12 +92,12 @@ namespace hillshader::camera::controllers::animators
 
     time_t path::compute_duration(std::vector<input_anchor> const& anchors, time_t delay_ms)
     {
-        time_t duration_ms = 0;
+        time_t largest_ms = 0;
         for (input_anchor const& a : anchors)
         {
-            duration_ms = std::max(duration_ms, a.timestamp_ms);
+            largest_ms = std::max(largest_ms, a.timestamp_ms);
         }
-        return duration_ms;
+        return delay_ms + largest_ms;
     }
 
     stff::scamera path::finite_difference(input_anchor const& lhs, input_anchor const& rhs)
