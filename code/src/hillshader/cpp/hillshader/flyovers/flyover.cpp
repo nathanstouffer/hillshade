@@ -15,7 +15,7 @@ namespace hillshader::flyovers
 
         m_dem = json["dem"];
         from_json(json["initial"], m_initial);
-        m_delay_ms = static_cast<time_t>(json["delay"] * 1000.f);
+        m_delay_ms = static_cast<time_t>(1000.f * static_cast<float>(json["delay"]));
         from_json(json["anchors"], m_anchors);
     }
 
