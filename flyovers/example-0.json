@@ -10,36 +10,6 @@
   "delay": 0.5,
   "anchors": [
     {
-      "delta": 2,
-      "camera": {
-        "x": 0,
-        "y": 0,
-        "z": 3200,
-        "heading": 90,
-        "pitch": 180
-      }
-    },
-    {
-      "delta": 3,
-      "camera": {
-        "x": -10,
-        "y": -200,
-        "z": 2800,
-        "heading": 45,
-        "pitch": 115
-      }
-    },
-    {
-      "delta": 3,
-      "camera": {
-        "x": 130,
-        "y": 625,
-        "z": 2570,
-        "heading": 152,
-        "pitch": 85
-      }
-    },
-    {
       "delta": 3,
       "camera": {
         "x": -480,
@@ -85,11 +55,11 @@
     {
       "delta": 4,
       "camera": {
-        "x": 1819,
-        "y": 125,
-        "z": 4000,
-        "heading": 190,
-        "pitch": 120
+        "x": 2540,
+        "y": 0,
+        "z": 4750,
+        "heading": 180,
+        "pitch": 132
       }
     }
   ]
