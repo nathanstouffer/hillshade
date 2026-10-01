@@ -25,10 +25,10 @@ namespace hillshader::flyovers
         anchors.reserve(1 + m_anchors.size());
 
         time_t duration = 0;
-        anchors.push_back({ duration, m_initial, { 0, 0, 0, 0, 0 } });
+        anchors.push_back({ duration, m_initial, { 0.f, 0.f, 0.f, 0.f, 0.f } });
         for (anchor const& a : m_anchors)
         {
-            duration += a.delta;
+            duration += static_cast<time_t>(a.delta);
             anchors.push_back({ duration, a.camera, a.deriv });
         }
 
