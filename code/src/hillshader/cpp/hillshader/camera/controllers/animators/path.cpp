@@ -49,12 +49,14 @@ namespace hillshader::camera::controllers::animators
             float next_theta = stf::math::closest_equiv_angle(next.camera.theta, prev.camera.theta);
             float next_phi = stf::math::closest_equiv_angle(next.camera.phi, prev.camera.phi);
 
-            float delta_t = static_cast<float>(next.timestamp_ms - prev.timestamp_ms);
-            float t = static_cast<float>(time_ms - prev.timestamp_ms) / delta_t;
+            float prev_t = static_cast<float>(prev.timestamp_ms);
+            float now_t  = static_cast<float>(time_ms);
+            float next_t = static_cast<float>(next.timestamp_ms);
+
             stff::scamera camera = opts.current;
-            camera.eye   = stf::math::cubic_hermite_spline(prev.camera.eye,   prev.deriv.eye   * delta_t, next.camera.eye, next.deriv.eye   * delta_t, t);
-            camera.theta = stf::math::cubic_hermite_spline(prev.camera.theta, prev.deriv.theta * delta_t, next_theta,      next.deriv.theta * delta_t, t);
-            camera.phi   = stf::math::cubic_hermite_spline(prev.camera.phi,   prev.deriv.phi   * delta_t, next_phi,        next.deriv.phi   * delta_t, t);
+            camera.eye   = stf::math::cubic_hermite_spline(prev_t, prev.camera.eye,   prev.deriv.eye,   next_t, next.camera.eye, next.deriv.eye,   now_t);
+            camera.theta = stf::math::cubic_hermite_spline(prev_t, prev.camera.theta, prev.deriv.theta, next_t, next_theta,      next.deriv.theta, now_t);
+            camera.phi   = stf::math::cubic_hermite_spline(prev_t, prev.camera.phi,   prev.deriv.phi,   next_t, next_phi,        next.deriv.phi,   now_t);
             return camera;
         }
         else
