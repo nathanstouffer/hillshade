@@ -6,9 +6,8 @@ An exploration in hillshading for topographic maps
 
 1. Put desired tiffs in `./tiff` directory
 1. `docker compose build && docker compose run --rm convert`
-1. Generate VS project file with `make generate-vs-project`
-    - note: relies on a symbolic link (you may need to enable `For developers` on Windows)
-1. Build and run `.build/Win64/hillshade.sln` with VS
+1. Generate VS project via CMake preset `dest-win`
+1. Build and run `.build/dest-win/hillshade.sln` with VS
 
 ## Attribution
 
