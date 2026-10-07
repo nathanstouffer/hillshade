@@ -196,6 +196,8 @@ namespace hillshader
 
         if (ImGui::BeginMenu("Flyovers"))
         {
+            ImGui::Checkbox("Record", &m_record_flyover);
+            ImGui::Separator();
             for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_flyover_dir))
             {
                 if (file.path().extension() == ".json")
@@ -204,7 +206,7 @@ namespace hillshader
                     bool selected = m_flyover_path == path;
                     if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
                     {
-                        load_flyover(path);
+                        load_flyover(path, m_record_flyover);
                     }
                 }
             }
@@ -864,11 +866,22 @@ namespace hillshader
         store_start_up_state();
     }
 
-    void application::load_flyover(std::string const& path)
+    void application::load_flyover(std::string const& path, bool record)
     {
         flyovers::flyover flyover(path);
         load_dem(flyover.dem());
-        m_controller = flyover.controller();
+
+        auto controller = flyover.controller();
+
+        if (record)
+        {
+            m_recording = true;
+            m_recording_start_time_ms = timer::now_ms();
+            m_recording_duration_ms = controller->duration_ms();
+            m_recording_frame = 0;
+        }
+
+        m_controller = std::move(controller);
     }
 
     void application::release_dem_resources()

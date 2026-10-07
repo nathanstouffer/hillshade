@@ -126,6 +126,7 @@ namespace hillshader
         stff::vec3 m_focus;
 
         std::string m_flyover_path;
+        bool m_record_flyover = false;
 
         std::string m_dem_path;
         std::unique_ptr<terrain const> m_terrain;
@@ -180,7 +181,7 @@ namespace hillshader
 
         void load_dem(std::string const& path);
 
-        void load_flyover(std::string const& path);
+        void load_flyover(std::string const& path, bool record);
 
         void release_dem_resources();
 
