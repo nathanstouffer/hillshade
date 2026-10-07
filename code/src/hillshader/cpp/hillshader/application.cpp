@@ -215,7 +215,7 @@ namespace hillshader
         {
             ImGui::MenuItem("Info", nullptr, &m_shown.info, !m_shown.info);
             ImGui::MenuItem("Config", nullptr, &m_shown.config, !m_shown.config);
-            ImGui::MenuItem("Path", nullptr, &m_shown.path, !m_shown.path);
+            ImGui::MenuItem("Flyover", nullptr, &m_shown.flyover, !m_shown.flyover);
             ImGui::EndMenu();
         }
 
@@ -263,10 +263,10 @@ namespace hillshader
             ImGui::End();
         }
 
-        if (m_shown.path)
+        if (m_shown.flyover)
         {
             ImGui::SetNextWindowSize(ImVec2(350.0f, 200.0f), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Path", &m_shown.path);
+            ImGui::Begin("Flyover", &m_shown.flyover);
             if (ImGui::BeginMenu("Select"))
             {
                 for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_flyover_dir))

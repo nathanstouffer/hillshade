@@ -115,7 +115,7 @@ namespace hillshader
             bool ui = true;
             bool info = false;
             bool config = false;
-            bool path = false;
+            bool flyover = false;
         };
 
         shown m_shown;
