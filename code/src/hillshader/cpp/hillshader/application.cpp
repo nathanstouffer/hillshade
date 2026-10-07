@@ -49,7 +49,7 @@ namespace hillshader
     static constexpr char const* c_shader_dir = "shaders";
     static constexpr char const* c_terrarium_dir = "terrarium";
     static constexpr char const* c_flyover_dir = "flyovers";
-    static constexpr char const* c_frames_dir = "frames";
+    static constexpr char const* c_frames_dir = "frames/generated";
 
     static constexpr float c_min_meters_per_quad = 5.0;
 
@@ -511,6 +511,7 @@ namespace hillshader
             auto controller = std::make_unique<camera::controllers::animators::orbit_attract>(m_camera, opt.value(), target_phi, rad_per_ms);
 
             m_recording = true;
+            std::filesystem::create_directory(c_frames_dir);
             m_recording_start_time_ms = timer::now_ms();
             m_recording_duration_ms = controller->duration_ms();
             m_recording_frame = 0;
@@ -876,6 +877,7 @@ namespace hillshader
         if (record)
         {
             m_recording = true;
+            std::filesystem::create_directory(c_frames_dir);
             m_recording_start_time_ms = timer::now_ms();
             m_recording_duration_ms = controller->duration_ms();
             m_recording_frame = 0;
