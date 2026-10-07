@@ -158,6 +158,11 @@ namespace hillshader
         }
 
         m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
+        if (m_override_with_sampling && m_sampling_controller)
+        {
+            time_t override_ms = m_sampling_start_time_ms + m_sampling_delta_time_ms;
+            m_camera = m_sampling_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms });
+        }
     }
 
     void application::store_start_up_state()
@@ -275,6 +280,7 @@ namespace hillshader
                             load_dem(flyover.dem());
                             m_sampling_start_time_ms = timer::now_ms();
                             m_sampling_controller = flyover.controller();
+                            m_override_with_sampling = true;
                         }
                     }
                 }
@@ -287,17 +293,13 @@ namespace hillshader
                 duration_ms = static_cast<int>(m_sampling_controller->duration_ms());
             }
 
+            ImGui::Checkbox("Override", &m_override_with_sampling);
             ImGui::Text("Name: %s", m_sampling_path.c_str());
             ImGui::Text("Duration: %d (ms)", duration_ms);
             int time = static_cast<int>(m_sampling_delta_time_ms);
             ImGui::DragInt("T (ms)", &time, 100, 0, duration_ms);
             m_sampling_delta_time_ms = static_cast<time_t>(time);
 
-            if (!m_sampling_path.empty())
-            {
-                time_t time_ms = m_sampling_delta_time_ms + m_sampling_delta_time_ms;
-                m_camera = m_sampling_controller->update({ io(), m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms});
-            }
             ImGui::End();
         }
     }

@@ -144,6 +144,7 @@ namespace hillshader
         bool m_flag_3d = true;
 
         std::string m_sampling_path;
+        bool m_override_with_sampling = false;
         std::unique_ptr<camera::controllers::animators::animator> m_sampling_controller;
         time_t m_sampling_start_time_ms = 0;
         time_t m_sampling_delta_time_ms = 0;
