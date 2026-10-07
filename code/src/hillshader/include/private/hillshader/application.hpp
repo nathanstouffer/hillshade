@@ -53,7 +53,7 @@ namespace hillshader
 
         void set_controller(std::unique_ptr<camera::controllers::controller> controller) { m_controller = std::move(controller); }
 
-        void toggle_ui() { m_render_ui = !m_render_ui; }
+        void toggle_ui() { m_shown.ui = !m_shown.ui; }
 
         inline void reset_camera();
 
@@ -109,7 +109,15 @@ namespace hillshader
         size_t m_recording_frame = 0;
         size_t m_recording_fps = 60;
 
-        bool m_render_ui = true;
+        struct shown
+        {
+            bool ui = true;
+            bool info = false;
+            bool config = false;
+            bool path = false;
+        };
+
+        shown m_shown;
 
         stff::scamera m_camera;
         std::unique_ptr<camera::controllers::controller> m_controller;
