@@ -312,8 +312,16 @@ namespace hillshader
             }
             m_sampling_playback_marker = timer::now_ms();
 
-
             ImGui::Checkbox("Override controller", &m_override_with_sampling);
+
+            if (ImGui::Button("Reload"))
+            {
+                flyovers::flyover flyover(m_sampling_path);
+                load_dem(flyover.dem());
+                m_sampling_start_time_ms = timer::now_ms();
+                m_sampling_controller = flyover.controller();
+                m_override_with_sampling = true;
+            }
 
             ImGui::End();
         }
