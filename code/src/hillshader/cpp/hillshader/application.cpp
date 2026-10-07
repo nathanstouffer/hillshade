@@ -265,7 +265,7 @@ namespace hillshader
         {
             ImGui::SetNextWindowSize(ImVec2(350.0f, 200.0f), ImGuiCond_FirstUseEver);
             ImGui::Begin("Path", &m_shown.path);
-            if (ImGui::BeginMenu("Paths"))
+            if (ImGui::BeginMenu("Select"))
             {
                 for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_flyover_dir))
                 {
@@ -273,7 +273,7 @@ namespace hillshader
                     {
                         std::string path = file.path().string();
                         bool selected = m_sampling_path == path;
-                        if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
+                        if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, true))
                         {
                             m_sampling_path = path;
                             flyovers::flyover flyover(path);
@@ -286,6 +286,7 @@ namespace hillshader
                 }
                 ImGui::EndMenu();
             }
+            ImGui::Separator();
 
             int duration_ms = 0;
             if (!m_sampling_path.empty())
@@ -293,12 +294,26 @@ namespace hillshader
                 duration_ms = static_cast<int>(m_sampling_controller->duration_ms());
             }
 
-            ImGui::Checkbox("Override", &m_override_with_sampling);
             ImGui::Text("Name: %s", m_sampling_path.c_str());
             ImGui::Text("Duration: %d (ms)", duration_ms);
             int time = static_cast<int>(m_sampling_delta_time_ms);
             ImGui::DragInt("T (ms)", &time, 100, 0, duration_ms);
             m_sampling_delta_time_ms = static_cast<time_t>(time);
+
+            ImGui::SliderFloat("Speed", &m_sampling_playback_speed, 0.f, 2.f);
+            ImGui::SameLine();
+            ImGui::Checkbox("Play", &m_sampling_playback);
+
+            if (m_sampling_playback)
+            {
+                time_t diff = timer::now_ms() - m_sampling_playback_marker;
+                float delta = m_sampling_playback_speed * static_cast<float>(diff);
+                m_sampling_delta_time_ms += static_cast<time_t>(delta);
+            }
+            m_sampling_playback_marker = timer::now_ms();
+
+
+            ImGui::Checkbox("Override controller", &m_override_with_sampling);
 
             ImGui::End();
         }

@@ -145,6 +145,9 @@ namespace hillshader
 
         std::string m_sampling_path;
         bool m_override_with_sampling = false;
+        bool m_sampling_playback = false;
+        float m_sampling_playback_speed = 1.0f;
+        time_t m_sampling_playback_marker = 0;
         std::unique_ptr<camera::controllers::animators::animator> m_sampling_controller;
         time_t m_sampling_start_time_ms = 0;
         time_t m_sampling_delta_time_ms = 0;
