@@ -19,7 +19,7 @@ namespace hillshader::flyovers
         from_json(json["anchors"], m_anchors);
     }
 
-    std::unique_ptr<camera::controllers::controller> flyover::controller() const
+    std::unique_ptr<camera::controllers::animators::animator> flyover::controller() const
     {
         std::vector<camera::controllers::animators::path::input_anchor> anchors;
         anchors.reserve(1 + m_anchors.size());

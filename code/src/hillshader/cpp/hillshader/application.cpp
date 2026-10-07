@@ -280,10 +280,19 @@ namespace hillshader
                 }
                 ImGui::EndMenu();
             }
+
+            int duration_ms = 0;
+            if (!m_sampling_path.empty())
+            {
+                duration_ms = static_cast<int>(m_sampling_controller->duration_ms());
+            }
+
             ImGui::Text("Name: %s", m_sampling_path.c_str());
+            ImGui::Text("Duration: %d (ms)", duration_ms);
             int time = static_cast<int>(m_sampling_delta_time_ms);
-            ImGui::DragInt("T (ms)", &time, 100, 0, 1'000'000);
+            ImGui::DragInt("T (ms)", &time, 100, 0, duration_ms);
             m_sampling_delta_time_ms = static_cast<time_t>(time);
+
             if (!m_sampling_path.empty())
             {
                 time_t time_ms = m_sampling_delta_time_ms + m_sampling_delta_time_ms;
