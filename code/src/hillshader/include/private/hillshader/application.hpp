@@ -142,6 +142,11 @@ namespace hillshader
         float m_step_scalar = 0.001f;
         bool m_flag_3d = true;
 
+        std::string m_sampling_path;
+        std::unique_ptr<camera::controllers::controller> m_sampling_controller;
+        time_t m_sampling_start_time_ms = 0;
+        time_t m_sampling_delta_time_ms = 0;
+
         nlohmann::json m_start_up_state;
 
     private:

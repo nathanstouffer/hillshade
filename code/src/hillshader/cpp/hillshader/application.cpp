@@ -214,7 +214,6 @@ namespace hillshader
 
         ImGui::EndMainMenuBar();
 
-        // info
         if (m_shown.info)
         {
             ImGui::Begin("Info", &m_shown.info);
@@ -241,7 +240,6 @@ namespace hillshader
             ImGui::End();
         }
 
-        // configuration
         if (m_shown.config)
         {
             ImGui::Begin("Configuration", &m_shown.config);
@@ -255,6 +253,42 @@ namespace hillshader
             ImGui::DragFloat("step scalar", &m_step_scalar, 0.0001f, 0.f, 0.01f, "%.4f");
             ImGui::Checkbox("render in 3d", &m_flag_3d);
             ImGui::PopItemWidth();
+            ImGui::End();
+        }
+
+        if (m_shown.path)
+        {
+            ImGui::SetNextWindowSize(ImVec2(350.0f, 200.0f), ImGuiCond_FirstUseEver);
+            ImGui::Begin("Path", &m_shown.path);
+            if (ImGui::BeginMenu("Paths"))
+            {
+                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_flyover_dir))
+                {
+                    if (file.path().extension() == ".json")
+                    {
+                        std::string path = file.path().string();
+                        bool selected = m_sampling_path == path;
+                        if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
+                        {
+                            m_sampling_path = path;
+                            flyovers::flyover flyover(path);
+                            load_dem(flyover.dem());
+                            m_sampling_start_time_ms = timer::now_ms();
+                            m_sampling_controller = flyover.controller();
+                        }
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::Text("Name: %s", m_sampling_path.c_str());
+            int time = static_cast<int>(m_sampling_delta_time_ms);
+            ImGui::DragInt("T (ms)", &time, 100, 0, 1'000'000);
+            m_sampling_delta_time_ms = static_cast<time_t>(time);
+            if (!m_sampling_path.empty())
+            {
+                time_t time_ms = m_sampling_delta_time_ms + m_sampling_delta_time_ms;
+                m_camera = m_sampling_controller->update({ io(), m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms});
+            }
             ImGui::End();
         }
     }
