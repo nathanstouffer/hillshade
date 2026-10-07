@@ -304,11 +304,12 @@ namespace hillshader
             ImGui::SameLine();
             ImGui::Checkbox("Play", &m_sampling_playback);
 
-            if (m_sampling_playback)
+            if (m_sampling_playback && m_sampling_controller)
             {
                 time_t diff = timer::now_ms() - m_sampling_playback_marker;
                 float delta = m_sampling_playback_speed * static_cast<float>(diff);
                 m_sampling_delta_time_ms += static_cast<time_t>(delta);
+                m_sampling_delta_time_ms = std::min(m_sampling_delta_time_ms, m_sampling_controller->duration_ms());
             }
             m_sampling_playback_marker = timer::now_ms();
 
