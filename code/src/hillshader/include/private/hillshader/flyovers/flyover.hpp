@@ -30,7 +30,7 @@ namespace hillshader::flyovers
 
         std::string const& dem() const { return m_dem; }
 
-        std::unique_ptr<camera::controllers::controller> controller() const;
+        std::unique_ptr<camera::controllers::animators::animator> controller() const;
 
     private:
 

@@ -44,11 +44,12 @@ add_executable(hillshader WIN32 ${HILLSHADER_FILES})
 # add directory structure to IDEs
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/" FILES ${HILLSHADER_FILES})
 
+file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/video/frames")
+
 file(CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/shaders" "${CMAKE_CURRENT_BINARY_DIR}/shaders" SYMBOLIC)
 file(CREATE_LINK "${CMAKE_SOURCE_DIR}/terrarium" "${CMAKE_CURRENT_BINARY_DIR}/terrarium" SYMBOLIC)
 file(CREATE_LINK "${CMAKE_SOURCE_DIR}/flyovers" "${CMAKE_CURRENT_BINARY_DIR}/flyovers" SYMBOLIC)
-
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/frames")
+file(CREATE_LINK "${CMAKE_SOURCE_DIR}/video/frames" "${CMAKE_CURRENT_BINARY_DIR}/frames" SYMBOLIC)
 
 # TODO eventually we should split this out by platform
 target_compile_definitions(hillshader

@@ -21,6 +21,7 @@
 #include <stf/gfx/color.hpp>
 
 #include "hillshader/camera/controllers/controller.hpp"
+#include "hillshader/camera/controllers/animators/animator.hpp"
 #include "hillshader/mesh.hpp"
 #include "hillshader/terrain.hpp"
 #include "hillshader/timer.hpp"
@@ -53,7 +54,7 @@ namespace hillshader
 
         void set_controller(std::unique_ptr<camera::controllers::controller> controller) { m_controller = std::move(controller); }
 
-        void toggle_ui() { m_render_ui = !m_render_ui; }
+        void toggle_ui() { m_shown.ui = !m_shown.ui; }
 
         inline void reset_camera();
 
@@ -109,7 +110,15 @@ namespace hillshader
         size_t m_recording_frame = 0;
         size_t m_recording_fps = 60;
 
-        bool m_render_ui = true;
+        struct shown
+        {
+            bool ui = true;
+            bool info = false;
+            bool config = false;
+            bool flyover = false;
+        };
+
+        shown m_shown;
 
         stff::scamera m_camera;
         std::unique_ptr<camera::controllers::controller> m_controller;
@@ -117,6 +126,7 @@ namespace hillshader
         stff::vec3 m_focus;
 
         std::string m_flyover_path;
+        bool m_record_flyover = false;
 
         std::string m_dem_path;
         std::unique_ptr<terrain const> m_terrain;
@@ -133,6 +143,15 @@ namespace hillshader
         float m_exaggeration = 5.0f;
         float m_step_scalar = 0.001f;
         bool m_flag_3d = true;
+
+        std::string m_sampling_path;
+        bool m_override_with_sampling = false;
+        bool m_sampling_playback = false;
+        float m_sampling_playback_speed = 1.0f;
+        time_t m_sampling_playback_marker = 0;
+        std::unique_ptr<camera::controllers::animators::animator> m_sampling_controller;
+        time_t m_sampling_start_time_ms = 0;
+        time_t m_sampling_delta_time_ms = 0;
 
         nlohmann::json m_start_up_state;
 
@@ -162,7 +181,7 @@ namespace hillshader
 
         void load_dem(std::string const& path);
 
-        void load_flyover(std::string const& path);
+        void load_flyover(std::string const& path, bool record);
 
         void release_dem_resources();
 

@@ -49,7 +49,7 @@ namespace hillshader
     static constexpr char const* c_shader_dir = "shaders";
     static constexpr char const* c_terrarium_dir = "terrarium";
     static constexpr char const* c_flyover_dir = "flyovers";
-    static constexpr char const* c_frames_dir = "frames";
+    static constexpr char const* c_frames_dir = "frames/generated";
 
     static constexpr float c_min_meters_per_quad = 5.0;
 
@@ -154,10 +154,17 @@ namespace hillshader
                 {
                     m_controller = std::make_unique<camera::controllers::input>(m_focus);
                 }
+                m_override_with_sampling = false;
+                m_sampling_playback = false;
             }
         }
 
         m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
+        if (m_override_with_sampling && m_sampling_controller)
+        {
+            time_t override_ms = m_sampling_start_time_ms + m_sampling_delta_time_ms;
+            m_camera = m_sampling_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms });
+        }
     }
 
     void application::store_start_up_state()
@@ -168,83 +175,157 @@ namespace hillshader
 
     void application::render_ui()
     {
-        // debug window
-        {
-            ImGui::BeginMainMenuBar();
+        ImGui::BeginMainMenuBar();
 
-            if (ImGui::BeginMenu("DEMs"))
+        if (ImGui::BeginMenu("DEMs"))
+        {
+            for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_terrarium_dir))
             {
-                for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_terrarium_dir))
+                if (file.path().extension() != ".json")
                 {
-                    if (file.path().extension() != ".json")
+                    std::string path = file.path().string();
+                    bool selected = m_dem_path == path;
+                    if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
                     {
-                        std::string path = file.path().string();
-                        bool selected = m_dem_path == path;
-                        if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
-                        {
-                            load_dem(path);
-                        }
+                        load_dem(path);
                     }
                 }
-                ImGui::EndMenu();
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Flyovers"))
+        {
+            ImGui::Checkbox("Record", &m_record_flyover);
+            ImGui::Separator();
+            for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_flyover_dir))
+            {
+                if (file.path().extension() == ".json")
+                {
+                    std::string path = file.path().string();
+                    bool selected = m_flyover_path == path;
+                    if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
+                    {
+                        load_flyover(path, m_record_flyover);
+                    }
+                }
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Debugging"))
+        {
+            ImGui::MenuItem("Info", nullptr, &m_shown.info, !m_shown.info);
+            ImGui::MenuItem("Config", nullptr, &m_shown.config, !m_shown.config);
+            ImGui::MenuItem("Flyover", nullptr, &m_shown.flyover, !m_shown.flyover);
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
+
+        if (m_shown.info)
+        {
+            ImGui::Begin("Info", &m_shown.info);
+
+            stff::aabb2 const bounds = (m_terrain) ? m_terrain->bounds() : stff::aabb2(stff::vec2(), stff::vec2());
+            ImGui::Text("DEM Bounds: (%.1f, %.1f) - (%.1f, %.1f)", bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y);
+            ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
+            ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
+
+            ImVec2 mouse_pos = ImGui::GetIO().MousePos;
+            ImGui::Text("Mouse Pos (screen): (%.3f, %.3f)", mouse_pos.x, mouse_pos.y);
+            std::optional<stff::vec3> opt = cursor_world_pos();
+            if (opt)
+            {
+                stff::vec3 const& world_pos = *opt;
+                ImGui::Text("Mouse Pos (world): (%.3f, %.3f, %.3f)", world_pos.x, world_pos.y, world_pos.z);
             }
 
-            if (ImGui::BeginMenu("Flyovers"))
+            stff::vec3 light_dir = light_direction(m_azimuth, m_altitude);
+            ImGui::Text("Light Direction: (%.3f, %.3f, %.3f)", light_dir.x, light_dir.y, light_dir.z);
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            ImGui::End();
+        }
+
+        if (m_shown.config)
+        {
+            ImGui::Begin("Configuration", &m_shown.config);
+            ImGui::PushItemWidth(250.0f);
+            ImGui::ColorEdit3("background", reinterpret_cast<float*>(&m_clear_color));
+            ImGui::ColorEdit3("albedo", reinterpret_cast<float*>(&m_albedo));
+            ImGui::DragFloat("azimuth", &m_azimuth, 0.5f, 0.f, 360.f, "%.1f");
+            ImGui::DragFloat("altitude", &m_altitude, 0.5f, 0.f, 90.f, "%.1f");
+            ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
+            ImGui::DragFloat("exaggeration", &m_exaggeration, 0.01f, 0.f, 10.f, "%.2f");
+            ImGui::DragFloat("step scalar", &m_step_scalar, 0.0001f, 0.f, 0.01f, "%.4f");
+            ImGui::Checkbox("render in 3d", &m_flag_3d);
+            ImGui::PopItemWidth();
+            ImGui::End();
+        }
+
+        if (m_shown.flyover)
+        {
+            ImGui::SetNextWindowSize(ImVec2(350.0f, 200.0f), ImGuiCond_FirstUseEver);
+            ImGui::Begin("Flyover", &m_shown.flyover);
+            if (ImGui::BeginMenu("Select"))
             {
                 for (std::filesystem::directory_entry const& file : std::filesystem::directory_iterator(c_flyover_dir))
                 {
                     if (file.path().extension() == ".json")
                     {
                         std::string path = file.path().string();
-                        bool selected = m_flyover_path == path;
-                        if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, !selected))
+                        bool selected = m_sampling_path == path;
+                        if (ImGui::MenuItem(file.path().stem().generic_string().c_str(), nullptr, selected, true))
                         {
-                            load_flyover(path);
+                            m_sampling_path = path;
+                            flyovers::flyover flyover(path);
+                            load_dem(flyover.dem());
+                            m_sampling_start_time_ms = timer::now_ms();
+                            m_sampling_controller = flyover.controller();
+                            m_override_with_sampling = true;
                         }
                     }
                 }
                 ImGui::EndMenu();
             }
-
-            ImGui::EndMainMenuBar();
-
-            ImGui::Begin("Debugging");
-
-
-            // configuration block
-            {
-                ImGui::Text("Configuration");
-                ImGui::ColorEdit3("background", reinterpret_cast<float*>(&m_clear_color));
-                ImGui::ColorEdit3("albedo", reinterpret_cast<float*>(&m_albedo));
-                ImGui::DragFloat("azimuth", &m_azimuth, 0.5f, 0.f, 360.f, "%.1f");
-                ImGui::DragFloat("altitude", &m_altitude, 0.5f, 0.f, 90.f, "%.1f");
-                ImGui::DragFloat("ambient", &m_ambient_intensity, 0.01f, 0.f, 1.f, "%.2f");
-                ImGui::DragFloat("exaggeration", &m_exaggeration, 0.01f, 0.f, 10.f, "%.2f");
-                ImGui::DragFloat("step scalar", &m_step_scalar, 0.0001f, 0.f, 0.01f, "%.4f");
-                ImGui::Checkbox("render in 3d", &m_flag_3d);
-            }
             ImGui::Separator();
-            // info block
+
+            int duration_ms = 0;
+            if (!m_sampling_path.empty())
             {
-                ImGui::Text("Info");
-                stff::aabb2 const bounds = (m_terrain) ? m_terrain->bounds() : stff::aabb2(stff::vec2(), stff::vec2());
-                ImGui::Text("DEM Bounds: (%.1f, %.1f) - (%.1f, %.1f)", bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y);
-                ImGui::Text("Eye: (%.1f, %.1f, %.1f)", m_camera.eye.x, m_camera.eye.y, m_camera.eye.z);
-                ImGui::Text("Theta: %.1f  Phi: %.1f", stf::math::to_degrees(m_camera.theta), stf::math::to_degrees(m_camera.phi));
+                duration_ms = static_cast<int>(m_sampling_controller->duration_ms());
+            }
 
-                ImVec2 mouse_pos = ImGui::GetIO().MousePos;
-                ImGui::Text("Mouse Pos (screen): (%.3f, %.3f)", mouse_pos.x, mouse_pos.y);
-                std::optional<stff::vec3> opt = cursor_world_pos();
-                if (opt)
-                {
-                    stff::vec3 const& world_pos = *opt;
-                    ImGui::Text("Mouse Pos (world): (%.3f, %.3f, %.3f)", world_pos.x, world_pos.y, world_pos.z);
-                }
+            ImGui::Text("Name: %s", m_sampling_path.c_str());
+            ImGui::Text("Duration: %d (ms)", duration_ms);
+            int time = static_cast<int>(m_sampling_delta_time_ms);
+            ImGui::DragInt("T (ms)", &time, 100, 0, duration_ms);
+            m_sampling_delta_time_ms = static_cast<time_t>(time);
 
-                stff::vec3 light_dir = light_direction(m_azimuth, m_altitude);
-                ImGui::Text("Light Direction: (%.3f, %.3f, %.3f)", light_dir.x, light_dir.y, light_dir.z);
+            ImGui::SliderFloat("Speed", &m_sampling_playback_speed, 0.f, 2.f);
+            ImGui::SameLine();
+            ImGui::Checkbox("Play", &m_sampling_playback);
 
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            if (m_sampling_playback && m_sampling_controller)
+            {
+                time_t diff = timer::now_ms() - m_sampling_playback_marker;
+                float delta = m_sampling_playback_speed * static_cast<float>(diff);
+                m_sampling_delta_time_ms += static_cast<time_t>(delta);
+                m_sampling_delta_time_ms = std::min(m_sampling_delta_time_ms, m_sampling_controller->duration_ms());
+            }
+            m_sampling_playback_marker = timer::now_ms();
+
+            ImGui::Checkbox("Override controller", &m_override_with_sampling);
+
+            if (ImGui::Button("Reload"))
+            {
+                flyovers::flyover flyover(m_sampling_path);
+                load_dem(flyover.dem());
+                m_sampling_start_time_ms = timer::now_ms();
+                m_sampling_controller = flyover.controller();
+                m_override_with_sampling = true;
             }
 
             ImGui::End();
@@ -346,7 +427,7 @@ namespace hillshader
             m_immediate_context->SetRenderTargets(1, &backbuffer_rtv, nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         }
 
-        if (m_render_ui) { render_ui(); }
+        if (m_shown.ui) { render_ui(); }
 
         m_imgui_impl->Render(m_immediate_context);
 
@@ -430,6 +511,7 @@ namespace hillshader
             auto controller = std::make_unique<camera::controllers::animators::orbit_attract>(m_camera, opt.value(), target_phi, rad_per_ms);
 
             m_recording = true;
+            std::filesystem::create_directory(c_frames_dir);
             m_recording_start_time_ms = timer::now_ms();
             m_recording_duration_ms = controller->duration_ms();
             m_recording_frame = 0;
@@ -785,11 +867,23 @@ namespace hillshader
         store_start_up_state();
     }
 
-    void application::load_flyover(std::string const& path)
+    void application::load_flyover(std::string const& path, bool record)
     {
         flyovers::flyover flyover(path);
         load_dem(flyover.dem());
-        m_controller = flyover.controller();
+
+        auto controller = flyover.controller();
+
+        if (record)
+        {
+            m_recording = true;
+            std::filesystem::create_directory(c_frames_dir);
+            m_recording_start_time_ms = timer::now_ms();
+            m_recording_duration_ms = controller->duration_ms();
+            m_recording_frame = 0;
+        }
+
+        m_controller = std::move(controller);
     }
 
     void application::release_dem_resources()
