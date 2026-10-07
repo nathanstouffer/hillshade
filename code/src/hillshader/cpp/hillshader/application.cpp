@@ -245,6 +245,7 @@ namespace hillshader
         if (m_shown.config)
         {
             ImGui::Begin("Configuration", &m_shown.config);
+            ImGui::PushItemWidth(250.0f);
             ImGui::ColorEdit3("background", reinterpret_cast<float*>(&m_clear_color));
             ImGui::ColorEdit3("albedo", reinterpret_cast<float*>(&m_albedo));
             ImGui::DragFloat("azimuth", &m_azimuth, 0.5f, 0.f, 360.f, "%.1f");
@@ -253,6 +254,7 @@ namespace hillshader
             ImGui::DragFloat("exaggeration", &m_exaggeration, 0.01f, 0.f, 10.f, "%.2f");
             ImGui::DragFloat("step scalar", &m_step_scalar, 0.0001f, 0.f, 0.01f, "%.4f");
             ImGui::Checkbox("render in 3d", &m_flag_3d);
+            ImGui::PopItemWidth();
             ImGui::End();
         }
     }
