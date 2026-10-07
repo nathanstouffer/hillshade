@@ -154,6 +154,8 @@ namespace hillshader
                 {
                     m_controller = std::make_unique<camera::controllers::input>(m_focus);
                 }
+                m_override_with_sampling = false;
+                m_sampling_playback = false;
             }
         }
 
