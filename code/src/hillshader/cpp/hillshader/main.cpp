@@ -97,6 +97,8 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 if (w_param == L'q') { PostQuitMessage(0); }
                 // hide/show ui
                 if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
+                // toggle 3d
+                if (w_param == L'3') { s_app->toggle_3d(); }
                 // zooming in
                 if (w_param == L'+') { s_app->zoom(hillshader::camera::config::c_zoom_factor, hillshader::focus::center); }
                 if (w_param == L'=') { s_app->zoom(hillshader::camera::config::c_zoom_factor, hillshader::focus::center); }

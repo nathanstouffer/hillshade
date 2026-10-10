@@ -56,6 +56,8 @@ namespace hillshader
 
         void toggle_ui() { m_shown.ui = !m_shown.ui; }
 
+        void toggle_3d() { m_flag_3d = !m_flag_3d; }
+
         inline void reset_camera();
 
         void zoom(float const factor, focus f);
