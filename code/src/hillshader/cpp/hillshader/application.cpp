@@ -300,6 +300,9 @@ namespace hillshader
 
             ImGui::Text("Name: %s", m_sampling_path.c_str());
             ImGui::Text("Duration: %d (ms)", duration_ms);
+
+            ImGui::Checkbox("Render Path", &m_render_sampling);
+
             int time = static_cast<int>(m_sampling_delta_time_ms);
             ImGui::DragInt("T (ms)", &time, 100, 0, duration_ms);
             m_sampling_delta_time_ms = static_cast<time_t>(time);
