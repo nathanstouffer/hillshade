@@ -447,10 +447,27 @@ namespace hillshader
 
                 basic_vertex* verts = nullptr;
                 m_immediate_context->MapBuffer(m_anchors_vertex_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD, (void*&)verts);
+                float radius = 10.f;
+                stff::vec4 look_color  = stff::vec4(0, 1, 1, 1);
+                stff::vec4 up_color    = stff::vec4(1, 1, 0, 1);
+                stff::vec4 right_color = stff::vec4(0, 0, 1, 1);
                 for (int i = 0; i < anchors.size(); ++i)
                 {
-                    stff::vec3 pos = anchors[i].camera.eye;
-                    verts[i] = basic_vertex{ pos, stff::vec4(1, 0, 1, 1) };
+                    stff::scamera cam = anchors[i].camera;
+                    int j = i * 6;
+
+                    // add forward direction
+                    verts[j + 0] = basic_vertex{ cam.eye,                       look_color };
+                    verts[j + 1] = basic_vertex{ cam.eye + radius * cam.look(), look_color };
+                    auto l = cam.look();
+
+                    // add up direction
+                    verts[j + 2] = basic_vertex{ cam.eye,                     up_color };
+                    verts[j + 3] = basic_vertex{ cam.eye + radius * cam.up(), up_color };
+
+                    // add right direction
+                    verts[j + 4] = basic_vertex{ cam.eye,                        right_color };
+                    verts[j + 5] = basic_vertex{ cam.eye + radius * cam.right(), right_color };
                 }
                 m_immediate_context->UnmapBuffer(m_anchors_vertex_buffer, Diligent::MAP_WRITE);
 
@@ -462,7 +479,7 @@ namespace hillshader
                 m_immediate_context->SetVertexBuffers(0, 1, vbuffs, offsets, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 
                 Diligent::DrawAttribs draw_attrs;
-                draw_attrs.NumVertices = m_sampling_controller->anchors().size();
+                draw_attrs.NumVertices = m_sampling_controller->anchors().size() * 6;
                 m_immediate_context->Draw(draw_attrs);
             }
         }
@@ -777,7 +794,7 @@ namespace hillshader
             pso_info.GraphicsPipeline.NumRenderTargets = 1;
             pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
             pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
-            pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_POINT_LIST;
+            pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
             pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
             pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
             pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
@@ -791,7 +808,7 @@ namespace hillshader
 
             Diligent::RefCntAutoPtr<Diligent::IShader> vs;
             {
-                std::string path = std::string(c_shader_dir) + "/anchor/anchor.vsh";
+                std::string path = std::string(c_shader_dir) + "/colored_vert/colored_vert.vsh";
                 shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
                 shader_info.EntryPoint = "main";
                 shader_info.Desc.Name = "debug anchor vs";
@@ -801,7 +818,7 @@ namespace hillshader
 
             Diligent::RefCntAutoPtr<Diligent::IShader> ps;
             {
-                std::string path = std::string(c_shader_dir) + "/anchor/anchor.psh";
+                std::string path = std::string(c_shader_dir) + "/colored_vert/colored_vert.psh";
                 shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
                 shader_info.EntryPoint = "main";
                 shader_info.Desc.Name = "debug anchor ps";
