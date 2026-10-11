@@ -672,7 +672,7 @@ namespace hillshader
             pso_info.GraphicsPipeline.NumRenderTargets = 1;
             pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
             pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
-            pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
+            pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_LINE_STRIP;
             pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
             pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
             pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
