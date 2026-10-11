@@ -422,7 +422,7 @@ namespace hillshader
                     time_t delta = static_cast<time_t>(t * m_sampling_controller->duration_ms());
                     time_t override_ms = m_sampling_controller->begin_ms() + delta;
                     stff::vec3 pos = m_sampling_controller->update({ io(), m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms }).eye;
-                    verts[i] = basic_vertex{ pos, stff::vec4(1, 0, 0, 1) };
+                    verts[i] = basic_vertex{ pos, stff::vec4(1, 0.2, 0.1, 1) };
                 }
                 m_immediate_context->UnmapBuffer(m_path_vertex_buffer, Diligent::MAP_WRITE);
 
@@ -448,8 +448,8 @@ namespace hillshader
                 basic_vertex* verts = nullptr;
                 m_immediate_context->MapBuffer(m_anchors_vertex_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD, (void*&)verts);
                 float radius = 10.f;
-                stff::vec4 look_color  = stff::vec4(0, 1, 1, 1);
-                stff::vec4 up_color    = stff::vec4(1, 1, 0, 1);
+                stff::vec4 look_color  = stff::vec4(1, 0, 1, 1);
+                stff::vec4 up_color    = stff::vec4(0, 1, 1, 1);
                 stff::vec4 right_color = stff::vec4(0, 0, 1, 1);
                 for (int i = 0; i < anchors.size(); ++i)
                 {
