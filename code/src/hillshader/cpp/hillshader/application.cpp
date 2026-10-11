@@ -55,7 +55,7 @@ namespace hillshader
 
     static constexpr float c_min_terrain_offset = 0.5;
 
-    struct constants
+    struct terrain_constants
     {
         stff::mtx4 view_proj;
 
@@ -350,7 +350,7 @@ namespace hillshader
 
         if (m_terrain)
         {
-            Diligent::MapHelper<constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+            Diligent::MapHelper<terrain_constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
             m_camera.aspect = aspect_ratio();
             consts->view_proj = m_camera.perspective() * m_camera.view();
@@ -541,7 +541,7 @@ namespace hillshader
         pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
 
         // create dynamic uniform buffer that will store shader constants
-        Diligent::CreateUniformBuffer(m_device, sizeof(constants), "Global shader constants CB", &m_shader_constants);
+        Diligent::CreateUniformBuffer(m_device, sizeof(terrain_constants), "Global shader constants CB", &m_shader_constants);
 
         Diligent::ShaderCreateInfo shader_info;
         shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
@@ -553,7 +553,7 @@ namespace hillshader
         // create a vertex shader
         Diligent::RefCntAutoPtr<Diligent::IShader> vertex_shader;
         {
-            std::string path = std::string(c_shader_dir) + "/hillshade.vsh";
+            std::string path = std::string(c_shader_dir) + "/terrain/terrain.vsh";
             shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
             shader_info.EntryPoint = "main";
             shader_info.Desc.Name = "terrain vertex shader";
@@ -564,7 +564,7 @@ namespace hillshader
         // create a pixel shader
         Diligent::RefCntAutoPtr<Diligent::IShader> pixel_shader;
         {
-            std::string path = std::string(c_shader_dir) + "/hillshade.psh";
+            std::string path = std::string(c_shader_dir) + "/terrain/terrain.psh";
             shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
             shader_info.EntryPoint = "main";
             shader_info.Desc.Name = "terrain pixel shader";
