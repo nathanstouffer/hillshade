@@ -50,6 +50,16 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
             s_app->io().AddMouseWheelEvent(0.f, GET_WHEEL_DELTA_WPARAM(w_param));
             return 0;
 
+        case WM_MOUSEMOVE:
+        {
+            // Extract X and Y coords from l_param
+            float mouse_x = (float)LOWORD(l_param);
+            float mouse_y = (float)HIWORD(l_param);
+            s_app->io().AddMousePosEvent(mouse_x, mouse_y);
+            return 0;
+        }
+
+
         case WM_SIZE: // window size has been changed
             if (s_app) { s_app->resize(LOWORD(l_param), HIWORD(l_param)); }
             return 0;
@@ -97,6 +107,8 @@ LRESULT CALLBACK MessageProc(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
                 if (w_param == L'q') { PostQuitMessage(0); }
                 // hide/show ui
                 if (w_param == L'U' || w_param == L'u') { s_app->toggle_ui(); }
+                // toggle 3d
+                if (w_param == L'3') { s_app->toggle_3d(); }
                 // zooming in
                 if (w_param == L'+') { s_app->zoom(hillshader::camera::config::c_zoom_factor, hillshader::focus::center); }
                 if (w_param == L'=') { s_app->zoom(hillshader::camera::config::c_zoom_factor, hillshader::focus::center); }

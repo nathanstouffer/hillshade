@@ -17,3 +17,12 @@ services:
       - ./transform:/src
       - ./tiff:/data/tiff
     entrypoint: python cut.py
+
+  merge:
+    build:
+      context: .
+      dockerfile: .docker/Transform.dockerfile
+    volumes:
+      - ./transform:/src
+      - ./tiff:/data/tiff
+    entrypoint: python merge.py
