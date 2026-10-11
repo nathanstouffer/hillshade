@@ -56,6 +56,7 @@ namespace hillshader
     static constexpr float c_min_terrain_offset = 0.5;
 
     static constexpr int c_path_vertex_count = 1 << 10;
+    static constexpr float c_anchor_size = 100.f;
 
     struct terrain_constants
     {
@@ -80,7 +81,13 @@ namespace hillshader
         stff::mtx4 view_proj;
     };
 
-    struct path_vertex
+    struct anchors_constants
+    {
+        stff::mtx4 view_proj;
+        float size;
+    };
+
+    struct basic_vertex
     {
         stff::vec3 pos;
         stff::vec4 color;
@@ -403,31 +410,61 @@ namespace hillshader
 
         if (m_render_sampling && m_sampling_controller)
         {
-            Diligent::MapHelper<path_constants> consts(m_immediate_context, m_path_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-            consts->view_proj = m_camera.perspective() * m_camera.view();
-
-            path_vertex* verts = nullptr;
-            m_immediate_context->MapBuffer(m_path_vertex_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD, (void*&)verts);
-            for (int i = 0; i < c_path_vertex_count; ++i)
             {
-                float t = static_cast<float>(i) / (c_path_vertex_count - 1);
-                time_t delta = static_cast<time_t>(t * m_sampling_controller->duration_ms());
-                time_t override_ms = m_sampling_controller->begin_ms() + delta;
-                stff::vec3 pos = m_sampling_controller->update({ io(), m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms }).eye;
-                verts[i] = path_vertex{ pos, stff::vec4(1, 0, 0, 1) };
+                Diligent::MapHelper<path_constants> consts(m_immediate_context, m_path_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+                consts->view_proj = m_camera.perspective() * m_camera.view();
+
+                basic_vertex* verts = nullptr;
+                m_immediate_context->MapBuffer(m_path_vertex_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD, (void*&)verts);
+                for (int i = 0; i < c_path_vertex_count; ++i)
+                {
+                    float t = static_cast<float>(i) / (c_path_vertex_count - 1);
+                    time_t delta = static_cast<time_t>(t * m_sampling_controller->duration_ms());
+                    time_t override_ms = m_sampling_controller->begin_ms() + delta;
+                    stff::vec3 pos = m_sampling_controller->update({ io(), m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms }).eye;
+                    verts[i] = basic_vertex{ pos, stff::vec4(1, 0, 0, 1) };
+                }
+                m_immediate_context->UnmapBuffer(m_path_vertex_buffer, Diligent::MAP_WRITE);
+
+                m_immediate_context->SetPipelineState(m_path_pso);
+                m_immediate_context->CommitShaderResources(m_path_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+                Diligent::IBuffer* vbuffs[] = { m_path_vertex_buffer };
+                Diligent::Uint64 offsets[] = { 0 };
+                m_immediate_context->SetVertexBuffers(0, 1, vbuffs, offsets, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+
+                Diligent::DrawAttribs draw_attrs;
+                draw_attrs.NumVertices = c_path_vertex_count;
+                m_immediate_context->Draw(draw_attrs);
             }
-            m_immediate_context->UnmapBuffer(m_path_vertex_buffer, Diligent::MAP_WRITE);
 
-            m_immediate_context->SetPipelineState(m_path_pso);
-            m_immediate_context->CommitShaderResources(m_path_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+            {
+                Diligent::MapHelper<anchors_constants> consts(m_immediate_context, m_anchors_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+                consts->view_proj = m_camera.perspective() * m_camera.view();
+                consts->size = c_anchor_size;
 
-            Diligent::IBuffer* vbuffs[] = { m_path_vertex_buffer };
-            Diligent::Uint64 offsets[] = { 0 };
-            m_immediate_context->SetVertexBuffers(0, 1, vbuffs, offsets, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+                auto const& anchors = m_sampling_controller->anchors();
 
-            Diligent::DrawAttribs draw_attrs;
-            draw_attrs.NumVertices = c_path_vertex_count;
-            m_immediate_context->Draw(draw_attrs);
+                basic_vertex* verts = nullptr;
+                m_immediate_context->MapBuffer(m_anchors_vertex_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD, (void*&)verts);
+                for (int i = 0; i < anchors.size(); ++i)
+                {
+                    stff::vec3 pos = anchors[i].camera.eye;
+                    verts[i] = basic_vertex{ pos, stff::vec4(1, 0, 1, 1) };
+                }
+                m_immediate_context->UnmapBuffer(m_anchors_vertex_buffer, Diligent::MAP_WRITE);
+
+                m_immediate_context->SetPipelineState(m_anchors_pso);
+                m_immediate_context->CommitShaderResources(m_anchors_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+                Diligent::IBuffer* vbuffs[] = { m_anchors_vertex_buffer };
+                Diligent::Uint64 offsets[] = { 0 };
+                m_immediate_context->SetVertexBuffers(0, 1, vbuffs, offsets, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+
+                Diligent::DrawAttribs draw_attrs;
+                draw_attrs.NumVertices = m_sampling_controller->anchors().size();
+                m_immediate_context->Draw(draw_attrs);
+            }
         }
 
         // resolve MSAA to GPU color buffer
@@ -726,9 +763,77 @@ namespace hillshader
             buff_desc.Name = "Debug Line Vertex Buffer";
             buff_desc.Usage = Diligent::USAGE_DYNAMIC;
             buff_desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-            buff_desc.Size = sizeof(path_vertex) * c_path_vertex_count;
+            buff_desc.Size = sizeof(basic_vertex) * c_path_vertex_count;
             buff_desc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
             m_device->CreateBuffer(buff_desc, nullptr, &m_path_vertex_buffer);
+        }
+
+        // anchor pso
+        {
+            Diligent::GraphicsPipelineStateCreateInfo pso_info;
+            pso_info.PSODesc.Name = "Debug Anchor PSO";
+            pso_info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
+
+            pso_info.GraphicsPipeline.NumRenderTargets = 1;
+            pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
+            pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
+            pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_POINT_LIST;
+            pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
+            pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
+            pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
+
+            Diligent::CreateUniformBuffer(m_device, sizeof(anchors_constants), "Anchor shader constants CB", &m_anchors_shader_constants);
+
+            Diligent::ShaderCreateInfo shader_info;
+            shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
+            shader_info.Desc.UseCombinedTextureSamplers = true;
+            shader_info.pShaderSourceStreamFactory = shader_source_factory;
+
+            Diligent::RefCntAutoPtr<Diligent::IShader> vs;
+            {
+                std::string path = std::string(c_shader_dir) + "/anchor/anchor.vsh";
+                shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
+                shader_info.EntryPoint = "main";
+                shader_info.Desc.Name = "debug anchor vs";
+                shader_info.FilePath = path.c_str();
+                m_device->CreateShader(shader_info, &vs);
+            }
+
+            Diligent::RefCntAutoPtr<Diligent::IShader> ps;
+            {
+                std::string path = std::string(c_shader_dir) + "/anchor/anchor.psh";
+                shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
+                shader_info.EntryPoint = "main";
+                shader_info.Desc.Name = "debug anchor ps";
+                shader_info.FilePath = path.c_str();
+                m_device->CreateShader(shader_info, &ps);
+            }
+
+            pso_info.pVS = vs;
+            pso_info.pPS = ps;
+
+            Diligent::LayoutElement debug_layout[] =
+            {
+                Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, Diligent::False}, // Position
+                Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, Diligent::False}  // Color
+            };
+            pso_info.GraphicsPipeline.InputLayout.LayoutElements = debug_layout;
+            pso_info.GraphicsPipeline.InputLayout.NumElements = _countof(debug_layout);
+
+            pso_info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
+            m_device->CreateGraphicsPipelineState(pso_info, &m_anchors_pso);
+
+            m_anchors_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "VSConstants")->Set(m_anchors_shader_constants);
+
+            m_anchors_pso->CreateShaderResourceBinding(&m_anchors_srb, true);
+
+            Diligent::BufferDesc buff_desc;
+            buff_desc.Name = "Debug Anchor Vertex Buffer";
+            buff_desc.Usage = Diligent::USAGE_DYNAMIC;
+            buff_desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+            buff_desc.Size = sizeof(basic_vertex) * c_path_vertex_count;
+            buff_desc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+            m_device->CreateBuffer(buff_desc, nullptr, &m_anchors_vertex_buffer);
         }
     }
 
