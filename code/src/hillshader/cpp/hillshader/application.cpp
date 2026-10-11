@@ -55,6 +55,8 @@ namespace hillshader
 
     static constexpr float c_min_terrain_offset = 0.5;
 
+    static constexpr int c_path_vertex_count = 1 << 10;
+
     struct terrain_constants
     {
         stff::mtx4 view_proj;
@@ -76,6 +78,12 @@ namespace hillshader
     struct path_constants
     {
         stff::mtx4 view_proj;
+    };
+
+    struct path_vertex
+    {
+        stff::vec3 pos;
+        stff::vec4 color;
     };
 
     application::application() : m_controller(std::make_unique<camera::controllers::identity>()) {}
@@ -393,26 +401,20 @@ namespace hillshader
             m_immediate_context->DrawIndexed(draw_attrs);
         }
 
+        if (m_render_sampling && m_sampling_controller)
         {
             Diligent::MapHelper<path_constants> consts(m_immediate_context, m_path_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
             consts->view_proj = m_camera.perspective() * m_camera.view();
 
-            struct debug_vertex
-            {
-                stff::vec3 pos;
-                stff::vec4 color;
-            };
-            debug_vertex* verts = nullptr;
+            path_vertex* verts = nullptr;
             m_immediate_context->MapBuffer(m_path_vertex_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD, (void*&)verts);
-            if (verts)
+            for (int i = 0; i < c_path_vertex_count; ++i)
             {
-                // Line 1: Red line along X axis
-                verts[0] = debug_vertex{ stff::vec3(0, 0, 0), stff::vec4(1, 0, 0, 1) };
-                verts[1] = debug_vertex{ stff::vec3(100, 0, 0), stff::vec4(1, 0, 0, 1) };
-
-                // Line 2: Green line along Y axis
-                verts[2] = debug_vertex{ stff::vec3(0, 0, 0), stff::vec4(0, 1, 0, 1) };
-                verts[3] = debug_vertex{ stff::vec3(0, 100, 0), stff::vec4(0, 1, 0, 1) };
+                float t = static_cast<float>(i) / (c_path_vertex_count - 1);
+                time_t delta = static_cast<time_t>(t * m_sampling_controller->duration_ms());
+                time_t override_ms = m_sampling_controller->begin_ms() + delta;
+                stff::vec3 pos = m_sampling_controller->update({ io(), m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms }).eye;
+                verts[i] = path_vertex{ pos, stff::vec4(1, 0, 0, 1) };
             }
             m_immediate_context->UnmapBuffer(m_path_vertex_buffer, Diligent::MAP_WRITE);
 
@@ -424,7 +426,7 @@ namespace hillshader
             m_immediate_context->SetVertexBuffers(0, 1, vbuffs, offsets, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 
             Diligent::DrawAttribs draw_attrs;
-            draw_attrs.NumVertices = 4;
+            draw_attrs.NumVertices = c_path_vertex_count;
             m_immediate_context->Draw(draw_attrs);
         }
 
@@ -720,12 +722,11 @@ namespace hillshader
 
             m_path_pso->CreateShaderResourceBinding(&m_path_srb, true);
 
-            // create a dynamic vertex buffer for drawing lines (e.g., capacity for 1024 vertices)
             Diligent::BufferDesc buff_desc;
             buff_desc.Name = "Debug Line Vertex Buffer";
             buff_desc.Usage = Diligent::USAGE_DYNAMIC;
             buff_desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-            buff_desc.Size = sizeof(path_constants) * 1024;
+            buff_desc.Size = sizeof(path_vertex) * c_path_vertex_count;
             buff_desc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
             m_device->CreateBuffer(buff_desc, nullptr, &m_path_vertex_buffer);
         }
