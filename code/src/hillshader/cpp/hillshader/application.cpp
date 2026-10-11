@@ -184,14 +184,25 @@ namespace hillshader
 
         m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
 
-        if (m_sampling_controller)
         {
-            time_t override_ms = m_sampling_start_time_ms + m_sampling_delta_time_ms;
-            m_sampled_camera = m_sampling_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms });
-        }
-        if (m_override_with_sampling && m_sampling_controller)
-        {
-            m_camera = m_sampled_camera;
+            if (m_sampling_playback && m_sampling_controller)
+            {
+                time_t diff = timer::now_ms() - m_sampling_playback_marker;
+                float delta = m_sampling_playback_speed * static_cast<float>(diff);
+                m_sampling_delta_time_ms += static_cast<time_t>(delta);
+                m_sampling_delta_time_ms = std::min(m_sampling_delta_time_ms, m_sampling_controller->duration_ms());
+            }
+            m_sampling_playback_marker = timer::now_ms();
+
+            if (m_sampling_controller)
+            {
+                time_t override_ms = m_sampling_start_time_ms + m_sampling_delta_time_ms;
+                m_sampled_camera = m_sampling_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms });
+            }
+            if (m_override_with_sampling && m_sampling_controller)
+            {
+                m_camera = m_sampled_camera;
+            }
         }
     }
 
@@ -338,15 +349,6 @@ namespace hillshader
             ImGui::SliderFloat("Speed", &m_sampling_playback_speed, 0.f, 2.f);
             ImGui::SameLine();
             ImGui::Checkbox("Play", &m_sampling_playback);
-
-            if (m_sampling_playback && m_sampling_controller)
-            {
-                time_t diff = timer::now_ms() - m_sampling_playback_marker;
-                float delta = m_sampling_playback_speed * static_cast<float>(diff);
-                m_sampling_delta_time_ms += static_cast<time_t>(delta);
-                m_sampling_delta_time_ms = std::min(m_sampling_delta_time_ms, m_sampling_controller->duration_ms());
-            }
-            m_sampling_playback_marker = timer::now_ms();
 
             ImGui::Checkbox("Override controller", &m_override_with_sampling);
 
