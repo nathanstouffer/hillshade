@@ -350,7 +350,7 @@ namespace hillshader
 
         if (m_terrain)
         {
-            Diligent::MapHelper<terrain_constants> consts(m_immediate_context, m_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+            Diligent::MapHelper<terrain_constants> consts(m_immediate_context, m_terrain_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
             m_camera.aspect = aspect_ratio();
             consts->view_proj = m_camera.perspective() * m_camera.view();
@@ -373,13 +373,13 @@ namespace hillshader
             consts->flag_3d = m_flag_3d;
 
             uint64_t const offset = 0;
-            Diligent::IBuffer* buffers[] = { m_vertex_buffer };
+            Diligent::IBuffer* buffers[] = { m_terrain_vertex_buffer };
             m_immediate_context->SetVertexBuffers(0, 1, buffers, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-            m_immediate_context->SetIndexBuffer(m_index_buffer, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+            m_immediate_context->SetIndexBuffer(m_terrain_index_buffer, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
             // set the pipeline state in the immediate context
-            m_immediate_context->SetPipelineState(m_pso);
-            m_immediate_context->CommitShaderResources(m_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+            m_immediate_context->SetPipelineState(m_terrain_pso);
+            m_immediate_context->CommitShaderResources(m_terrain_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
             Diligent::DrawIndexedAttribs draw_attrs;
             draw_attrs.IndexType = Diligent::VT_UINT32;
@@ -527,95 +527,98 @@ namespace hillshader
     {
         create_msaa_resources();
 
-        Diligent::GraphicsPipelineStateCreateInfo pso_info;
-
-        pso_info.PSODesc.Name = "Simple quad PSO";
-        pso_info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
-
-        pso_info.GraphicsPipeline.NumRenderTargets = 1;
-        pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
-        pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
-        pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-        pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
-        pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
-        pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
-
-        // create dynamic uniform buffer that will store shader constants
-        Diligent::CreateUniformBuffer(m_device, sizeof(terrain_constants), "Global shader constants CB", &m_shader_constants);
-
-        Diligent::ShaderCreateInfo shader_info;
-        shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
-        shader_info.Desc.UseCombinedTextureSamplers = true;
-        Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> shader_source_factory;
-        m_engine_factory->CreateDefaultShaderSourceStreamFactory(nullptr, &shader_source_factory);
-        shader_info.pShaderSourceStreamFactory = shader_source_factory;
-
-        // create a vertex shader
-        Diligent::RefCntAutoPtr<Diligent::IShader> vertex_shader;
+        // terrain pso
         {
-            std::string path = std::string(c_shader_dir) + "/terrain/terrain.vsh";
-            shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
-            shader_info.EntryPoint = "main";
-            shader_info.Desc.Name = "terrain vertex shader";
-            shader_info.FilePath = path.c_str();
-            m_device->CreateShader(shader_info, &vertex_shader);
+            Diligent::GraphicsPipelineStateCreateInfo pso_info;
+
+            pso_info.PSODesc.Name = "Simple quad PSO";
+            pso_info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
+
+            pso_info.GraphicsPipeline.NumRenderTargets = 1;
+            pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
+            pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
+            pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+            pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
+            pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
+            pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
+
+            // create dynamic uniform buffer that will store shader constants
+            Diligent::CreateUniformBuffer(m_device, sizeof(terrain_constants), "Global shader constants CB", &m_terrain_shader_constants);
+
+            Diligent::ShaderCreateInfo shader_info;
+            shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
+            shader_info.Desc.UseCombinedTextureSamplers = true;
+            Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> shader_source_factory;
+            m_engine_factory->CreateDefaultShaderSourceStreamFactory(nullptr, &shader_source_factory);
+            shader_info.pShaderSourceStreamFactory = shader_source_factory;
+
+            // create a vertex shader
+            Diligent::RefCntAutoPtr<Diligent::IShader> vertex_shader;
+            {
+                std::string path = std::string(c_shader_dir) + "/terrain/terrain.vsh";
+                shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
+                shader_info.EntryPoint = "main";
+                shader_info.Desc.Name = "terrain vertex shader";
+                shader_info.FilePath = path.c_str();
+                m_device->CreateShader(shader_info, &vertex_shader);
+            }
+
+            // create a pixel shader
+            Diligent::RefCntAutoPtr<Diligent::IShader> pixel_shader;
+            {
+                std::string path = std::string(c_shader_dir) + "/terrain/terrain.psh";
+                shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
+                shader_info.EntryPoint = "main";
+                shader_info.Desc.Name = "terrain pixel shader";
+                shader_info.FilePath = path.c_str();
+                m_device->CreateShader(shader_info, &pixel_shader);
+            }
+
+            // create the pipeline state
+            pso_info.pVS = vertex_shader;
+            pso_info.pPS = pixel_shader;
+
+            Diligent::LayoutElement layout_elems[] =
+            {
+                // Attribute 0 - vertex position
+                Diligent::LayoutElement{0, 0, 2, Diligent::VT_FLOAT32, Diligent::False},
+                // Attribute 1 - texture coordinates
+                Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, Diligent::False}
+            };
+
+            pso_info.GraphicsPipeline.InputLayout.LayoutElements = layout_elems;
+            pso_info.GraphicsPipeline.InputLayout.NumElements = _countof(layout_elems);
+
+            pso_info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
+
+            // shader variables should typically be mutable, which means they are expected to change on a per-instance basis
+            Diligent::ShaderResourceVariableDesc vars[] =
+            {
+                { Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL, "g_terrain", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE },
+            };
+            pso_info.PSODesc.ResourceLayout.Variables = vars;
+            pso_info.PSODesc.ResourceLayout.NumVariables = _countof(vars);
+
+            // define immutable sampler for g_terrain. Immutable samplers should be used whenever possible
+            Diligent::SamplerDesc desc
+            {
+                Diligent::FILTER_TYPE_LINEAR, Diligent::FILTER_TYPE_LINEAR, Diligent::FILTER_TYPE_LINEAR,
+                Diligent::TEXTURE_ADDRESS_CLAMP, Diligent::TEXTURE_ADDRESS_CLAMP, Diligent::TEXTURE_ADDRESS_CLAMP
+            };
+            Diligent::ImmutableSamplerDesc immutable_samplers[] =
+            {
+                { Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL, "g_terrain", desc },
+            };
+            pso_info.PSODesc.ResourceLayout.ImmutableSamplers = immutable_samplers;
+            pso_info.PSODesc.ResourceLayout.NumImmutableSamplers = _countof(immutable_samplers);
+
+            m_device->CreateGraphicsPipelineState(pso_info, &m_terrain_pso);
+
+            m_terrain_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "VSConstants")->Set(m_terrain_shader_constants);
+            m_terrain_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "PSConstants")->Set(m_terrain_shader_constants);
+
+            m_terrain_pso->CreateShaderResourceBinding(&m_terrain_srb, true);
         }
-
-        // create a pixel shader
-        Diligent::RefCntAutoPtr<Diligent::IShader> pixel_shader;
-        {
-            std::string path = std::string(c_shader_dir) + "/terrain/terrain.psh";
-            shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
-            shader_info.EntryPoint = "main";
-            shader_info.Desc.Name = "terrain pixel shader";
-            shader_info.FilePath = path.c_str();
-            m_device->CreateShader(shader_info, &pixel_shader);
-        }
-
-        // create the pipeline state
-        pso_info.pVS = vertex_shader;
-        pso_info.pPS = pixel_shader;
-
-        Diligent::LayoutElement layout_elems[] =
-        {
-            // Attribute 0 - vertex position
-            Diligent::LayoutElement{0, 0, 2, Diligent::VT_FLOAT32, Diligent::False},
-            // Attribute 1 - texture coordinates
-            Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, Diligent::False}
-        };
-
-        pso_info.GraphicsPipeline.InputLayout.LayoutElements = layout_elems;
-        pso_info.GraphicsPipeline.InputLayout.NumElements = _countof(layout_elems);
-
-        pso_info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
-
-        // shader variables should typically be mutable, which means they are expected to change on a per-instance basis
-        Diligent::ShaderResourceVariableDesc vars[] =
-        {
-            { Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL, "g_terrain", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE },
-        };
-        pso_info.PSODesc.ResourceLayout.Variables = vars;
-        pso_info.PSODesc.ResourceLayout.NumVariables = _countof(vars);
-
-        // define immutable sampler for g_terrain. Immutable samplers should be used whenever possible
-        Diligent::SamplerDesc desc
-        {
-            Diligent::FILTER_TYPE_LINEAR, Diligent::FILTER_TYPE_LINEAR, Diligent::FILTER_TYPE_LINEAR,
-            Diligent::TEXTURE_ADDRESS_CLAMP, Diligent::TEXTURE_ADDRESS_CLAMP, Diligent::TEXTURE_ADDRESS_CLAMP
-        };
-        Diligent::ImmutableSamplerDesc immutable_samplers[] =
-        {
-            { Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL, "g_terrain", desc },
-        };
-        pso_info.PSODesc.ResourceLayout.ImmutableSamplers = immutable_samplers;
-        pso_info.PSODesc.ResourceLayout.NumImmutableSamplers = _countof(immutable_samplers);
-
-        m_device->CreateGraphicsPipelineState(pso_info, &m_pso);
-
-        m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "VSConstants")->Set(m_shader_constants);
-        m_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL , "PSConstants")->Set(m_shader_constants);
-
-        m_pso->CreateShaderResourceBinding(&m_srb, true);
     }
 
     void application::create_msaa_resources()
@@ -819,7 +822,7 @@ namespace hillshader
                 Diligent::BufferData data;
                 data.pData = m_vertices.data();
                 data.DataSize = sizeof(mesh::vertex_t) * m_vertices.size();
-                m_device->CreateBuffer(desc, &data, &m_vertex_buffer);
+                m_device->CreateBuffer(desc, &data, &m_terrain_vertex_buffer);
             }
 
             // compute and load index buffer
@@ -835,7 +838,7 @@ namespace hillshader
                 Diligent::BufferData data;
                 data.pData = m_indices.data();
                 data.DataSize = sizeof(uint32_t) * m_indices.size();
-                m_device->CreateBuffer(desc, &data, &m_index_buffer);
+                m_device->CreateBuffer(desc, &data, &m_terrain_index_buffer);
             }
         }
 
@@ -862,8 +865,8 @@ namespace hillshader
             loader->CreateTexture(m_device, &m_texture);
 
             m_texture_srv = m_texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-            m_srb->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_terrain")->Set(m_texture_srv, Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
-            m_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL , "g_terrain")->Set(m_texture_srv, Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+            m_terrain_srb->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_terrain")->Set(m_texture_srv, Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+            m_terrain_srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL , "g_terrain")->Set(m_texture_srv, Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
         }
 
         m_start_up_state["dem_path"] = path;
@@ -893,8 +896,8 @@ namespace hillshader
     {
         if (m_texture) { m_texture = nullptr; }
         if (m_texture_srv) { m_texture_srv = nullptr; }
-        if (m_vertex_buffer) { m_vertex_buffer = nullptr; }
-        if (m_index_buffer) { m_index_buffer = nullptr; }
+        if (m_terrain_vertex_buffer) { m_terrain_vertex_buffer = nullptr; }
+        if (m_terrain_index_buffer) { m_terrain_index_buffer = nullptr; }
     }
 
 }

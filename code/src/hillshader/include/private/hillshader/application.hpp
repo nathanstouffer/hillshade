@@ -91,11 +91,13 @@ namespace hillshader
         Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_resolved_color_rtv;
         Diligent::RefCntAutoPtr<Diligent::ITexture>               m_staging_color;
         Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_staging_color_rtv;
-        Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_pso;
-        Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_srb;
-        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_shader_constants;
-        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_vertex_buffer;
-        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_index_buffer;
+
+        Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_terrain_pso;
+        Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_terrain_srb;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_terrain_shader_constants;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_terrain_vertex_buffer;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_terrain_index_buffer;
+
         Diligent::RENDER_DEVICE_TYPE                              m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
