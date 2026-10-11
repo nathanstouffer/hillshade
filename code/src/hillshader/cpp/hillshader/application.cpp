@@ -394,6 +394,9 @@ namespace hillshader
         }
 
         {
+            Diligent::MapHelper<path_constants> consts(m_immediate_context, m_path_shader_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+            consts->view_proj = m_camera.perspective() * m_camera.view();
+
             struct debug_vertex
             {
                 stff::vec3 pos;
@@ -583,7 +586,7 @@ namespace hillshader
             pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
 
             // create dynamic uniform buffer that will store shader constants
-            Diligent::CreateUniformBuffer(m_device, sizeof(terrain_constants), "Global shader constants CB", &m_terrain_shader_constants);
+            Diligent::CreateUniformBuffer(m_device, sizeof(terrain_constants), "Terrain shader constants CB", &m_terrain_shader_constants);
 
             Diligent::ShaderCreateInfo shader_info;
             shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
@@ -672,6 +675,8 @@ namespace hillshader
             pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
             pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
 
+            Diligent::CreateUniformBuffer(m_device, sizeof(terrain_constants), "Path shader constants CB", &m_path_shader_constants);
+
             Diligent::ShaderCreateInfo shader_info;
             shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
             shader_info.Desc.UseCombinedTextureSamplers = true;
@@ -708,11 +713,9 @@ namespace hillshader
             pso_info.GraphicsPipeline.InputLayout.LayoutElements = debug_layout;
             pso_info.GraphicsPipeline.InputLayout.NumElements = _countof(debug_layout);
 
-            // bind global constant buffer if you want to use the same view_proj matrix
             pso_info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
             m_device->CreateGraphicsPipelineState(pso_info, &m_path_pso);
 
-            // map global constants to the debug line shader if it shares the buffer
             m_path_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "VSConstants")->Set(m_path_shader_constants);
 
             m_path_pso->CreateShaderResourceBinding(&m_path_srb, true);
