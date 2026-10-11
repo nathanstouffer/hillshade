@@ -180,10 +180,15 @@ namespace hillshader
         }
 
         m_camera = m_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, time_ms });
-        if (m_override_with_sampling && m_sampling_controller)
+
+        if (m_sampling_controller)
         {
             time_t override_ms = m_sampling_start_time_ms + m_sampling_delta_time_ms;
-            m_camera = m_sampling_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms });
+            m_sampled_camera = m_sampling_controller->update({ io, m_camera, (m_flag_3d) ? m_terrain.get() : nullptr, override_ms });
+        }
+        if (m_override_with_sampling && m_sampling_controller)
+        {
+            m_camera = m_sampled_camera;
         }
     }
 
@@ -451,7 +456,24 @@ namespace hillshader
                 stff::vec4 look_color  = stff::vec4(1, 0, 1, 1);
                 stff::vec4 up_color    = stff::vec4(0, 1, 1, 1);
                 stff::vec4 right_color = stff::vec4(0, 0, 1, 1);
-                for (int i = 0; i < anchors.size(); ++i)
+                {
+                    stff::scamera cam = m_sampled_camera;
+                    int j = 0;
+
+                    // add forward direction
+                    verts[j + 0] = basic_vertex{ cam.eye,                       look_color };
+                    verts[j + 1] = basic_vertex{ cam.eye + radius * cam.look(), look_color };
+                    auto l = cam.look();
+
+                    // add up direction
+                    verts[j + 2] = basic_vertex{ cam.eye,                     up_color };
+                    verts[j + 3] = basic_vertex{ cam.eye + radius * cam.up(), up_color };
+
+                    // add right direction
+                    verts[j + 4] = basic_vertex{ cam.eye,                        right_color };
+                    verts[j + 5] = basic_vertex{ cam.eye + radius * cam.right(), right_color };
+                }
+                for (int i = 1; i < anchors.size(); ++i)
                 {
                     stff::scamera cam = anchors[i].camera;
                     int j = i * 6;

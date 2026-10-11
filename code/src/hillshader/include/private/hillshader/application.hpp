@@ -168,6 +168,7 @@ namespace hillshader
         std::unique_ptr<camera::controllers::animators::path> m_sampling_controller;
         time_t m_sampling_start_time_ms = 0;
         time_t m_sampling_delta_time_ms = 0;
+        stff::scamera m_sampled_camera;
 
         nlohmann::json m_start_up_state;
 
