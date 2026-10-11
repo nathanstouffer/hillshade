@@ -22,6 +22,7 @@
 
 #include "hillshader/camera/controllers/controller.hpp"
 #include "hillshader/camera/controllers/animators/animator.hpp"
+#include "hillshader/camera/controllers/animators/path.hpp"
 #include "hillshader/mesh.hpp"
 #include "hillshader/terrain.hpp"
 #include "hillshader/timer.hpp"
@@ -91,11 +92,23 @@ namespace hillshader
         Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_resolved_color_rtv;
         Diligent::RefCntAutoPtr<Diligent::ITexture>               m_staging_color;
         Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_staging_color_rtv;
-        Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_pso;
-        Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_srb;
-        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_shader_constants;
-        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_vertex_buffer;
-        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_index_buffer;
+
+        Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_terrain_pso;
+        Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_terrain_srb;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_terrain_shader_constants;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_terrain_vertex_buffer;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_terrain_index_buffer;
+
+        Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_path_pso;
+        Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_path_srb;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_path_shader_constants;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_path_vertex_buffer;
+
+        Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_anchors_pso;
+        Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_anchors_srb;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_anchors_shader_constants;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_anchors_vertex_buffer;
+
         Diligent::RENDER_DEVICE_TYPE                              m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;
@@ -148,12 +161,14 @@ namespace hillshader
 
         std::string m_sampling_path;
         bool m_override_with_sampling = false;
+        bool m_render_sampling = false;
         bool m_sampling_playback = false;
         float m_sampling_playback_speed = 1.0f;
         time_t m_sampling_playback_marker = 0;
-        std::unique_ptr<camera::controllers::animators::animator> m_sampling_controller;
+        std::unique_ptr<camera::controllers::animators::path> m_sampling_controller;
         time_t m_sampling_start_time_ms = 0;
         time_t m_sampling_delta_time_ms = 0;
+        stff::scamera m_sampled_camera;
 
         nlohmann::json m_start_up_state;
 

@@ -1,0 +1,6 @@
+#include "shaders/anchor/structures.fxh"
+
+void main(in PSInput pixel_input, out PSOutput pixel_output)
+{
+    pixel_output.color = pixel_input.color;
+}

@@ -33,6 +33,17 @@ namespace hillshader::camera::controllers::animators
         path();
         path(std::vector<input_anchor> anchors, time_t delay_ms = 0);
 
+    public:
+
+        struct anchor
+        {
+            time_t timestamp_ms;
+            stff::scamera camera;
+            stff::scamera deriv;
+        };
+
+        std::vector<anchor> const& anchors() const { return m_anchors; }
+
     private:
 
         stff::scamera animator_update(options const& opts) override;
@@ -50,13 +61,6 @@ namespace hillshader::camera::controllers::animators
         static stff::scamera overwritten(stff::scamera const& camera, derivative const& deriv);
 
     private:
-
-        struct anchor
-        {
-            time_t timestamp_ms;
-            stff::scamera camera;
-            stff::scamera deriv;
-        };
 
         std::vector<anchor> m_anchors;
         time_t m_delay_ms;

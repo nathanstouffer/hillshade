@@ -1,4 +1,4 @@
-#include "shaders/structures.fxh"
+#include "shaders/terrain/structures.fxh"
 
 Texture2D       g_terrain;
 SamplerState    g_terrain_sampler;
