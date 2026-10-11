@@ -98,6 +98,11 @@ namespace hillshader
         Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_terrain_vertex_buffer;
         Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_terrain_index_buffer;
 
+        Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_path_pso;
+        Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_path_srb;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_path_shader_constants;
+        Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_path_vertex_buffer;
+
         Diligent::RENDER_DEVICE_TYPE                              m_device_type = Diligent::RENDER_DEVICE_TYPE_GL;
         
         std::unique_ptr<Diligent::ImGuiImplWin32> m_imgui_impl = nullptr;

@@ -73,6 +73,11 @@ namespace hillshader
         bool flag_3d;
     };
 
+    struct path_constants
+    {
+        stff::mtx4 view_proj;
+    };
+
     application::application() : m_controller(std::make_unique<camera::controllers::identity>()) {}
 
     application::~application()
@@ -388,6 +393,38 @@ namespace hillshader
             m_immediate_context->DrawIndexed(draw_attrs);
         }
 
+        {
+            struct debug_vertex
+            {
+                stff::vec3 pos;
+                stff::vec4 color;
+            };
+            debug_vertex* verts = nullptr;
+            m_immediate_context->MapBuffer(m_path_vertex_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD, (void*&)verts);
+            if (verts)
+            {
+                // Line 1: Red line along X axis
+                verts[0] = debug_vertex{ stff::vec3(0, 0, 0), stff::vec4(1, 0, 0, 1) };
+                verts[1] = debug_vertex{ stff::vec3(100, 0, 0), stff::vec4(1, 0, 0, 1) };
+
+                // Line 2: Green line along Y axis
+                verts[2] = debug_vertex{ stff::vec3(0, 0, 0), stff::vec4(0, 1, 0, 1) };
+                verts[3] = debug_vertex{ stff::vec3(0, 100, 0), stff::vec4(0, 1, 0, 1) };
+            }
+            m_immediate_context->UnmapBuffer(m_path_vertex_buffer, Diligent::MAP_WRITE);
+
+            m_immediate_context->SetPipelineState(m_path_pso);
+            m_immediate_context->CommitShaderResources(m_path_srb, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+            Diligent::IBuffer* vbuffs[] = { m_path_vertex_buffer };
+            Diligent::Uint64 offsets[] = { 0 };
+            m_immediate_context->SetVertexBuffers(0, 1, vbuffs, offsets, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+
+            Diligent::DrawAttribs draw_attrs;
+            draw_attrs.NumVertices = 4;
+            m_immediate_context->Draw(draw_attrs);
+        }
+
         // resolve MSAA to GPU color buffer
         {
             Diligent::ResolveTextureSubresourceAttribs resolve_attribs;
@@ -527,6 +564,9 @@ namespace hillshader
     {
         create_msaa_resources();
 
+        Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> shader_source_factory;
+        m_engine_factory->CreateDefaultShaderSourceStreamFactory(nullptr, &shader_source_factory);
+
         // terrain pso
         {
             Diligent::GraphicsPipelineStateCreateInfo pso_info;
@@ -548,8 +588,6 @@ namespace hillshader
             Diligent::ShaderCreateInfo shader_info;
             shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
             shader_info.Desc.UseCombinedTextureSamplers = true;
-            Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> shader_source_factory;
-            m_engine_factory->CreateDefaultShaderSourceStreamFactory(nullptr, &shader_source_factory);
             shader_info.pShaderSourceStreamFactory = shader_source_factory;
 
             // create a vertex shader
@@ -618,6 +656,75 @@ namespace hillshader
             m_terrain_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "PSConstants")->Set(m_terrain_shader_constants);
 
             m_terrain_pso->CreateShaderResourceBinding(&m_terrain_srb, true);
+        }
+
+        // path pso
+        {
+            Diligent::GraphicsPipelineStateCreateInfo pso_info;
+            pso_info.PSODesc.Name = "Debug Line PSO";
+            pso_info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
+
+            pso_info.GraphicsPipeline.NumRenderTargets = 1;
+            pso_info.GraphicsPipeline.RTVFormats[0] = m_swap_chain->GetDesc().ColorBufferFormat;
+            pso_info.GraphicsPipeline.DSVFormat = m_swap_chain->GetDesc().DepthBufferFormat;
+            pso_info.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
+            pso_info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
+            pso_info.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
+            pso_info.GraphicsPipeline.SmplDesc.Count = m_msaa_sample_count;
+
+            Diligent::ShaderCreateInfo shader_info;
+            shader_info.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
+            shader_info.Desc.UseCombinedTextureSamplers = true;
+            shader_info.pShaderSourceStreamFactory = shader_source_factory;
+
+            Diligent::RefCntAutoPtr<Diligent::IShader> debug_vs;
+            {
+                std::string path = std::string(c_shader_dir) + "/colored_vert/colored_vert.vsh";
+                shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
+                shader_info.EntryPoint = "main";
+                shader_info.Desc.Name = "debug line vs";
+                shader_info.FilePath = path.c_str();
+                m_device->CreateShader(shader_info, &debug_vs);
+            }
+
+            Diligent::RefCntAutoPtr<Diligent::IShader> debug_ps;
+            {
+                std::string path = std::string(c_shader_dir) + "/colored_vert/colored_vert.psh";
+                shader_info.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
+                shader_info.EntryPoint = "main";
+                shader_info.Desc.Name = "debug line ps";
+                shader_info.FilePath = path.c_str();
+                m_device->CreateShader(shader_info, &debug_ps);
+            }
+
+            pso_info.pVS = debug_vs;
+            pso_info.pPS = debug_ps;
+
+            Diligent::LayoutElement debug_layout[] =
+            {
+                Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, Diligent::False}, // Position
+                Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, Diligent::False}  // Color
+            };
+            pso_info.GraphicsPipeline.InputLayout.LayoutElements = debug_layout;
+            pso_info.GraphicsPipeline.InputLayout.NumElements = _countof(debug_layout);
+
+            // bind global constant buffer if you want to use the same view_proj matrix
+            pso_info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
+            m_device->CreateGraphicsPipelineState(pso_info, &m_path_pso);
+
+            // map global constants to the debug line shader if it shares the buffer
+            m_path_pso->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "VSConstants")->Set(m_path_shader_constants);
+
+            m_path_pso->CreateShaderResourceBinding(&m_path_srb, true);
+
+            // create a dynamic vertex buffer for drawing lines (e.g., capacity for 1024 vertices)
+            Diligent::BufferDesc buff_desc;
+            buff_desc.Name = "Debug Line Vertex Buffer";
+            buff_desc.Usage = Diligent::USAGE_DYNAMIC;
+            buff_desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+            buff_desc.Size = sizeof(path_constants) * 1024;
+            buff_desc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+            m_device->CreateBuffer(buff_desc, nullptr, &m_path_vertex_buffer);
         }
     }
 
